@@ -15,54 +15,31 @@ export interface ValidationResult {
 }
 
 export function validateBlockNumber(input: string): ValidationResult {
-  const trimmed = input.trim();
-  
-  if (!trimmed) {
-    return { isValid: false, type: 'invalid', error: 'Input is empty' };
-  }
-  
-  if (/^\d+$/.test(trimmed)) {
+  if (/^\d+$/.test(input)) {
     return { isValid: true, type: 'block_number' };
   }
-  
   return { isValid: false, type: 'invalid', error: 'Block number must be numeric' };
 }
 
 export function validateTezosAddress(input: string): ValidationResult {
-  const trimmed = input.trim();
-  
-  if (!trimmed) {
-    return { isValid: false, type: 'invalid', error: 'Input is empty' };
-  }
-  
-  if (!trimmed.startsWith('tz') && !trimmed.startsWith('KT')) {
+  if (!input.startsWith('tz') && !input.startsWith('KT')) {
     return { isValid: false, type: 'invalid', error: 'Not a Tezos address' };
   }
   
-  const validationResult = validateAddress(trimmed);
+  const validationResult = validateAddress(input);
   if (validationResult === TaquitoValidationResult.VALID) {
     return { isValid: true, type: 'tezos_address' };
   }
   
-  return { 
-    isValid: false, 
-    type: 'invalid', 
-    error: 'Invalid Tezos address' 
-  };
+  return { isValid: false, type: 'invalid', error: 'Invalid Tezos address' };
 }
 
 export function validateTezosTxHash(input: string): ValidationResult {
-  const trimmed = input.trim();
-  
-  if (!trimmed) {
-    return { isValid: false, type: 'invalid', error: 'Input is empty' };
-  }
-  
-  if (!trimmed.startsWith('o')) {
+  if (!input.startsWith('o')) {
     return { isValid: false, type: 'invalid', error: 'Not a Tezos transaction hash' };
   }
   
-  if (/^o[1-9A-HJ-NP-Za-km-z]{50}$/.test(trimmed)) {
+  if (/^o[1-9A-HJ-NP-Za-km-z]{50}$/.test(input)) {
     return { isValid: true, type: 'tezos_tx_hash' };
   }
   
@@ -70,59 +47,17 @@ export function validateTezosTxHash(input: string): ValidationResult {
 }
 
 export function validateEtherlinkAddress(input: string): ValidationResult {
-  const trimmed = input.trim();
-  
-  if (!trimmed) {
-    return { isValid: false, type: 'invalid', error: 'Input is empty' };
-  }
-  
-  if (!trimmed.startsWith('0x')) {
-    return { isValid: false, type: 'invalid', error: 'Not an Etherlink address' };
-  }
-  
-  const hex = trimmed.slice(2);
-  
-  if (!/^[0-9a-fA-F]+$/.test(hex)) {
-    return { isValid: false, type: 'invalid', error: 'Invalid hexadecimal characters' };
-  }
-  
-  if (hex.length === 40) {
+  if (/^0x[0-9a-fA-F]{40}$/.test(input)) {
     return { isValid: true, type: 'etherlink_address' };
   }
-  
-  return { 
-    isValid: false, 
-    type: 'invalid', 
-    error: `Invalid address length: expected 40 hex chars, got ${hex.length}` 
-  };
+  return { isValid: false, type: 'invalid', error: 'Invalid Etherlink address' };
 }
 
 export function validateEtherlinkTxHash(input: string): ValidationResult {
-  const trimmed = input.trim();
-  
-  if (!trimmed) {
-    return { isValid: false, type: 'invalid', error: 'Input is empty' };
-  }
-  
-  if (!trimmed.startsWith('0x')) {
-    return { isValid: false, type: 'invalid', error: 'Not an Etherlink transaction hash' };
-  }
-  
-  const hex = trimmed.slice(2);
-  
-  if (!/^[0-9a-fA-F]+$/.test(hex)) {
-    return { isValid: false, type: 'invalid', error: 'Invalid hexadecimal characters' };
-  }
-  
-  if (hex.length === 64) {
+  if (/^0x[0-9a-fA-F]{64}$/.test(input)) {
     return { isValid: true, type: 'etherlink_tx_hash' };
   }
-  
-  return { 
-    isValid: false, 
-    type: 'invalid', 
-    error: `Invalid tx hash length: expected 64 hex chars, got ${hex.length}` 
-  };
+  return { isValid: false, type: 'invalid', error: 'Invalid Etherlink transaction hash' };
 }
 
 export function validateInput(input: string): ValidationResult {
@@ -155,26 +90,12 @@ export function validateInput(input: string): ValidationResult {
       return validateEtherlinkTxHash(trimmed);
     }
     
-    return { 
-      isValid: false, 
-      type: 'invalid', 
-      error: `Invalid length` 
-    };
+    return { isValid: false, type: 'invalid', error: 'Invalid length' };
   }
   
-  return { 
-    isValid: false, 
-    type: 'invalid', 
-    error: 'Unrecognized format' 
-  };
+  return { isValid: false, type: 'invalid', error: 'Unrecognized format' };
 }
 
 export function getValidationMessage(result: ValidationResult): string {
-  if (!result.isValid) {
-    return result.error || 'Invalid input';
-  }
-  else {
-    return '';
-  }
+  return result.error || '';
 }
-
