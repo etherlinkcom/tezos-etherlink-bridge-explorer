@@ -5,18 +5,13 @@ import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransacti
 
 const TransactionTable = observer(() => {
 
-  const transactions: TezosTransaction[] = tezosTransactionStore.transactions;
+  const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
   const loadingInitial = tezosTransactionStore.loadingInitial;
   const loadingMore = tezosTransactionStore.loadingMore;
   const loadingRefresh = tezosTransactionStore.loadingRefresh;
   const loadingPage = tezosTransactionStore.loadingPage;
-  const hasMore = tezosTransactionStore.hasMore;
   const currentPage = tezosTransactionStore.currentPage;
   const totalPages = tezosTransactionStore.totalPages;
-
-  const handleLoadMore = () => {
-    tezosTransactionStore.loadMore();
-  };
 
   const handlePreviousPage = () => {
     tezosTransactionStore.previousPage();
@@ -81,7 +76,8 @@ const TransactionTable = observer(() => {
       <table border={1}>
         <thead>
           <tr>
-            <th>Txn Hash</th>
+            <th>L1 Tx Hash</th>
+            <th>L2 Tx Hash</th>
             <th>L1 Block</th>
             <th>L2 Block</th>
             <th>Type</th>
@@ -94,13 +90,30 @@ const TransactionTable = observer(() => {
           {transactions && transactions.length > 0 && transactions.map((transaction, i) => {      
             return (    
               <tr key={i}>
-                <td>{transaction.txHash}</td>
+                <td style={{ 
+                  maxWidth: '150px', 
+                  overflow: 'hidden', 
+                  textOverflow: 'ellipsis', 
+                  whiteSpace: 'nowrap',
+                  fontSize: '12px'
+                }}>
+                  {transaction.l1TxHash || '-'}
+                </td>
+                <td style={{ 
+                  maxWidth: '150px', 
+                  overflow: 'hidden', 
+                  textOverflow: 'ellipsis', 
+                  whiteSpace: 'nowrap',
+                  fontSize: '12px'
+                }}>
+                  {transaction.l2TxHash || '-'}
+                </td>
                 <td>{transaction.l1Block !== undefined ? transaction.l1Block : '-'}</td>
                 <td>{transaction.l2Block !== undefined ? transaction.l2Block : '-'}</td>
                 <td>{transaction.type}</td>
                 <td>{transaction.kind || 'N/A'}</td>
                 <td>{transaction.status}</td>
-                <td>{transaction.sendingAmount}</td>
+                <td>{transaction.sendingAmount} {transaction.symbol}</td>
               </tr> 
             )
           })}
@@ -154,25 +167,6 @@ const TransactionTable = observer(() => {
             {loadingPage && currentPage < totalPages ? 'Loading...' : 'Next'}
           </button>
         </div>
-      </div>
-      
-      {/* Load More button (Optional - for infinite scroll style) */}
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <button 
-          onClick={handleLoadMore}
-          disabled={loadingMore || !hasMore}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: loadingMore || !hasMore ? 'not-allowed' : 'pointer',
-            backgroundColor: loadingMore || !hasMore ? '#ccc' : '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px'
-          }}
-        >
-          {loadingMore ? 'Loading More...' : hasMore ? 'Load More (Append to Current View)' : 'No More Transactions'}
-        </button>
       </div>
     </div>
   );
