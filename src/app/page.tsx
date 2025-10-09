@@ -11,7 +11,7 @@ export default function Home() {
       console.log('Store is now available! Type "store" in console to test it.');
     }
     
-    tezosTransactionStore.fetchTransactions();
+    tezosTransactionStore.getTransactions();
     
     tezosTransactionStore.startAutoRefresh();
     
