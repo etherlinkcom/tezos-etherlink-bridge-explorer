@@ -14,11 +14,11 @@ const TransactionTable = observer(() => {
   const totalPages = tezosTransactionStore.totalPages;
 
   const handlePreviousPage = () => {
-    tezosTransactionStore.previousPage();
+    tezosTransactionStore.goToPage(currentPage - 1);
   };
 
   const handleNextPage = () => {
-    tezosTransactionStore.nextPage();
+    tezosTransactionStore.goToPage(currentPage + 1);
   };
 
   return (
@@ -83,6 +83,7 @@ const TransactionTable = observer(() => {
             <th>Type</th>
             <th>Status</th>
             <th>Amount</th>
+            <th>Kind</th>
           </tr>
         </thead>
         <tbody>
@@ -112,6 +113,7 @@ const TransactionTable = observer(() => {
                 <td>{transaction.type}</td>
                 <td>{transaction.status}</td>
                 <td>{transaction.sendingAmount} {transaction.symbol}</td>
+                <td>{transaction.kind || 'N/A'}</td>
               </tr> 
             )
           })}
@@ -121,6 +123,12 @@ const TransactionTable = observer(() => {
       {loadingInitial && (
         <div style={{ textAlign: 'center', padding: '20px', fontSize: '16px', color: '#666' }}>
           <span>Loading transactions...</span>
+        </div>
+      )}
+      
+      {!loadingInitial && transactions.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '20px', fontSize: '16px', color: '#666' }}>
+          <span>No transactions found. Try adjusting your search criteria.</span>
         </div>
       )}
       

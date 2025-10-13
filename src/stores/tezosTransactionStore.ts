@@ -401,15 +401,6 @@ export class TezosTransactionStore {
     this.setPage(page);
   };
 
-  // remove this and call from componant
-  nextPage = () => {
-    this.goToPage(this.currentPage + 1);
-  };
-  
-  previousPage = () => {
-    this.goToPage(this.currentPage - 1);
-  };
-
 private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
   // typecast  
   const query = this.buildGraphQLQuery(filters);
