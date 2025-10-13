@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 import TransactionTable from "@/components/TransactionTable";
+import SearchBar from "@/components/SearchBar";
 
 export default function Home() {
   useEffect(() => {
@@ -10,10 +11,15 @@ export default function Home() {
       (window as any).store = tezosTransactionStore;
       console.log('Store is now available! Type "store" in console to test it.');
     }
-    
-    tezosTransactionStore.getTransactions();
-    
-    tezosTransactionStore.startAutoRefresh();
+
+    const initializeStore = async () => {
+      console.log('🚀 Starting initial load...');
+      await tezosTransactionStore.getTransactions();
+      console.log('✅ Initial load completed, starting auto-refresh...');
+      tezosTransactionStore.startAutoRefresh();
+    };
+
+    initializeStore();
     
     return () => {
       tezosTransactionStore.stopAutoRefresh();
@@ -26,6 +32,7 @@ export default function Home() {
       <p style={{ color: '#666', marginBottom: '30px' }}>
         Explore bridge transactions between Tezos (L1) and Etherlink (L2)
       </p>
+      <SearchBar />
       <TransactionTable />
     </div>
   );
