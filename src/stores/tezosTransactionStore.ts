@@ -1,10 +1,8 @@
-import { makeAutoObservable, configure, observable, action } from "mobx";
+import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/requestRetryHelper";
+import { logger } from "@/Logger/logger";
 
-// configure({
-//   enforceActions: "never"
-// });
 
 type TransactionType = string;
 type Confirmation = { txHash: string; chainId: number };
@@ -40,6 +38,11 @@ interface GraphQLResponse {
       amount: string;
       transaction_hash: string;
       level: number | null;
+      l2_token: {
+        decimals: number;
+        name: string;
+        symbol: string;
+      };
       ticket: {
         token: {
           decimals: number;
@@ -60,6 +63,11 @@ interface GraphQLResponse {
       amount: string;
       transaction_hash: string;
       level: number | null;
+      l2_token: {
+        decimals: number;
+        name: string;
+        symbol: string;
+      };
       ticket: {
         token: {
           decimals: number;
@@ -90,7 +98,6 @@ interface TransactionProps<Input> {
   sendingAmount: string;
   receivingAmount: string | undefined;
   symbol: string;
-  decimals: number;
   chainId: number;
   expectedDate: number;
   submittedDate: number;
@@ -118,7 +125,6 @@ export class TezosTransaction<Input = GraphQLResponse>
   sendingAmount: string;
   receivingAmount: string | undefined;
   symbol: string;
-  decimals: number;
   chainId: number;
   expectedDate: number;
   submittedDate: number;
@@ -147,7 +153,6 @@ export class TezosTransaction<Input = GraphQLResponse>
     this.sendingAmount = props.sendingAmount;
     this.receivingAmount = props.receivingAmount;
     this.symbol = props.symbol;
-    this.decimals = props.decimals;
     this.status = props.status;
     this.isFastWithdrawal = props.isFastWithdrawal || false;
     this.l1Block = props.l1Block;
@@ -161,13 +166,10 @@ export class TezosTransaction<Input = GraphQLResponse>
 }
 
 export class TezosTransactionStore {
-  // transactions: TezosTransaction[] = [];
   transactionMap = observable.map<string, TezosTransaction>();
   
-  // Consolidated loading state
   loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
   
-  // Computed loading flags for backward compatibility
   get loading() { return this.loadingState !== 'idle'; }
   get loadingInitial() { return this.loadingState === 'initial'; }
   get loadingMore() { return this.loadingState === 'page'; }
@@ -175,18 +177,14 @@ export class TezosTransactionStore {
   get loadingPage() { return this.loadingState === 'page'; }
   
   error: string | null = null;
-  // offset: number = 0;
   currentPage: number = 1;
   pageSize: number = 50; // UI page size for pagination
-  batchSize: number = 2000; // API batch size for high-performance fetching
+  batchSize: number = 1000; // API batch size for fetching
   private mostRecentTimestamp: string | null = null;
   
-  // Memory management: prevent Map from growing indefinitely
-  private readonly MAX_TRANSACTIONS = 5000; // Keep last 5000 transactions
-  
-  // TODO: Change this to Support network: mainnet, testnet
-  private readonly graphqlEndpoint = 'https://bridge.indexer.etherlink.com/v1/graphql';
-  private readonly TEZOS_BLOCK_TIME = 8000; // 8 seconds
+  private readonly MAX_TRANSACTIONS = 5000;
+  private readonly graphqlEndpoint = process.env.GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
+  private readonly AUTO_REFRESH_INTERVAL = 50000; // 5 mins
   private refreshInterval: NodeJS.Timeout | null = null;
   
   constructor() {
@@ -194,12 +192,10 @@ export class TezosTransactionStore {
   }
 
   get transactions(): TezosTransaction[] {
-    return Array.from(this.transactionMap.values())
-      .sort((a, b) => b.submittedDate - a.submittedDate);
+    return Array.from(this.transactionMap.values());
   }
 
   get currentTransactions(): TezosTransaction[] {
-    // Client-side pagination from large batch
     const offset = (this.currentPage - 1) * this.pageSize;
     return this.transactions.slice(offset, offset + this.pageSize);
   }
@@ -219,19 +215,18 @@ export class TezosTransactionStore {
   startAutoRefresh = () => {
     if (this.refreshInterval) return;
     
-    console.log('Starting auto-refresh every 8 seconds');
+    console.log(`Starting auto-refresh every ${this.AUTO_REFRESH_INTERVAL} seconds`);
     this.refreshInterval = setInterval(() => {
       if (this.loading) return;
       
       if (this.transactionMap.size === 0) {
-        this.getTransactions({ limit: this.pageSize });
+        this.getTransactions();
         return;
       }
 
-      if (this.mostRecentTimestamp) {
-        this.getTransactions({ since: this.mostRecentTimestamp });
-      }
-    }, this.TEZOS_BLOCK_TIME);
+      if (this.mostRecentTimestamp) this.getTransactions({ since: this.mostRecentTimestamp });
+      
+    }, this.AUTO_REFRESH_INTERVAL);
   };
 
   stopAutoRefresh = () => {
@@ -244,7 +239,7 @@ export class TezosTransactionStore {
 
   private handleError = (error: unknown, context: string) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[${context}] Error:`, errorMessage);
+    logger.error(`${context}: ${errorMessage}`);
     this.setError(`${context}: ${errorMessage}`);
   };
 
@@ -334,6 +329,11 @@ export class TezosTransactionStore {
                   symbol
                 }
               }
+              l2_token {
+                decimals
+                name
+                symbol
+              }
             }
             l1_transaction {
               amount
@@ -347,6 +347,11 @@ export class TezosTransactionStore {
               amount
               transaction_hash
               level
+              l2_token {
+                decimals
+                name
+                symbol
+              }
               ticket {
                 token {
                   decimals
@@ -371,9 +376,12 @@ export class TezosTransactionStore {
     this.error = error;
   };
 
-
   setPage = (page: number) => {
     this.currentPage = page;
+  };
+
+  setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
+    this.loadingState = state;
   };
 
   goToPage = (page: number) => {
@@ -382,7 +390,6 @@ export class TezosTransactionStore {
     }
     
     this.setPage(page);
-    // That's it! currentTransactions getter handles the slicing
   };
   
   nextPage = () => {
@@ -410,83 +417,68 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
     return response.data.bridge_operation;
   }
 
-  private mapToTransactions = (operations: GraphQLResponse[]): TezosTransaction[] => {
+  private parseTransactions = (operations: GraphQLResponse[]): TezosTransaction[] => {
     return operations.map(item => this.createTransaction(item));
+  };
+
+  private updateMostRecentTimestamp = (transactions: TezosTransaction[]): void => {
+    if (transactions.length > 0) {
+      const newestTransaction = transactions[0];
+      
+      if (newestTransaction) {
+        this.mostRecentTimestamp = newestTransaction.input.updated_at;
+      }
+    }
   };
 
   private replaceTransactions = (transactions: TezosTransaction[]): void => {
     this.transactionMap.clear();
     transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
-    
-    if (transactions.length > 0) {
-      this.mostRecentTimestamp = transactions[0].input.updated_at;
-    }
+    this.updateMostRecentTimestamp(transactions);
   };
 
   private mergeTransactions = (transactions: TezosTransaction[]): void => {
     transactions.forEach(tx => {
       const existing = this.transactionMap.get(tx.input.id);
       if (existing) {
-        // Update existing instance to preserve observers and computed values
         existing.update(tx);
       } else {
-        // Create new instance only for new transactions
         this.transactionMap.set(tx.input.id, tx);
       }
     });
 
-    // Trim old transactions to prevent memory leak
     this.trimOldTransactions();
-
-    if (transactions.length > 0) {
-      const newestInBatch = transactions[0].input.updated_at;
-      if (!this.mostRecentTimestamp || newestInBatch > this.mostRecentTimestamp) {
-        this.mostRecentTimestamp = newestInBatch;
-      }
-    }
+    this.updateMostRecentTimestamp(transactions);
   };
 
-  // Trim old transactions to prevent memory leak
   private trimOldTransactions = (): void => {
     if (this.transactionMap.size <= this.MAX_TRANSACTIONS) return;
     
-    // Get all transactions sorted by date (newest first)
-    const allTransactions = Array.from(this.transactionMap.values())
-      .sort((a, b) => b.submittedDate - a.submittedDate);
-    
-    // Keep only the most recent MAX_TRANSACTIONS
-    const toKeep = allTransactions.slice(0, this.MAX_TRANSACTIONS);
+    const allTransactions = Array.from(this.transactionMap.values());
     const toRemove = allTransactions.slice(this.MAX_TRANSACTIONS);
     
-    // Remove old transactions
     toRemove.forEach(tx => this.transactionMap.delete(tx.input.id));
-    
-    console.log(`🧹 Trimmed ${toRemove.length} old transactions. Map size: ${this.transactionMap.size}`);
   };
-    
   
   getTransactions = async (filters: QueryFilters = {}): Promise<void> => {
-    const isRefresh = !!filters.since;
-    
-    this.loadingState = isRefresh ? 'refresh' : 'initial';
+    const isAutoRefresh = !!filters.since;
+    this.setLoadingState(isAutoRefresh ? 'refresh' : 'initial');
     this.error = null;
     
     try {
-      // Use batchSize for initial load, pageSize for pagination
-      const limit = isRefresh ? this.pageSize : this.batchSize;
+      const limit = isAutoRefresh ? this.pageSize : this.batchSize;
       const operations = await this.fetchBridgeOperations({ ...filters, limit });
-      const transactions = this.mapToTransactions(operations);
-      
-      if (isRefresh) {
-        this.mergeTransactions(transactions);  // Merge for auto-refresh
+      const transactions = this.parseTransactions(operations);
+
+      if (isAutoRefresh) {
+        this.mergeTransactions(transactions);
       } else {
-        this.replaceTransactions(transactions);  // Replace for load/pagination
-        this.currentPage = 1;
+        this.replaceTransactions(transactions);
       }
     } catch (error) {
       this.handleError(error, 'Failed to fetch transactions');
     } finally {
-      this.loadingState = 'idle';
+      this.setLoadingState('idle');
     }
   };
 
@@ -502,15 +494,20 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
     const l2Hash = l2HashRaw && !l2HashRaw.startsWith('0x') ? `0x${l2HashRaw}` : l2HashRaw;
     
     const tokenMetadata = txData?.l2_transaction?.ticket?.token;
-    console.log(tokenMetadata);
     const symbol = tokenMetadata?.symbol || 'UNKNOWN';
-    const decimals = tokenMetadata?.decimals ?? 0;
-    console.log("decimals", decimals);
     
-    const l1Amount = toDecimalValue(Number(l1AmountRaw), decimals);
-    const l2Amount = toDecimalValue(Number(l2AmountRaw), decimals);
-    console.log("l1Amount", l1Amount, "l1AmountRaw", l1AmountRaw);
-    console.log("l2Amount", l2Amount, "l2AmountRaw", l2AmountRaw);
+    let l2Decimals: number;
+    if (symbol === 'XTZ') {
+      l2Decimals = txData?.l2_transaction?.l2_token?.decimals ?? 0;
+    } else {
+      l2Decimals = tokenMetadata?.decimals ?? 0;
+    }
+    
+    let l1Decimals = tokenMetadata?.decimals ?? 0;
+    
+    
+    const l1Amount = toDecimalValue(Number(l1AmountRaw), l1Decimals);
+    const l2Amount = toDecimalValue(Number(l2AmountRaw), l2Decimals);
     
     const l1Block = txData?.l1_transaction?.level;
     
@@ -524,7 +521,6 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
       sendingAmount: isDeposit ? l1Amount.toString() : l2Amount.toString(),
       receivingAmount: isDeposit ? l2Amount.toString() : l1Amount.toString(),
       symbol: symbol,
-      decimals: decimals,
       chainId: 0,
       expectedDate: new Date(data.created_at).getTime(),
       submittedDate: new Date(data.created_at).getTime(),
