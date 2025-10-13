@@ -1,6 +1,6 @@
 import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
-import { fetchJson } from "@/utils/requestRetryHelper";
+import { fetchJson } from "@/utils/fetchJson";
 import { logger } from "@/Logger/logger";
 
 
@@ -114,9 +114,10 @@ interface TransactionProps<Input> {
 }
 type TransactionConstructorProps<Input> = Optional<
   TransactionProps<Input>,
-  "confirmation" | "completed" | "error" | "completed"
+  "confirmation" | "completed" | "error"
 >;
 
+// TODO: mapping l2 tx hash to tx
 export class TezosTransaction<Input = GraphQLResponse>
   implements TransactionProps<Input>
 {
@@ -138,6 +139,7 @@ export class TezosTransaction<Input = GraphQLResponse>
   isFastWithdrawal?: boolean | undefined;
   l1Block?: number;
   l2Block?: number;
+  // fastWithdrawalPayOut?: TezosTransaction;
   
   constructor(props: TransactionConstructorProps<Input>) {
     makeAutoObservable(this, {
@@ -243,6 +245,8 @@ export class TezosTransactionStore {
     this.setError(`${context}: ${errorMessage}`);
   };
 
+  // TODO: add filter by token and fastwithdrawal type
+  // TODO: fetch txs with before for pagination after reaching last page
   private buildGraphQLQuery = (filters: QueryFilters = {}) => {
     const {
       limit = this.pageSize,
@@ -258,7 +262,7 @@ export class TezosTransactionStore {
 
     if (txHash) {
       // API gets without 0x
-      const l2TxHash = txHash.startsWith('0x') ? txHash.slice(2) : txHash;
+      const l2TxHash: string = txHash.startsWith('0x') ? txHash.slice(2) : txHash;
       
       andConditions.push(`
         _or: [
@@ -268,14 +272,16 @@ export class TezosTransactionStore {
           {withdrawal: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}}
         ]
       `);
+      // API gets without 0x
     } else if (address) {
+      const addressWithout0x: string = address.startsWith('0x') ? address.slice(2) : address;
       andConditions.push(`
         _or: [
           {l1_account: {_eq: "${address}"}},
-          {l2_account: {_eq: "${address}"}}
+          {l2_account: {_eq: "${addressWithout0x}"}}
         ]
       `);
-    } else if (level !== undefined) {
+    } else if (level) {
       andConditions.push(`
         _or: [
           {deposit: {l1_transaction: {level: {_eq: ${level}}}}},
@@ -286,13 +292,9 @@ export class TezosTransactionStore {
       `);
     }
 
-    if (since) {
-      andConditions.push(`updated_at: {_gte: "${since}"}`);
-    }
+    if (since) andConditions.push(`created_at: {_gte: "${since}"}`);
 
-    if (before) {
-      andConditions.push(`created_at: {_lt: "${before}"}`);
-    }
+    if (before) andConditions.push(`created_at: {_lte: "${before}"}`);
 
     const whereClause = andConditions.length > 0
       ? `where: {_and: [${andConditions.map(cond => `{${cond}}`).join(', ')}]}`
@@ -380,6 +382,7 @@ export class TezosTransactionStore {
     this.currentPage = page;
   };
 
+  //TODO: remove states we don't need now
   setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
     this.loadingState = state;
   };
@@ -391,7 +394,8 @@ export class TezosTransactionStore {
     
     this.setPage(page);
   };
-  
+
+  // remove this and call from componant
   nextPage = () => {
     this.goToPage(this.currentPage + 1);
   };
@@ -401,55 +405,53 @@ export class TezosTransactionStore {
   };
 
 private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
-    const query = this.buildGraphQLQuery(filters);
+  // typecast  
+  const query = this.buildGraphQLQuery(filters);
 
-    const response: { 
-      data: { bridge_operation: GraphQLResponse[] };
-      errors?: Array<{ message: string }>;
-    } = await fetchJson(this.graphqlEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
-    }, 5, 500);
+  const response: { 
+    data: { bridge_operation: GraphQLResponse[] };
+    errors?: Array<{ message: string }>;
+  } = await fetchJson(this.graphqlEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
     
-    if (response.errors?.length) throw new Error(response.errors[0]?.message || 'Failed to fetch transactions');
+  if (response.errors?.length) throw new Error(response.errors[0]?.message || 'Failed to fetch transactions');
 
-    return response.data.bridge_operation;
-  }
-
+  return response.data.bridge_operation;
+}
+  // TODO: remove this on production
   private parseTransactions = (operations: GraphQLResponse[]): TezosTransaction[] => {
     return operations.map(item => this.createTransaction(item));
   };
 
+  // TODO: Remove this and use transactions[0]?.input.updated_at;
   private updateMostRecentTimestamp = (transactions: TezosTransaction[]): void => {
-    if (transactions.length > 0) {
-      const newestTransaction = transactions[0];
-      
-      if (newestTransaction) {
-        const newTimestamp = newestTransaction.input.updated_at;
-        if (!this.mostRecentTimestamp || newTimestamp > this.mostRecentTimestamp) {
-          this.mostRecentTimestamp = newTimestamp;
-        }
-      }
+    if (transactions.length <= 0) return;
+          
+    if (!transactions[0]) return;
+
+    const newTimestamp = transactions[0]?.input.updated_at;
+    if (!this.mostRecentTimestamp || newTimestamp > this.mostRecentTimestamp) {
+      this.mostRecentTimestamp = newTimestamp;
     }
   };
 
-  private replaceTransactions = (transactions: TezosTransaction[]): void => {
-    this.transactionMap.clear();
-    transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
-    this.updateMostRecentTimestamp(transactions);
-  };
-
+  // TODO: check 
   private mergeTransactions = (transactions: TezosTransaction[]): void => {
-    transactions.forEach(tx => {
-      const existing = this.transactionMap.get(tx.input.id);
-      if (existing) {
-        existing.update(tx);
-      } else {
-        this.transactionMap.set(tx.input.id, tx);
-      }
-    });
-
+    if (this.transactionMap.size === 0) {
+      transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
+    } else {
+      transactions.forEach(tx => {
+        const existing = this.transactionMap.get(tx.input.id);
+        if (existing) {
+          existing.update(tx);
+        } else {
+          this.transactionMap.set(tx.input.id, tx);
+        }
+      });
+    }
     this.trimOldTransactions();
     this.updateMostRecentTimestamp(transactions);
   };
@@ -469,22 +471,16 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
     this.error = null;
     
     try {
-      const limit = isAutoRefresh ? this.pageSize : this.batchSize;
-      const operations = await this.fetchBridgeOperations({ ...filters, limit });
-      const transactions = this.parseTransactions(operations);
-
-      if (isAutoRefresh) {
-        this.mergeTransactions(transactions);
-      } else {
-        this.replaceTransactions(transactions);
-      }
+      const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
+      const transactions: TezosTransaction<GraphQLResponse>[] = this.parseTransactions(operations);
+      
+      this.mergeTransactions(transactions);
     } catch (error) {
       this.handleError(error, 'Failed to fetch transactions');
     } finally {
       this.setLoadingState('idle');
     }
   };
-
 
   private createTransaction = (data: GraphQLResponse): TezosTransaction<GraphQLResponse> => {
     const isDeposit = data.type === 'deposit';
@@ -501,7 +497,7 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
     
     let l2Decimals: number;
     if (symbol === 'XTZ') {
-      l2Decimals = txData?.l2_transaction?.l2_token?.decimals ?? 0;
+      l2Decimals = txData?.l2_transaction?.l2_token?.decimals ?? 18;
     } else {
       l2Decimals = tokenMetadata?.decimals ?? 0;
     }
@@ -518,6 +514,8 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
       ? txData.l2_transaction.level
       : undefined;
     
+    // TODO: Add fastwithdrawal type, expected date --> if withdrawal: 15 days, if deposit: 2 mins, if fastwithdrwal: 2 mins
+    // TODO: Add Completed date, if completed --> completed date if not --> expexted date
     return new TezosTransaction({
       type: data.type,
       input: data,
