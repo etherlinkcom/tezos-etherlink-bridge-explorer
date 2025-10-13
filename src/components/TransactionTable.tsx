@@ -81,7 +81,6 @@ const TransactionTable = observer(() => {
             <th>L1 Block</th>
             <th>L2 Block</th>
             <th>Type</th>
-            <th>Kind</th>
             <th>Status</th>
             <th>Amount</th>
           </tr>
@@ -111,7 +110,6 @@ const TransactionTable = observer(() => {
                 <td>{transaction.l1Block !== undefined ? transaction.l1Block : '-'}</td>
                 <td>{transaction.l2Block !== undefined ? transaction.l2Block : '-'}</td>
                 <td>{transaction.type}</td>
-                <td>{transaction.kind || 'N/A'}</td>
                 <td>{transaction.status}</td>
                 <td>{transaction.sendingAmount} {transaction.symbol}</td>
               </tr> 
