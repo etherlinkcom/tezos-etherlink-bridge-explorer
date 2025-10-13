@@ -6,6 +6,7 @@ export type InputType =
   | 'tezos_tx_hash'      // op... (51 chars base58)
   | 'etherlink_tx_hash'  // 0x... (64 hex chars)
   | 'block_number'       // numeric
+  | 'token_symbol'       // XTZ, USDT, etc.
   | 'invalid';
 
 export interface ValidationResult {
@@ -60,6 +61,13 @@ export function validateEtherlinkTxHash(input: string): ValidationResult {
   return { isValid: false, type: 'invalid', error: 'Invalid Etherlink transaction hash' };
 }
 
+export function validateTokenSymbol(input: string): ValidationResult {
+  if (/^[A-Z0-9]{2,10}$/.test(input)) {
+    return { isValid: true, type: 'token_symbol' };
+  }
+  return { isValid: false, type: 'invalid', error: 'Invalid token symbol' };
+}
+
 export function validateInput(input: string): ValidationResult {
   const trimmed = input.trim();
   
@@ -91,6 +99,10 @@ export function validateInput(input: string): ValidationResult {
     }
     
     return { isValid: false, type: 'invalid', error: 'Invalid length' };
+  }
+  
+  if (/^[A-Z0-9]{2,10}$/.test(trimmed)) {
+    return validateTokenSymbol(trimmed);
   }
   
   return { isValid: false, type: 'invalid', error: 'Unrecognized format' };

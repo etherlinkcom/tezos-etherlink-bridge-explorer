@@ -8,6 +8,7 @@ import { validateInput, getValidationMessage, type ValidationResult } from '@/ut
 const SearchBar = observer(() => {
   const [searchInput, setSearchInput] = useState('');
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [withdrawalType, setWithdrawalType] = useState<'all' | 'normal' | 'fast'>('all');
 
   const handleInputChange = (value: string) => {
     setSearchInput(value);
@@ -43,14 +44,25 @@ const SearchBar = observer(() => {
         case 'block_number':
           filters.level = parseInt(searchInput.trim());
           break;
+        case 'token_symbol':
+          filters.tokenSymbol = searchInput.trim();
+          break;
       }
     }
+    
+    if (withdrawalType === 'fast') {
+      filters.isFastWithdrawal = true;
+    } else if (withdrawalType === 'normal') {
+      filters.isFastWithdrawal = false;
+    }
+    
     tezosTransactionStore.resetStore();
     await tezosTransactionStore.getTransactions(filters);
   };
 
   const handleClear = async () => {
     setSearchInput('');
+    setWithdrawalType('all');
     setValidationResult(null);
     await tezosTransactionStore.getTransactions();
   };
@@ -81,7 +93,7 @@ const SearchBar = observer(() => {
           value={searchInput}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Enter tx hash, address (tz1..., KT1..., 0x...), or block number"
+          placeholder="Enter tx hash, address (tz1..., KT1..., 0x...), block number, or token symbol (XTZ, USDT)"
           style={{
             width: '100%',
             padding: '10px',
@@ -103,6 +115,30 @@ const SearchBar = observer(() => {
             {getValidationMessage(validationResult)}
           </div>
         )}
+      </div>
+
+
+      {/* Transaction Kind Filter */}
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>
+          Transaction Kind:
+        </label>
+        <select
+          value={withdrawalType}
+          onChange={(e) => setWithdrawalType(e.target.value as 'all' | 'normal' | 'fast')}
+          style={{
+            width: '100%',
+            padding: '10px',
+            fontSize: '14px',
+            border: '1px solid #ced4da',
+            borderRadius: '4px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <option value="all">All</option>
+          <option value="normal">Normal</option>
+          <option value="fast">Fast Withdrawal</option>
+        </select>
       </div>
 
       {/* Buttons */}

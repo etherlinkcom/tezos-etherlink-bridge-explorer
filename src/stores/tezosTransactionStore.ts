@@ -17,9 +17,15 @@ export interface QueryFilters {
   level?: number;
   since?: string;  // ISO timestamp for fetching new transactions
   before?: string; // ISO timestamp for pagination
+  tokenSymbol?: string;
+  isFastWithdrawal?: boolean; 
 }
 
-export type TezosTransactionKind = string;
+export type TezosTransactionKind =
+  "fast_withdrawal" |
+  "fast_withdrawal_payed_out" |
+  "fast_withdrawal_payed_out_expired" |
+  "fast_withdrawal_payed_out_reward" | null
 
 interface GraphQLResponse {
   id: string;
@@ -31,7 +37,7 @@ interface GraphQLResponse {
   is_successful: boolean;
   is_completed: boolean;
   type: TezosTransactionType;
-  kind: TezosTransactionKind | null;
+  kind: TezosTransactionKind;
   deposit: {
     l2_transaction: {
       token_id: string;
@@ -132,7 +138,7 @@ export class TezosTransaction<Input = GraphQLResponse>
   error: string | null = null;
   l1TxHash: string;
   l2TxHash: string;
-  kind: TezosTransactionKind | null;
+  kind: TezosTransactionKind;
   confirmation: Confirmation | undefined = undefined;
   completed = false;
   status: GraphTokenStatus;
@@ -243,7 +249,6 @@ export class TezosTransactionStore {
     this.setError(`${context}: ${errorMessage}`);
   };
 
-  // TODO: add filter by token and fastwithdrawal type
   // TODO: fetch txs with before for pagination after reaching last page
   private buildGraphQLQuery = (filters: QueryFilters = {}) => {
     const {
@@ -253,7 +258,9 @@ export class TezosTransactionStore {
       address,
       level,
       since,
-      before
+      before,
+      tokenSymbol,
+      isFastWithdrawal
     } = filters;
 
     const andConditions: string[] = [];
@@ -293,6 +300,26 @@ export class TezosTransactionStore {
     if (since) andConditions.push(`created_at: {_gte: "${since}"}`);
 
     if (before) andConditions.push(`created_at: {_lte: "${before}"}`);
+
+    if (tokenSymbol) {
+      andConditions.push(`_or: [
+        {deposit: {l2_transaction: {ticket: {token: {symbol: {_eq: "${tokenSymbol}"}}}}}},
+        {deposit: {l2_transaction: {l2_token: {symbol: {_eq: "${tokenSymbol}"}}}}},
+        {withdrawal: {l2_transaction: {ticket: {token: {symbol: {_eq: "${tokenSymbol}"}}}}}},
+        {withdrawal: {l2_transaction: {l2_token: {symbol: {_eq: "${tokenSymbol}"}}}}}
+      ]`);
+    }
+
+    if (isFastWithdrawal !== undefined) {
+      if (isFastWithdrawal) {
+        andConditions.push(`kind: {_in: ["fast_withdrawal", "fast_withdrawal_payed_out", "fast_withdrawal_payed_out_expired", "fast_withdrawal_payed_out_reward"]}`);
+      } else {
+        andConditions.push(`_or: [
+          {kind: {_is_null: true}},
+          {kind: {_nin: ["fast_withdrawal", "fast_withdrawal_payed_out", "fast_withdrawal_payed_out_expired", "fast_withdrawal_payed_out_reward", "fast_withdrawal_service_provider"]}}
+        ]`);
+      }
+    }
 
     const whereClause = andConditions.length > 0
       ? `where: {_and: [${andConditions.map(cond => `{${cond}}`).join(', ')}]}`
