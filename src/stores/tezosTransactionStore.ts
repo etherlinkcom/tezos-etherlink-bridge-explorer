@@ -182,7 +182,6 @@ export class TezosTransactionStore {
   currentPage: number = 1;
   pageSize: number = 50; // UI page size for pagination
   batchSize: number = 1000; // API batch size for fetching
-  private mostRecentTimestamp: string | null = null;
   
   private readonly MAX_TRANSACTIONS = 5000;
   private readonly graphqlEndpoint = process.env.GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
@@ -225,8 +224,7 @@ export class TezosTransactionStore {
         this.getTransactions();
         return;
       }
-
-      if (this.mostRecentTimestamp) this.getTransactions({ since: this.mostRecentTimestamp });
+      if (this.transactions.length > 0) this.getTransactions({ since: this.transactions[0].input.updated_at });
       
     }, this.AUTO_REFRESH_INTERVAL);
   };
@@ -401,41 +399,24 @@ export class TezosTransactionStore {
     this.setPage(page);
   };
 
-private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
-  // typecast  
-  const query = this.buildGraphQLQuery(filters);
+  private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
+    // typecast  
+    const query = this.buildGraphQLQuery(filters);
 
-  const response: { 
-    data: { bridge_operation: GraphQLResponse[] };
-    errors?: Array<{ message: string }>;
-  } = await fetchJson(this.graphqlEndpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query })
-  });
-    
-  if (response.errors?.length) throw new Error(response.errors[0]?.message || 'Failed to fetch transactions');
+    const response: { 
+      data: { bridge_operation: GraphQLResponse[] };
+      errors?: Array<{ message: string }>;
+    } = await fetchJson(this.graphqlEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+      
+    if (response.errors?.length) throw new Error(response.errors[0]?.message || 'Failed to fetch transactions');
 
-  return response.data.bridge_operation;
-}
-  // TODO: remove this on production
-  private parseTransactions = (operations: GraphQLResponse[]): TezosTransaction[] => {
-    return operations.map(item => this.createTransaction(item));
-  };
+    return response.data.bridge_operation;
+  }
 
-  // TODO: Remove this and use transactions[0]?.input.updated_at;
-  private updateMostRecentTimestamp = (transactions: TezosTransaction[]): void => {
-    if (transactions.length <= 0) return;
-          
-    if (!transactions[0]) return;
-
-    const newTimestamp = transactions[0]?.input.updated_at;
-    if (!this.mostRecentTimestamp || newTimestamp > this.mostRecentTimestamp) {
-      this.mostRecentTimestamp = newTimestamp;
-    }
-  };
-
-  // TODO: check 
   private mergeTransactions = (transactions: TezosTransaction[]): void => {
     if (this.transactionMap.size === 0) {
       transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
@@ -450,7 +431,6 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
       });
     }
     this.trimOldTransactions();
-    this.updateMostRecentTimestamp(transactions);
   };
 
   private trimOldTransactions = (): void => {
@@ -469,7 +449,7 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
     
     try {
       const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
-      const transactions: TezosTransaction<GraphQLResponse>[] = this.parseTransactions(operations);
+      const transactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
       
       this.mergeTransactions(transactions);
     } catch (error) {
