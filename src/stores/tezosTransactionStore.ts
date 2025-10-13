@@ -382,6 +382,12 @@ export class TezosTransactionStore {
     this.currentPage = page;
   };
 
+  resetStore = () => {
+    this.transactionMap.clear();
+    this.currentPage = 1;
+    this.error = null;
+  };
+
   //TODO: remove states we don't need now
   setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
     this.loadingState = state;

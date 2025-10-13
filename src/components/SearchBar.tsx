@@ -45,7 +45,7 @@ const SearchBar = observer(() => {
           break;
       }
     }
-    
+    tezosTransactionStore.resetStore();
     await tezosTransactionStore.getTransactions(filters);
   };
 
