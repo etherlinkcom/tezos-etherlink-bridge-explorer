@@ -426,7 +426,10 @@ private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<Grap
       const newestTransaction = transactions[0];
       
       if (newestTransaction) {
-        this.mostRecentTimestamp = newestTransaction.input.updated_at;
+        const newTimestamp = newestTransaction.input.updated_at;
+        if (!this.mostRecentTimestamp || newTimestamp > this.mostRecentTimestamp) {
+          this.mostRecentTimestamp = newTimestamp;
+        }
       }
     }
   };
