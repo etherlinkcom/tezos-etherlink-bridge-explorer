@@ -2,6 +2,7 @@ import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { logger } from "@/Logger/logger";
+import { FastWithdrawalHandler } from "./fastWithdrawalHandler";
 
 
 type TransactionType = string;
@@ -23,6 +24,7 @@ export interface QueryFilters {
 
 export type TezosTransactionKind =
   "fast_withdrawal" |
+  "fast_withdrawal_service_provider" |
   "fast_withdrawal_payed_out" |
   "fast_withdrawal_payed_out_expired" |
   "fast_withdrawal_payed_out_reward" | null
@@ -98,6 +100,7 @@ export enum GraphTokenStatus {
   Failed = "FAILED",
 }
 
+
 interface TransactionProps<Input> {
   type: TransactionType;
   input: Input;
@@ -117,10 +120,11 @@ interface TransactionProps<Input> {
   isFastWithdrawal?: boolean;
   l1Block?: number;
   l2Block?: number;
+  fastWithdrawalPayOut?: TezosTransaction;
 }
 type TransactionConstructorProps<Input> = Optional<
   TransactionProps<Input>,
-  "confirmation" | "completed" | "error"
+  "confirmation" | "error"
 >;
 
 // TODO: mapping l2 tx hash to tx
@@ -145,7 +149,7 @@ export class TezosTransaction<Input = GraphQLResponse>
   isFastWithdrawal?: boolean | undefined;
   l1Block?: number;
   l2Block?: number;
-  // fastWithdrawalPayOut?: TezosTransaction;
+  fastWithdrawalPayOut?: TezosTransaction;
   
   constructor(props: TransactionConstructorProps<Input>) {
     makeAutoObservable(this, {
@@ -162,6 +166,7 @@ export class TezosTransaction<Input = GraphQLResponse>
     this.receivingAmount = props.receivingAmount;
     this.symbol = props.symbol;
     this.status = props.status;
+    this.completed = props.completed;
     this.isFastWithdrawal = props.isFastWithdrawal || false;
     this.l1Block = props.l1Block;
     this.l2Block = props.l2Block;
@@ -175,6 +180,7 @@ export class TezosTransaction<Input = GraphQLResponse>
 
 export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
+  fastWithdrawalHandler = new FastWithdrawalHandler();
   
   loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
   
@@ -312,11 +318,11 @@ export class TezosTransactionStore {
 
     if (isFastWithdrawal !== undefined) {
       if (isFastWithdrawal) {
-        andConditions.push(`kind: {_in: ["fast_withdrawal", "fast_withdrawal_payed_out", "fast_withdrawal_payed_out_expired", "fast_withdrawal_payed_out_reward"]}`);
+        andConditions.push(`kind: {_in: ["fast_withdrawal_service_provider", "fast_withdrawal_payed_out"]}`);
       } else {
         andConditions.push(`_or: [
           {kind: {_is_null: true}},
-          {kind: {_nin: ["fast_withdrawal", "fast_withdrawal_payed_out", "fast_withdrawal_payed_out_expired", "fast_withdrawal_payed_out_reward", "fast_withdrawal_service_provider"]}}
+          {kind: {_nin: ["fast_withdrawal_service_provider", "fast_withdrawal_payed_out"]}}
         ]`);
       }
     }
@@ -456,6 +462,8 @@ export class TezosTransactionStore {
         }
       });
     }
+    
+    
     this.trimOldTransactions();
   };
 
@@ -475,9 +483,13 @@ export class TezosTransactionStore {
     
     try {
       const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
-      const transactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
+      const allTransactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
       
-      this.mergeTransactions(transactions);
+      const transactionsToAdd = allTransactions.filter(tx => 
+        this.fastWithdrawalHandler.linkFastWithdrawalTxs(tx, this.transactionMap, allTransactions)
+      );
+      
+      this.mergeTransactions(transactionsToAdd);
     } catch (error) {
       this.handleError(error, 'Failed to fetch transactions');
     } finally {
@@ -517,9 +529,11 @@ export class TezosTransactionStore {
       ? txData.l2_transaction.level
       : undefined;
     
+    const isFastWithdrawal = data.kind === 'fast_withdrawal_service_provider' ||
+                            data.kind === 'fast_withdrawal_payed_out';    
     // TODO: Add fastwithdrawal type, expected date --> if withdrawal: 15 days, if deposit: 2 mins, if fastwithdrwal: 2 mins
     // TODO: Add Completed date, if completed --> completed date if not --> expexted date
-    return new TezosTransaction({
+    const transaction = new TezosTransaction({
       type: data.type,
       input: data,
       sendingAmount: isDeposit ? l1Amount.toString() : l2Amount.toString(),
@@ -535,7 +549,10 @@ export class TezosTransactionStore {
       l1Block: l1Block,
       l2Block: l2Block,
       kind: data.kind,
+      isFastWithdrawal: isFastWithdrawal,
     });
+
+    return transaction;
   };
 }
 
