@@ -203,7 +203,7 @@ export class TezosTransactionStore {
   }
 
   get currentTransactions(): TezosTransaction[] {
-    const offset = (this.currentPage - 1) * this.pageSize;
+    const offset: number = (this.currentPage - 1) * this.pageSize;
     return this.transactions.slice(offset, offset + this.pageSize);
   }
 
@@ -244,13 +244,13 @@ export class TezosTransactionStore {
   };
 
   private handleError = (error: unknown, context: string) => {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
     logger.error(`${context}: ${errorMessage}`);
     this.setError(`${context}: ${errorMessage}`);
   };
 
   // TODO: fetch txs with before for pagination after reaching last page
-  private buildGraphQLQuery = (filters: QueryFilters = {}) => {
+  private buildGraphQLQuery = (filters: QueryFilters = {}): string => {
     const {
       limit = this.pageSize,
       offset = 0,
@@ -427,8 +427,7 @@ export class TezosTransactionStore {
   };
 
   private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
-    // typecast  
-    const query = this.buildGraphQLQuery(filters);
+    const query: string = this.buildGraphQLQuery(filters);
 
     const response: { 
       data: { bridge_operation: GraphQLResponse[] };
@@ -449,7 +448,7 @@ export class TezosTransactionStore {
       transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
     } else {
       transactions.forEach(tx => {
-        const existing = this.transactionMap.get(tx.input.id);
+        const existing: TezosTransaction | undefined = this.transactionMap.get(tx.input.id);
         if (existing) {
           existing.update(tx);
         } else {
@@ -463,14 +462,14 @@ export class TezosTransactionStore {
   private trimOldTransactions = (): void => {
     if (this.transactionMap.size <= this.MAX_TRANSACTIONS) return;
     
-    const allTransactions = Array.from(this.transactionMap.values());
-    const toRemove = allTransactions.slice(this.MAX_TRANSACTIONS);
+    const allTransactions: TezosTransaction[] = Array.from(this.transactionMap.values());
+    const toRemove: TezosTransaction[] = allTransactions.slice(this.MAX_TRANSACTIONS);
     
     toRemove.forEach(tx => this.transactionMap.delete(tx.input.id));
   };
   
   getTransactions = async (filters: QueryFilters = {}): Promise<void> => {
-    const isAutoRefresh = !!filters.since;
+    const isAutoRefresh: boolean = !!filters.since;
     this.setLoadingState(isAutoRefresh ? 'refresh' : 'initial');
     this.error = null;
     
@@ -487,17 +486,17 @@ export class TezosTransactionStore {
   };
 
   private createTransaction = (data: GraphQLResponse): TezosTransaction<GraphQLResponse> => {
-    const isDeposit = data.type === 'deposit';
-    const txData = isDeposit ? data.deposit : data.withdrawal;
+    const isDeposit: boolean = data.type === 'deposit';
+    const txData: GraphQLResponse['deposit'] | GraphQLResponse['withdrawal'] = isDeposit ? data.deposit : data.withdrawal;
     
-    const l1AmountRaw = txData?.l1_transaction?.amount || '0';
-    const l2AmountRaw = txData?.l2_transaction?.amount || '0';
-    const l1Hash = txData?.l1_transaction?.operation_hash || '';
-    const l2HashRaw = txData?.l2_transaction?.transaction_hash || '';
-    const l2Hash = l2HashRaw && !l2HashRaw.startsWith('0x') ? `0x${l2HashRaw}` : l2HashRaw;
+    const l1AmountRaw: string = txData?.l1_transaction?.amount || '0';
+    const l2AmountRaw: string = txData?.l2_transaction?.amount || '0';
+    const l1Hash: string = txData?.l1_transaction?.operation_hash || '';
+    const l2HashRaw: string = txData?.l2_transaction?.transaction_hash || '';
+    const l2Hash: string = l2HashRaw && !l2HashRaw.startsWith('0x') ? `0x${l2HashRaw}` : l2HashRaw;
     
     const tokenMetadata = txData?.l2_transaction?.ticket?.token;
-    const symbol = tokenMetadata?.symbol || 'UNKNOWN';
+    const symbol: string = tokenMetadata?.symbol || 'UNKNOWN';
     
     let l2Decimals: number;
     if (symbol === 'XTZ') {
@@ -506,15 +505,15 @@ export class TezosTransactionStore {
       l2Decimals = tokenMetadata?.decimals ?? 0;
     }
     
-    let l1Decimals = tokenMetadata?.decimals ?? 0;
+    let l1Decimals: number = tokenMetadata?.decimals ?? 0;
     
     
-    const l1Amount = toDecimalValue(Number(l1AmountRaw), l1Decimals);
-    const l2Amount = toDecimalValue(Number(l2AmountRaw), l2Decimals);
+    const l1Amount: number = toDecimalValue(Number(l1AmountRaw), l1Decimals);
+    const l2Amount: number = toDecimalValue(Number(l2AmountRaw), l2Decimals);
     
-    const l1Block = txData?.l1_transaction?.level;
+    const l1Block: number | undefined = txData?.l1_transaction?.level;
     
-    const l2Block = txData?.l2_transaction?.level !== null && txData?.l2_transaction?.level !== undefined
+    const l2Block: number | undefined = txData?.l2_transaction?.level !== null && txData?.l2_transaction?.level !== undefined
       ? txData.l2_transaction.level
       : undefined;
     
