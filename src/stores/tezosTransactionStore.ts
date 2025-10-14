@@ -108,8 +108,9 @@ interface TransactionProps<Input> {
   receivingAmount: string | undefined;
   symbol: string;
   chainId: number;
-  expectedDate: number;
+  expectedDate?: number;
   submittedDate: number;
+  completedDate?: number;
   error: string | null;
   l1TxHash: string;
   l2TxHash: string;
@@ -137,8 +138,9 @@ export class TezosTransaction<Input = GraphQLResponse>
   receivingAmount: string | undefined;
   symbol: string;
   chainId: number;
-  expectedDate: number;
+  expectedDate?: number;
   submittedDate: number;
+  completedDate?: number;
   error: string | null = null;
   l1TxHash: string;
   l2TxHash: string;
@@ -160,6 +162,7 @@ export class TezosTransaction<Input = GraphQLResponse>
     this.l2TxHash = props.l2TxHash;
     this.expectedDate = props.expectedDate;
     this.submittedDate = props.submittedDate;
+    this.completedDate = props.completedDate;
     this.input = props.input;
     this.type = props.type;
     this.sendingAmount = props.sendingAmount;
@@ -485,7 +488,7 @@ export class TezosTransactionStore {
       const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
       const allTransactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
       
-      const transactionsToAdd = allTransactions.filter(tx => 
+      const transactionsToAdd: TezosTransaction<GraphQLResponse>[] = allTransactions.filter(tx => 
         this.fastWithdrawalHandler.linkFastWithdrawalTxs(tx, this.transactionMap, allTransactions)
       );
       
@@ -530,9 +533,20 @@ export class TezosTransactionStore {
       : undefined;
     
     const isFastWithdrawal = data.kind === 'fast_withdrawal_service_provider' ||
-                            data.kind === 'fast_withdrawal_payed_out';    
-    // TODO: Add fastwithdrawal type, expected date --> if withdrawal: 15 days, if deposit: 2 mins, if fastwithdrwal: 2 mins
-    // TODO: Add Completed date, if completed --> completed date if not --> expexted date
+                            data.kind === 'fast_withdrawal_payed_out';
+    
+    const submittedTime: number = new Date(data.created_at).getTime();
+    let expectedTime: number;
+    
+    if (data.type === 'withdrawal' && !isFastWithdrawal) {
+      expectedTime = submittedTime + (15 * 24 * 60 * 60 * 1000); // 15 days for regular withdrawal
+    } else {
+      expectedTime = submittedTime + (2 * 60 * 1000); // 2 minutes for fast withdrawal and deposit
+    }
+    
+    const completedDate: number | undefined = data.is_completed ? new Date(data.updated_at).getTime() : undefined;
+    const finalExpectedDate: number | undefined = data.is_completed ? undefined : expectedTime;
+    
     const transaction = new TezosTransaction({
       type: data.type,
       input: data,
@@ -540,8 +554,9 @@ export class TezosTransactionStore {
       receivingAmount: isDeposit ? l2Amount.toString() : l1Amount.toString(),
       symbol: symbol,
       chainId: 0,
-      expectedDate: new Date(data.created_at).getTime(),
-      submittedDate: new Date(data.created_at).getTime(),
+      expectedDate: finalExpectedDate,
+      submittedDate: submittedTime,
+      completedDate: completedDate,
       l1TxHash: l1Hash,
       l2TxHash: l2Hash,
       status: data.status,

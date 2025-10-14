@@ -16,7 +16,7 @@ export class FastWithdrawalHandler {
       return true;
     }
 
-    const l2Hash = tx.l2TxHash;
+    const l2Hash: string = tx.l2TxHash;
     let serviceProvider: TezosTransaction | undefined;
 
     if (currentBatch) {
@@ -40,6 +40,8 @@ export class FastWithdrawalHandler {
         fastWithdrawalPayOut: tx,
         status: tx.status, 
         completed: tx.completed,
+        completedDate: tx.completed ? tx.completedDate : undefined,
+        expectedDate: tx.completed ? undefined : serviceProvider.expectedDate,
         l1TxHash: tx.l1TxHash || serviceProvider.l1TxHash,
         l1Block: tx.l1Block || serviceProvider.l1Block
       });
