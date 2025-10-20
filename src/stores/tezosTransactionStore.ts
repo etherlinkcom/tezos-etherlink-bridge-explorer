@@ -128,7 +128,6 @@ type TransactionConstructorProps<Input> = Optional<
   "confirmation" | "error"
 >;
 
-// TODO: mapping l2 tx hash to tx
 export class TezosTransaction<Input = GraphQLResponse>
   implements TransactionProps<Input>
 {
@@ -312,10 +311,10 @@ export class TezosTransactionStore {
 
     if (tokenSymbol) {
       andConditions.push(`_or: [
-        {deposit: {l2_transaction: {ticket: {token: {symbol: {_eq: "${tokenSymbol}"}}}}}},
-        {deposit: {l2_transaction: {l2_token: {symbol: {_eq: "${tokenSymbol}"}}}}},
-        {withdrawal: {l2_transaction: {ticket: {token: {symbol: {_eq: "${tokenSymbol}"}}}}}},
-        {withdrawal: {l2_transaction: {l2_token: {symbol: {_eq: "${tokenSymbol}"}}}}}
+        {deposit: {l2_transaction: {ticket: {token: {symbol: {_ilike: "${tokenSymbol}"}}}}}},
+        {deposit: {l2_transaction: {l2_token: {symbol: {_ilike: "${tokenSymbol}"}}}}},
+        {withdrawal: {l2_transaction: {ticket: {token: {symbol: {_ilike: "${tokenSymbol}"}}}}}},
+        {withdrawal: {l2_transaction: {l2_token: {symbol: {_ilike: "${tokenSymbol}"}}}}}
       ]`);
     }
 
@@ -520,7 +519,7 @@ export class TezosTransactionStore {
       l2Decimals = tokenMetadata?.decimals ?? 0;
     }
     
-    let l1Decimals: number = tokenMetadata?.decimals ?? 0;
+    const l1Decimals: number = tokenMetadata?.decimals ?? 0;
     
     
     const l1Amount: number = toDecimalValue(Number(l1AmountRaw), l1Decimals);

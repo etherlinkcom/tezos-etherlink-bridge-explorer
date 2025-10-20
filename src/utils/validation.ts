@@ -62,7 +62,8 @@ export function validateEtherlinkTxHash(input: string): ValidationResult {
 }
 
 export function validateTokenSymbol(input: string): ValidationResult {
-  if (/^[A-Z0-9]{2,10}$/.test(input)) {
+  // Allow 2-10 alphanumeric characters, case-insensitive
+  if (/^[A-Za-z0-9]{2,10}$/.test(input)) {
     return { isValid: true, type: 'token_symbol' };
   }
   return { isValid: false, type: 'invalid', error: 'Invalid token symbol' };
@@ -101,7 +102,8 @@ export function validateInput(input: string): ValidationResult {
     return { isValid: false, type: 'invalid', error: 'Invalid length' };
   }
   
-  if (/^[A-Z0-9]{2,10}$/.test(trimmed)) {
+  // Token symbols: accept lowercase or uppercase
+  if (/^[A-Za-z0-9]{2,10}$/.test(trimmed)) {
     return validateTokenSymbol(trimmed);
   }
   
