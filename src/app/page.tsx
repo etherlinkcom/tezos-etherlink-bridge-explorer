@@ -1,21 +1,18 @@
 'use client';
 
 import { useEffect } from "react";
+import { Box, Container, Typography } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 import TransactionTable from "@/components/TransactionTable";
-import SearchBar from "@/components/SearchBar";
+import SearchBox from "@/components/SearchBox";
+import { Layout } from "@/components/layouts/Layout";
+
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).store = tezosTransactionStore;
-      console.log('Store is now available! Type "store" in console to test it.');
-    }
-
     const initializeStore = async () => {
-      console.log('🚀 Starting initial load...');
       await tezosTransactionStore.getTransactions();
-      console.log('✅ Initial load completed, starting auto-refresh...');
       tezosTransactionStore.startAutoRefresh();
     };
 
@@ -27,13 +24,13 @@ export default function Home() {
   }, []);
   
   return (
-    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '10px' }}>Tezos-Etherlink Bridge Explorer</h1>
-      <p style={{ color: '#666', marginBottom: '30px' }}>
-        Explore bridge transactions between Tezos (L1) and Etherlink (L2)
-      </p>
-      <SearchBar />
-      <TransactionTable />
-    </div>
+    <Layout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <SearchBox />
+          <TransactionTable />
+        </Box>
+      </Container>
+    </Layout>
   );
 }
