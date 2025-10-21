@@ -339,7 +339,7 @@ export class TezosTransactionStore {
           ${whereClause}
           limit: ${limit}
           offset: ${offset}
-          order_by: {updated_at: desc}
+          order_by: {created_at: desc}
         ) {
           id
           created_at
