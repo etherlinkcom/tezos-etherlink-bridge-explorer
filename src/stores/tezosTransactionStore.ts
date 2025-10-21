@@ -434,7 +434,7 @@ export class TezosTransactionStore {
     this.setPage(page);
   };
 
-  private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
+  fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
     const query: string = this.buildGraphQLQuery(filters);
 
     const response: { 
@@ -499,7 +499,7 @@ export class TezosTransactionStore {
     }
   };
 
-  private createTransaction = (data: GraphQLResponse): TezosTransaction<GraphQLResponse> => {
+  createTransaction = (data: GraphQLResponse): TezosTransaction<GraphQLResponse> => {
     const isDeposit: boolean = data.type === 'deposit';
     const txData: GraphQLResponse['deposit'] | GraphQLResponse['withdrawal'] = isDeposit ? data.deposit : data.withdrawal;
     
