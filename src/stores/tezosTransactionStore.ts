@@ -1,7 +1,6 @@
 import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
-import { logger } from "@/Logger/logger";
 import { FastWithdrawalHandler } from "./fastWithdrawalHandler";
 
 
@@ -253,7 +252,7 @@ export class TezosTransactionStore {
 
   private handleError = (error: unknown, context: string) => {
     const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
-    logger.error(`${context}: ${errorMessage}`);
+    console.log(`Error in ${context}: ${errorMessage}`);
     this.setError(`${context}: ${errorMessage}`);
   };
 
