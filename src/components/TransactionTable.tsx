@@ -20,7 +20,7 @@ import {
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
 
-const TransactionTable = observer(() => {
+export const TransactionTable = observer(() => {
 
   const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
   const loadingInitial = tezosTransactionStore.loadingInitial;
@@ -86,26 +86,17 @@ const TransactionTable = observer(() => {
       <TableContainer component={Paper} className="table-card" sx={{ overflowX: 'auto' }}>
         <Table sx={{ 
           minWidth: 1200,
-          '& .MuiTableCell-root': {
-            padding: '16px 12px',
-            fontSize: '0.875rem',
-            height: '56px',
-            verticalAlign: 'middle'
-          },
-          '& .MuiTableRow-root': {
-            height: '56px'
-          }
         }}>
           <TableHead>
             <TableRow sx={{ height: '48px' }}>
-              <TableCell sx={{ width: '80px', fontWeight: 600 }}>Status</TableCell>
-              <TableCell sx={{ width: '140px', fontWeight: 600 }}>Source Tx Hash</TableCell>
-              <TableCell sx={{ width: '120px', fontWeight: 600 }}>From</TableCell>
-              <TableCell sx={{ width: '120px', fontWeight: 600 }}>To</TableCell>
-              <TableCell sx={{ width: '100px', fontWeight: 600 }}>Amount</TableCell>
-              <TableCell sx={{ width: '140px', fontWeight: 600 }}>Destination Tx Hash</TableCell>
-              <TableCell sx={{ width: '80px', fontWeight: 600 }}>Type</TableCell>
-              <TableCell sx={{ width: '100px', fontWeight: 600 }}>Created</TableCell>
+              <TableCell sx={{ width: '80px' }}>Status</TableCell>
+              <TableCell sx={{ width: '140px' }}>Source Tx Hash</TableCell>
+              <TableCell sx={{ width: '120px' }}>From</TableCell>
+              <TableCell sx={{ width: '120px' }}>To</TableCell>
+              <TableCell sx={{ width: '100px' }}>Amount</TableCell>
+              <TableCell sx={{ width: '140px' }}>Destination Tx Hash</TableCell>
+              <TableCell sx={{ width: '80px' }}>Type</TableCell>
+              <TableCell sx={{ width: '100px' }}>Created</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -250,8 +241,4 @@ const TransactionTable = observer(() => {
     </Box>
   );
 });
-
-TransactionTable.displayName = 'TransactionTable';
-
-export default TransactionTable;
 

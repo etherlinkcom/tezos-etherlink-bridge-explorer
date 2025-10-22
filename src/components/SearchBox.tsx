@@ -24,7 +24,7 @@ import { designTokens } from '@/theme/tokens';
 
 type WithdrawalType = 'all' | 'normal' | 'fast';
 
-const SearchBox = observer(() => {
+export const SearchBox = observer(() => {
   const theme = useTheme();
   const [searchInput, setSearchInput] = useState('');
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -100,7 +100,8 @@ const SearchBox = observer(() => {
     setValidationResult(null);
     await loadAll();
   }, [loadAll]);
-
+// TODO: check mui if it animated thing
+// TODO: Update InputProps
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <motion.div
@@ -153,14 +154,6 @@ const SearchBox = observer(() => {
                 '&::placeholder': {
                   color: theme.palette.text.secondary,
                   opacity: 1
-                }
-              }
-            }}
-            sx={{
-              flex: 1,
-              '& .MuiInput-root': {
-                '&:before, &:after': {
-                  display: 'none'
                 }
               }
             }}
@@ -220,7 +213,3 @@ const SearchBox = observer(() => {
     </Box>
   );
 });
-
-SearchBox.displayName = 'SearchBox';
-
-export default SearchBox;
