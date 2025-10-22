@@ -1,6 +1,15 @@
 import { Components, Theme, alpha } from "@mui/material/styles";
 import { typography } from "./typography";
 
+export const designTokens = {
+  searchBox: {
+    height: 72,
+    borderRadius: 40,
+    padding: 12,
+    gap: 10,
+  },
+} as const;
+
 export const components: Components<Theme> = {
   MuiButton: {
     styleOverrides: {
