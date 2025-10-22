@@ -2,7 +2,6 @@
 
 import { observer } from 'mobx-react-lite';
 import { useState, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Box, 
   TextField, 
@@ -100,36 +99,26 @@ export const SearchBox = observer(() => {
     setValidationResult(null);
     await loadAll();
   }, [loadAll]);
-// TODO: check mui if it animated thing
-// TODO: Update InputProps
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
-      <motion.div
-        initial={false}
-        animate={{ 
-          height: designTokens.searchBox.height,
-          borderRadius: designTokens.searchBox.borderRadius
-        }}
-        transition={{
-          type: "spring",
-          mass: 1,
-          stiffness: 100,
-          damping: 15
-        }}
-        whileHover={{ 
-          backgroundColor: theme.palette.background.paper,
-          boxShadow: `0px 0px 12px 0px ${theme.palette.custom.shadow.secondary}`,
-          transform: "translateY(-1px)"
-        }}
-        style={{
+      <Box
+        sx={{
           background: theme.palette.background.default,
           boxShadow: `0px 0px 6px 0px ${theme.palette.custom.shadow.primary}`,
           padding: `${designTokens.searchBox.padding}px`,
           gap: `${designTokens.searchBox.gap}px`,
+          height: designTokens.searchBox.height,
+          borderRadius: designTokens.searchBox.borderRadius,
           opacity: 1,
           position: 'relative',
           overflow: 'hidden',
-          width: '100%'
+          width: '100%',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: `0px 0px 12px 0px ${theme.palette.custom.shadow.secondary}`,
+            transform: 'translateY(-1px)',
+          }
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%', width: '100%' }}>
@@ -146,14 +135,16 @@ export const SearchBox = observer(() => {
             error={validationResult ? !validationResult.isValid : false}
             helperText={validationResult && !validationResult.isValid ? getValidationMessage(validationResult) : ''}
             variant="standard"
-            InputProps={{
-              disableUnderline: true,
-              sx: {
-                color: theme.palette.text.primary,
-                fontSize: '16px',
-                '&::placeholder': {
-                  color: theme.palette.text.secondary,
-                  opacity: 1
+            slotProps={{
+              input: {
+                disableUnderline: true,
+                sx: {
+                  color: theme.palette.text.primary,
+                  fontSize: '16px',
+                  '&::placeholder': {
+                    color: theme.palette.text.secondary,
+                    opacity: 1
+                  }
                 }
               }
             }}
@@ -209,7 +200,7 @@ export const SearchBox = observer(() => {
           )}
         </Box>
 
-      </motion.div>
+      </Box>
     </Box>
   );
 });
