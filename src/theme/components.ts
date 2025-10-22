@@ -326,6 +326,9 @@ export const components: Components<Theme> = {
         borderCollapse: "separate",
         borderSpacing: 0,
         padding: "12px",
+          '& .MuiTableRow-root': {
+            height: '56px'
+          }
       },
     },
   },
@@ -336,7 +339,7 @@ export const components: Components<Theme> = {
           backgroundColor: theme.palette.background.paper,
           borderBottom: "none",
           color: theme.palette.info.main,
-          fontWeight: 700,
+          fontWeight: 600,
           fontSize: "16px",
           lineHeight: "20px",
           letterSpacing: "-0.02em",
@@ -364,17 +367,16 @@ export const components: Components<Theme> = {
   },
   MuiTableCell: {
     styleOverrides: {
-      root: {
+      root: ({ theme }) => ({
+        padding: '16px 12px',
+        fontSize: '0.875rem',
+        height: '56px',
+        verticalAlign: 'middle',
         borderBottom: "none",
-        padding: "12px 16px",
-      },
-      body: ({ theme }) => ({
         color: theme.palette.info.main,
         fontWeight: 400,
-        fontSize: "14px",
         lineHeight: "18px",
         letterSpacing: "-0.02em",
-        verticalAlign: "middle",
       }),
     },
   },
