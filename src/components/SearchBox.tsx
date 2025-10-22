@@ -18,8 +18,7 @@ import {
 } from '@mui/icons-material';
 import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { validateInput, getValidationMessage, type ValidationResult } from '@/utils/validation';
-import { designTokens } from '@/theme/tokens';
-
+import { designTokens } from '@/theme/components';
 
 type WithdrawalType = 'all' | 'normal' | 'fast';
 
