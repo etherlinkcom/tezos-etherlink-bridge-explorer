@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect } from "react";
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
-import TransactionTable from "@/components/TransactionTable";
-import SearchBox from "@/components/SearchBox";
+import { TransactionTable } from "@/components/TransactionTable";
+import { SearchBox } from "@/components/SearchBox";
 import { Layout } from "@/components/layouts/Layout";
 
 export const dynamic = 'force-dynamic';
