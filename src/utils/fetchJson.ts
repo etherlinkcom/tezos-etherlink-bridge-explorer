@@ -1,12 +1,10 @@
-import { logger } from "../Logger/logger";
-
 export async function fetchJson<T>(
   url: string,
   options?: RequestInit,
   maxAttempts: number = 5,
   initialDelay: number = 500
 ): Promise<T> {
-  logger.info(`FetchJson: Fetching URL: ${url} with options: ${JSON.stringify(options)}`);
+  console.log(`FetchJson: Fetching URL: ${url} with options: ${JSON.stringify(options)}`);
   let delay: number = initialDelay;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
