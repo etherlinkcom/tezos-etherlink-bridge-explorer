@@ -1,7 +1,6 @@
 import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
-import { logger } from "@/Logger/logger";
 import { FastWithdrawalHandler } from "./fastWithdrawalHandler";
 
 
@@ -253,7 +252,7 @@ export class TezosTransactionStore {
 
   private handleError = (error: unknown, context: string) => {
     const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
-    logger.error(`${context}: ${errorMessage}`);
+    console.log(`Error in ${context}: ${errorMessage}`);
     this.setError(`${context}: ${errorMessage}`);
   };
 
@@ -434,7 +433,7 @@ export class TezosTransactionStore {
     this.setPage(page);
   };
 
-  private fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
+  fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
     const query: string = this.buildGraphQLQuery(filters);
 
     const response: { 
@@ -499,7 +498,7 @@ export class TezosTransactionStore {
     }
   };
 
-  private createTransaction = (data: GraphQLResponse): TezosTransaction<GraphQLResponse> => {
+  createTransaction = (data: GraphQLResponse): TezosTransaction<GraphQLResponse> => {
     const isDeposit: boolean = data.type === 'deposit';
     const txData: GraphQLResponse['deposit'] | GraphQLResponse['withdrawal'] = isDeposit ? data.deposit : data.withdrawal;
     
