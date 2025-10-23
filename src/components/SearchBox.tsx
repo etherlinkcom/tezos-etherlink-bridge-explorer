@@ -1,7 +1,6 @@
 'use client';
 
 import { observer } from 'mobx-react-lite';
-import { useState, useMemo, useCallback } from 'react';
 import { 
   Box, 
   TextField, 
@@ -16,88 +15,12 @@ import {
   Search as SearchIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
-import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
-import { validateInput, getValidationMessage, type ValidationResult } from '@/utils/validation';
+import { searchStore } from '@/stores/searchStore';
+import { getValidationMessage } from '@/utils/validation';
 import { designTokens } from '@/theme/components';
-
-type WithdrawalType = 'all' | 'normal' | 'fast';
 
 export const SearchBox = observer(() => {
   const theme = useTheme();
-  const [searchInput, setSearchInput] = useState('');
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
-  const [withdrawalType, setWithdrawalType] = useState<WithdrawalType>('all');
-
-  const buildFilters = (searchValue: string, inputType: string) => {
-    const filters: Record<string, unknown> = {};
-    
-    switch (inputType) {
-      case 'tezos_address':
-      case 'etherlink_address':
-        filters.address = searchValue;
-        break;
-      case 'tezos_tx_hash':
-      case 'etherlink_tx_hash':
-        filters.txHash = searchValue;
-        break;
-      case 'block_number':
-        filters.level = parseInt(searchValue);
-        break;
-      case 'token_symbol':
-        filters.tokenSymbol = searchValue;
-        break;
-    }
-    
-    if (withdrawalType === 'fast') filters.isFastWithdrawal = true;
-    if (withdrawalType === 'normal') filters.isFastWithdrawal = false;
-    
-    return filters;
-  };
-
-  const hasActiveFilters = useMemo(
-    () => Boolean(searchInput) || withdrawalType !== 'all',
-    [searchInput, withdrawalType]
-  );
-
-  const loadAll = useCallback(async () => {
-    tezosTransactionStore.resetStore();
-    await tezosTransactionStore.getTransactions();
-  }, []);
-
-  const executeSearch = useCallback(async () => {
-    const trimmed = searchInput.trim();
-    if (!trimmed) return loadAll();
-
-    const validation = validateInput(trimmed);
-    setValidationResult(validation);
-
-    if (!validation.isValid) return;
-
-    const filters = buildFilters(trimmed, validation.type);
-    tezosTransactionStore.resetStore();
-    await tezosTransactionStore.getTransactions(filters);
-  }, [searchInput, withdrawalType, loadAll]);
-
-  const handleInputChange = useCallback((value: string) => {
-    setSearchInput(value);
-    setValidationResult(value.trim() ? validateInput(value) : null);
-  }, []);
-
-  const handleWithdrawalTypeChange = useCallback(async (newType: WithdrawalType) => {
-    setWithdrawalType(newType);
-    if (searchInput.trim()) {
-      await executeSearch();
-    } else {
-      await loadAll();
-    }
-  }, [searchInput, executeSearch, loadAll]);
-
-  const handleClear = useCallback(async () => {
-    setSearchInput('');
-    setWithdrawalType('all');
-    setValidationResult(null);
-    await loadAll();
-  }, [loadAll]);
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <Box
@@ -126,13 +49,13 @@ export const SearchBox = observer(() => {
           
           <TextField
             fullWidth
-            value={searchInput}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
+            value={searchStore.searchInput}
+            onChange={(e) => searchStore.setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && searchStore.executeSearch()}
             placeholder="Search for transactions, addresses, blocks, symbols"
             aria-label="Search for transactions, addresses, blocks, or token symbols"
-            error={validationResult ? !validationResult.isValid : false}
-            helperText={validationResult && !validationResult.isValid ? getValidationMessage(validationResult) : ''}
+            error={searchStore.validationResult ? !searchStore.validationResult.isValid : false}
+            helperText={searchStore.validationResult && !searchStore.validationResult.isValid ? getValidationMessage(searchStore.validationResult) : ''}
             variant="standard"
             slotProps={{
               input: {
@@ -151,8 +74,8 @@ export const SearchBox = observer(() => {
 
           <FormControl size="small" sx={{ minWidth: 140, flexShrink: 0 }}>
             <Select
-              value={withdrawalType}
-              onChange={(e) => handleWithdrawalTypeChange(e.target.value as 'all' | 'normal' | 'fast')}
+              value={searchStore.withdrawalType}
+              onChange={(e) => searchStore.handleWithdrawalTypeChange(e.target.value as 'all' | 'normal' | 'fast')}
               displayEmpty
               aria-label="Filter transactions by type"
               sx={{
@@ -180,9 +103,9 @@ export const SearchBox = observer(() => {
             </Select>
           </FormControl>
 
-          {(searchInput || withdrawalType !== 'all') && (
+          {searchStore.hasActiveFilters && (
             <IconButton
-              onClick={handleClear}
+              onClick={searchStore.clearFilters}
               size="small"
               sx={{ 
                 color: theme.palette.text.secondary, 
