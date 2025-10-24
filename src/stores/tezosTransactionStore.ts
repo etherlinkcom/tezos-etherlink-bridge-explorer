@@ -27,7 +27,7 @@ export type TezosTransactionKind =
   "fast_withdrawal_payed_out_expired" |
   "fast_withdrawal_payed_out_reward" | null
 
-interface GraphQLResponse {
+export interface GraphQLResponse {
   id: string;
   created_at: string;
   updated_at: string;
@@ -180,6 +180,7 @@ export class TezosTransaction<Input = GraphQLResponse>
 
 export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
+  private _transactions = observable.array<TezosTransaction>([]);
   
   loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
   
@@ -202,9 +203,8 @@ export class TezosTransactionStore {
   constructor() {
     makeAutoObservable(this);
   }
-
   get transactions(): TezosTransaction[] {
-    return Array.from(this.transactionMap.values());
+    return this._transactions;
   }
 
   get currentTransactions(): TezosTransaction[] {
@@ -414,6 +414,7 @@ export class TezosTransactionStore {
 
   resetStore = () => {
     this.transactionMap.clear();
+    this._transactions.replace([]);
     this.currentPage = 1;
     this.error = null;
   };
@@ -462,8 +463,8 @@ export class TezosTransactionStore {
       });
     }
     
-    
     this.trimOldTransactions();
+    this._transactions.replace(Array.from(this.transactionMap.values()));
   };
 
   private trimOldTransactions = (): void => {
