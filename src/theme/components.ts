@@ -486,13 +486,18 @@ export const components: Components<Theme> = {
           backgroundColor: alpha(theme.palette.primary.main, 0.1),
         },
       }),
-      filled: ({ theme }) => ({
-        color: theme.palette.primary.contrastText,
-        backgroundColor: theme.palette.primary.main,
-        "&:hover": {
-          backgroundColor: theme.palette.primary.dark,
-        },
-      }),
+      filled: ({ theme, ownerState }) => {
+        if (!ownerState.color || ownerState.color === 'default') {
+          return {
+            color: theme.palette.primary.contrastText,
+            backgroundColor: theme.palette.primary.main,
+            "&:hover": {
+              backgroundColor: theme.palette.primary.dark,
+            },
+          };
+        }
+        return {};
+      },
     },
   },
 };
