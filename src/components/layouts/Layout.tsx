@@ -28,7 +28,7 @@ export const Layout = ({ children }: LayoutProps) => {
               fontWeight: 'bold'
             }}
           >
-            🌉 Tezos-Etherlink Bridge Explorer
+            Tezos-Etherlink Bridge Explorer
           </Typography>
           <Typography 
             variant="h6" 
