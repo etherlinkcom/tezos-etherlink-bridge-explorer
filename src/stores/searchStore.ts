@@ -52,37 +52,39 @@ export class SearchStore {
     return filters;
   };
 
-  loadAll = async () => {
-    tezosTransactionStore.resetStore();
-    await tezosTransactionStore.getTransactions();
-  };
-
   executeSearch = async () => {
-    const trimmed = this.searchInput.trim();
-    if (!trimmed) return this.loadAll();
+    const trimmed: string = this.searchInput.trim();
+    
+    if (!trimmed) {
+      await tezosTransactionStore.getTransactions({ resetStore: true });
+      return;
+    }
 
-    const validation = validateInput(trimmed);
+    const validation: ValidationResult = validateInput(trimmed);
     runInAction(() => {
       this.validationResult = validation;
     });
 
     if (!validation.isValid) return;
 
-    const filters = this.buildFilters(trimmed, validation.type);
-    tezosTransactionStore.resetStore();
-    await tezosTransactionStore.getTransactions(filters);
+    if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
+      return { shouldNavigate: true, hash: trimmed };
+    }
+    
+    const filters: Record<string, unknown> = this.buildFilters(trimmed, validation.type);
+    await tezosTransactionStore.getTransactions({ ...filters, resetStore: true });
   };
 
   handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
     this.setWithdrawalType(newType);
-    this.searchInput.trim() ? await this.executeSearch() : await this.loadAll();
+    await this.executeSearch();
   };
 
   clearFilters = () => {
     this.searchInput = '';
     this.withdrawalType = 'all';
     this.validationResult = null;
-    this.loadAll();
+    this.executeSearch();
   };
 }
 
