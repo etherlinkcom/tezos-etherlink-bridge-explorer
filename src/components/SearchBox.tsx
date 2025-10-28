@@ -15,12 +15,22 @@ import {
   Search as SearchIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
+import { useRouter } from 'next/navigation';
 import { searchStore } from '@/stores/searchStore';
 import { getValidationMessage } from '@/utils/validation';
 import { designTokens } from '@/theme/components';
 
 export const SearchBox = observer(() => {
   const theme = useTheme();
+  const router = useRouter();
+
+  const handleSearch = async () => {
+    const result = await searchStore.executeSearch();
+    if (result?.shouldNavigate) {
+      router.push(`/transaction/${result.hash}`);
+    }
+  };
+  
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <Box
@@ -51,7 +61,7 @@ export const SearchBox = observer(() => {
             fullWidth
             value={searchStore.searchInput}
             onChange={(e) => searchStore.setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && searchStore.executeSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Search for transactions, addresses, blocks, symbols"
             aria-label="Search for transactions, addresses, blocks, or token symbols"
             error={searchStore.validationResult ? !searchStore.validationResult.isValid : false}
