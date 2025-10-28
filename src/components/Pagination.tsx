@@ -5,9 +5,9 @@ import { Box, Button, Typography } from '@mui/material';
 import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
 
 export const Pagination = observer(() => {
-  const currentPage = tezosTransactionStore.currentPage;
-  const totalPages = tezosTransactionStore.totalPages;
-  const loadingPage = tezosTransactionStore.loadingPage;
+  const currentPage: number = tezosTransactionStore.currentPage;
+  const totalPages: number = tezosTransactionStore.totalPages;
+  const loadingPage: boolean = tezosTransactionStore.loadingPage;
 
   const handlePreviousPage = () => {
     tezosTransactionStore.goToPage(currentPage - 1);
