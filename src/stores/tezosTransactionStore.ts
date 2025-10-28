@@ -67,6 +67,13 @@ export interface GraphQLResponse {
       amount: string;
       operation_hash: string;
       level: number;
+      ticket: {
+        token: {
+          decimals: number;
+          name: string;
+          symbol: string;
+        };
+      };
     };
   };
   withdrawal: {
@@ -379,6 +386,13 @@ export class TezosTransactionStore {
               amount
               operation_hash
               level
+              ticket {
+                token {
+                  decimals
+                  name
+                  symbol
+                }
+              }
             }
           }
           withdrawal {
@@ -485,7 +499,7 @@ export class TezosTransactionStore {
   };
 
   // Handles linking of fast_withdrawal_payed_out txs to their fast_withdrawal_service_provider parents
-  private linkFastWithdrawalTxs = action((
+  linkFastWithdrawalTxs = action((
     tx: TezosTransaction,
     transactionMap: Map<string, TezosTransaction>,
     currentBatch?: TezosTransaction[]
@@ -567,7 +581,9 @@ export class TezosTransactionStore {
     const l2HashRaw: string = txData?.l2_transaction?.transaction_hash || '';
     const l2Hash: string = l2HashRaw && !l2HashRaw.startsWith('0x') ? `0x${l2HashRaw}` : l2HashRaw;
     
-    const tokenMetadata = txData?.l2_transaction?.ticket?.token;
+    const tokenMetadata = isDeposit 
+      ? (txData as GraphQLResponse['deposit'])?.l1_transaction?.ticket?.token
+      : (txData as GraphQLResponse['withdrawal'])?.l2_transaction?.ticket?.token;
     const symbol: string = tokenMetadata?.symbol || 'UNKNOWN';
     
     let l2Decimals: number;
