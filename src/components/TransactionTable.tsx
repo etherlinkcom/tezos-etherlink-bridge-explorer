@@ -14,53 +14,30 @@ import {
   Button, 
   CircularProgress,
   Chip,
-  ChipProps,
   Tooltip
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
+import { StatusChip } from '@/components/shared/StatusChip';
+import { Pagination } from '@/components/Pagination';
+import { validateInput, ValidationResult } from '@/utils/validation';
+import { formatTimeAgo } from '@/utils/formatters';
 
+// TODO: add another componant for transaction table, pagination, 
 export const TransactionTable = observer(() => {
+  const router = useRouter();
 
   const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
   const loadingInitial = tezosTransactionStore.loadingInitial;
   const loadingRefresh = tezosTransactionStore.loadingRefresh;
-  const loadingPage = tezosTransactionStore.loadingPage;
-  const currentPage = tezosTransactionStore.currentPage;
-  const totalPages = tezosTransactionStore.totalPages;
 
-  const handlePreviousPage = () => {
-    tezosTransactionStore.goToPage(currentPage - 1);
-  };
-
-  const handleNextPage = () => {
-    tezosTransactionStore.goToPage(currentPage + 1);
-  };
-
-  const getStatusColor = (status: string): ChipProps['color'] => {
-    switch (status.toLowerCase()) {
-      case 'completed': return 'success';
-      case 'pending': return 'warning';
-      case 'failed': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) {
-      return `${diffInSeconds} second${diffInSeconds !== 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  const handleTransactionClick = (txHash: string) => {
+    const validation: ValidationResult = validateInput(txHash);
+    if (validation.isValid && (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash')) {
+      router.push(`/transaction/${txHash}`);
     } else {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} day${days !== 1 ? 's' : ''} ago`;
+      console.warn('Invalid transaction hash:', txHash, validation.error);
     }
   };
 
@@ -104,21 +81,24 @@ export const TransactionTable = observer(() => {
               <TableRow key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`} hover>
                 {/* Status */}
                 <TableCell>
-                  <Chip 
-                    label={transaction.status} 
-                    size="small"
-                    color={getStatusColor(transaction.status)}
-                  />
+                  <StatusChip status={transaction.status} />
                 </TableCell>
                 
                 {/* Source Tx Hash */}
                 <TableCell>
                   <Tooltip title={transaction.l1TxHash || '-'}>
-                    <EllipsisBox sx={{ 
-                      fontFamily: 'monospace',
-                      cursor: 'pointer',
-                      maxWidth: '120px'
-                    }}>
+                    <EllipsisBox 
+                      sx={{ 
+                        fontFamily: 'monospace',
+                        cursor: transaction.l1TxHash && transaction.l1TxHash !== '-' ? 'pointer' : 'default',
+                        maxWidth: '120px',
+                        '&:hover': transaction.l1TxHash && transaction.l1TxHash !== '-' ? {
+                          color: 'primary.main',
+                          textDecoration: 'underline'
+                        } : {}
+                      }}
+                      onClick={() => handleTransactionClick(transaction.l1TxHash)}
+                    >
                       {transaction.l1TxHash || '-'}
                     </EllipsisBox>
                   </Tooltip>
@@ -160,11 +140,18 @@ export const TransactionTable = observer(() => {
                 {/* Destination Tx Hash */}
                 <TableCell>
                   <Tooltip title={transaction.l2TxHash || '-'}>
-                    <EllipsisBox sx={{ 
-                      fontFamily: 'monospace',
-                      cursor: 'pointer',
-                      maxWidth: '120px'
-                    }}>
+                    <EllipsisBox 
+                      sx={{ 
+                        fontFamily: 'monospace',
+                        cursor: transaction.l2TxHash && transaction.l2TxHash !== '-' ? 'pointer' : 'default',
+                        maxWidth: '120px',
+                        '&:hover': transaction.l2TxHash && transaction.l2TxHash !== '-' ? {
+                          color: 'primary.main',
+                          textDecoration: 'underline'
+                        } : {}
+                      }}
+                      onClick={() => handleTransactionClick(transaction.l2TxHash)}
+                    >
                       {transaction.l2TxHash || '-'}
                     </EllipsisBox>
                   </Tooltip>
@@ -192,7 +179,7 @@ export const TransactionTable = observer(() => {
         </Table>
       </TableContainer>
       
-      {/* Loading States */}
+      {/* Loading States TODO: move above the table*/}
       {loadingInitial && (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <CircularProgress />
@@ -215,29 +202,7 @@ export const TransactionTable = observer(() => {
       </Typography>
       
       {/* Pagination Controls (Bottom) */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          Page {currentPage} of {totalPages}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button 
-            onClick={handlePreviousPage}
-            disabled={loadingPage || currentPage === 1}
-            variant="outlined"
-            startIcon={loadingPage && currentPage > 1 ? <CircularProgress size={16} /> : null}
-          >
-            {loadingPage && currentPage > 1 ? 'Loading...' : 'Previous'}
-          </Button>
-          <Button 
-            onClick={handleNextPage}
-            disabled={loadingPage || currentPage >= totalPages}
-            variant="outlined"
-            endIcon={loadingPage && currentPage < totalPages ? <CircularProgress size={16} /> : null}
-          >
-            {loadingPage && currentPage < totalPages ? 'Loading...' : 'Next'}
-          </Button>
-        </Box>
-      </Box>
+      <Pagination />
     </Box>
   );
 });
