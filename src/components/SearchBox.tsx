@@ -62,8 +62,8 @@ export const SearchBox = observer(() => {
             value={searchStore.searchInput}
             onChange={(e) => searchStore.setSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search for transactions, addresses, blocks, symbols"
-            aria-label="Search for transactions, addresses, blocks, or token symbols"
+            placeholder="Search for transactions, addresses, blocks, or symbols..."
+            aria-label="Search for transactions, addresses, blocks, or symbols"
             error={searchStore.validationResult ? !searchStore.validationResult.isValid : false}
             helperText={searchStore.validationResult && !searchStore.validationResult.isValid ? getValidationMessage(searchStore.validationResult) : ''}
             variant="standard"
@@ -108,7 +108,7 @@ export const SearchBox = observer(() => {
               }}
             >
               <MenuItem value="all">All Transactions</MenuItem>
-              <MenuItem value="normal">Normal Withdrawals</MenuItem>
+              <MenuItem value="normal">Normal Transactions</MenuItem>
               <MenuItem value="fast">Fast Withdrawals</MenuItem>
             </Select>
           </FormControl>
