@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export default function Home() {
   useEffect(() => {
     const initializeStore = async () => {
-      await tezosTransactionStore.getTransactions();
+      await tezosTransactionStore.getTransactions({ resetStore: true, loadingMode: 'initial' });
       tezosTransactionStore.startAutoRefresh();
     };
 

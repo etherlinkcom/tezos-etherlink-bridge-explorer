@@ -20,6 +20,12 @@ export interface QueryFilters {
   isFastWithdrawal?: boolean; 
 }
 
+interface GetTransactionsOptions extends QueryFilters {
+  resetStore?: boolean;
+  autoRefresh?: boolean;
+  loadingMode?: 'initial' | 'page' | 'refresh';
+}
+
 export type TezosTransactionKind =
   "fast_withdrawal" |
   "fast_withdrawal_service_provider" |
@@ -228,14 +234,16 @@ export class TezosTransactionStore {
     if (this.refreshInterval) return;
     
     console.log(`Starting auto-refresh every ${this.AUTO_REFRESH_INTERVAL} seconds`);
-    this.refreshInterval = setInterval(() => {
+    this.refreshInterval = setInterval(async () => {
       if (this.loading) return;
       
       if (this.transactionMap.size === 0) {
-        this.getTransactions();
+        await this.getTransactions({ resetStore: true ,loadingMode: 'initial' });
         return;
       }
-      if (this.transactions.length > 0) this.getTransactions({ since: this.transactions[0].input.updated_at });
+      if (this.transactions.length > 0) {
+        await this.getTransactions({ autoRefresh: true, loadingMode: 'refresh' });
+      }
       
     }, this.AUTO_REFRESH_INTERVAL);
   };
@@ -336,7 +344,7 @@ export class TezosTransactionStore {
           ${whereClause}
           limit: ${limit}
           offset: ${offset}
-          order_by: {updated_at: desc}
+          order_by: {created_at: desc}
         ) {
           id
           created_at
@@ -476,7 +484,7 @@ export class TezosTransactionStore {
     toRemove.forEach(tx => this.transactionMap.delete(tx.input.id));
   };
 
-  //Handles linking of fast_withdrawal_payed_out txs to their fast_withdrawal_service_provider parents
+  // Handles linking of fast_withdrawal_payed_out txs to their fast_withdrawal_service_provider parents
   private linkFastWithdrawalTxs = action((
     tx: TezosTransaction,
     transactionMap: Map<string, TezosTransaction>,
@@ -520,10 +528,18 @@ export class TezosTransactionStore {
     return true;
   });
   
-  getTransactions = async (filters: QueryFilters = {}): Promise<void> => {
-    const isAutoRefresh: boolean = !!filters.since;
-    this.setLoadingState(isAutoRefresh ? 'refresh' : 'initial');
+  getTransactions = async (options: GetTransactionsOptions = {}): Promise<void> => {
+    this.setLoadingState(options.loadingMode || (options.autoRefresh ? 'refresh' : 'initial'));
     this.error = null;
+
+    if (options.resetStore) {
+      this.resetStore();
+    }
+
+    let filters: GetTransactionsOptions = options;
+    if (options.autoRefresh && this.transactions.length > 0) {
+      filters = { ...options, since: this.transactions[0]?.input.updated_at };
+    }
     
     try {
       const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
