@@ -10,70 +10,69 @@ export type InputType =
   | 'invalid';
 
 export interface ValidationResult {
-  isValid: boolean;
   type: InputType;
   error?: string;
 }
 
 export function validateBlockNumber(input: string): ValidationResult {
   if (/^\d+$/.test(input)) {
-    return { isValid: true, type: 'block_number' };
+    return { type: 'block_number' };
   }
-  return { isValid: false, type: 'invalid', error: 'Block number must be numeric' };
+  return { type: 'invalid', error: 'Block number must be numeric' };
 }
 
 export function validateTezosAddress(input: string): ValidationResult {
   if (!input.startsWith('tz') && !input.startsWith('KT')) {
-    return { isValid: false, type: 'invalid', error: 'Not a Tezos address' };
+    return { type: 'invalid', error: 'Not a Tezos address' };
   }
   
   const validationResult = validateAddress(input);
   if (validationResult === TaquitoValidationResult.VALID) {
-    return { isValid: true, type: 'tezos_address' };
+    return { type: 'tezos_address' };
   }
   
-  return { isValid: false, type: 'invalid', error: 'Invalid Tezos address' };
+  return { type: 'invalid', error: 'Invalid Tezos address' };
 }
 
 export function validateTezosTxHash(input: string): ValidationResult {
   if (!input.startsWith('o')) {
-    return { isValid: false, type: 'invalid', error: 'Not a Tezos transaction hash' };
+    return { type: 'invalid', error: 'Not a Tezos transaction hash' };
   }
   
   if (/^o[1-9A-HJ-NP-Za-km-z]{50}$/.test(input)) {
-    return { isValid: true, type: 'tezos_tx_hash' };
+    return { type: 'tezos_tx_hash' };
   }
   
-  return { isValid: false, type: 'invalid', error: 'Invalid Tezos operation hash format' };
+  return { type: 'invalid', error: 'Invalid Tezos operation hash format' };
 }
 
 export function validateEtherlinkAddress(input: string): ValidationResult {
   if (/^0x[0-9a-fA-F]{40}$/.test(input)) {
-    return { isValid: true, type: 'etherlink_address' };
+    return { type: 'etherlink_address' };
   }
-  return { isValid: false, type: 'invalid', error: 'Invalid Etherlink address' };
+  return { type: 'invalid', error: 'Invalid Etherlink address' };
 }
 
 export function validateEtherlinkTxHash(input: string): ValidationResult {
   if (/^0x[0-9a-fA-F]{64}$/.test(input)) {
-    return { isValid: true, type: 'etherlink_tx_hash' };
+    return { type: 'etherlink_tx_hash' };
   }
-  return { isValid: false, type: 'invalid', error: 'Invalid Etherlink transaction hash' };
+  return { type: 'invalid', error: 'Invalid Etherlink transaction hash' };
 }
 
 export function validateTokenSymbol(input: string): ValidationResult {
   // Allow 2-10 alphanumeric characters, case-insensitive
   if (/^[A-Za-z0-9]{2,10}$/.test(input)) {
-    return { isValid: true, type: 'token_symbol' };
+    return { type: 'token_symbol' };
   }
-  return { isValid: false, type: 'invalid', error: 'Invalid token symbol' };
+  return { type: 'invalid', error: 'Invalid token symbol' };
 }
 
 export function validateInput(input: string): ValidationResult {
   const trimmed = input.trim();
   
   if (!trimmed) {
-    return { isValid: false, type: 'invalid', error: 'Input is empty' };
+    return { type: 'invalid', error: 'Input is empty' };
   }
   
   if (/^\d+$/.test(trimmed)) {
@@ -99,7 +98,7 @@ export function validateInput(input: string): ValidationResult {
       return validateEtherlinkTxHash(trimmed);
     }
     
-    return { isValid: false, type: 'invalid', error: 'Invalid length' };
+    return { type: 'invalid', error: 'Invalid length' };
   }
   
   // Token symbols: accept lowercase or uppercase
@@ -107,7 +106,7 @@ export function validateInput(input: string): ValidationResult {
     return validateTokenSymbol(trimmed);
   }
   
-  return { isValid: false, type: 'invalid', error: 'Unrecognized format' };
+  return { type: 'invalid', error: 'Unrecognized format' };
 }
 
 export function getValidationMessage(result: ValidationResult): string {
