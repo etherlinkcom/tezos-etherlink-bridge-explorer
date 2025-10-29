@@ -27,7 +27,7 @@ const SearchBar = observer(() => {
     if (searchInput.trim()) {
       const validation = validateInput(searchInput);
       
-      if (!validation.isValid) {
+      if (validation.type === 'invalid') {
         setValidationResult(validation);
         return;
       }
@@ -98,14 +98,14 @@ const SearchBar = observer(() => {
             width: '100%',
             padding: '10px',
             fontSize: '14px',
-            border: validationResult && !validationResult.isValid
+            border: validationResult && validationResult.type === 'invalid'
               ? '2px solid #dc3545'
               : '1px solid #ced4da',
             borderRadius: '4px',
             boxSizing: 'border-box'
           }}
         />
-        {validationResult && !validationResult.isValid && (
+        {validationResult && validationResult.type === 'invalid' && (
           <div style={{ 
             marginTop: '5px', 
             fontSize: '13px', 
