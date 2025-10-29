@@ -468,7 +468,7 @@ export const components: Components<Theme> = {
   },
   MuiChip: {
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: () => ({
         fontFamily: typography.fontFamily,
         fontWeight: 500,
         fontSize: "14px",
