@@ -643,8 +643,3 @@ export class TezosTransactionStore {
 }
 
 export const tezosTransactionStore = new TezosTransactionStore();
-
-// Only for testing purposes
-if (typeof window !== 'undefined') {
-  (window as any).store = tezosTransactionStore;
-}
