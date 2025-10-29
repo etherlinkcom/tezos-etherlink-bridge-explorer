@@ -9,7 +9,6 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).store = tezosTransactionStore;
-      console.log('Store is now available! Type "store" in console to test it.');
     }
 
     const initializeStore = async () => {

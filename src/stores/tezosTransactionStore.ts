@@ -240,7 +240,6 @@ export class TezosTransactionStore {
   startAutoRefresh = () => {
     if (this.refreshInterval) return;
     
-    console.log(`Starting auto-refresh every ${this.AUTO_REFRESH_INTERVAL} seconds`);
     this.refreshInterval = setInterval(async () => {
       if (this.loading) return;
       
@@ -257,7 +256,6 @@ export class TezosTransactionStore {
 
   stopAutoRefresh = () => {
     if (this.refreshInterval) {
-      console.log('Stopping auto-refresh');
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
     }
