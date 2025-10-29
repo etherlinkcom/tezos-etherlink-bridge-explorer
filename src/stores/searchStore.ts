@@ -65,7 +65,7 @@ export class SearchStore {
       this.validationResult = validation;
     });
 
-    if (!validation.isValid) return;
+    if (validation.type === 'invalid') return;
 
     if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
       return { shouldNavigate: true, hash: trimmed };

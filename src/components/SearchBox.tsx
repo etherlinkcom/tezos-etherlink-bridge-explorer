@@ -64,8 +64,8 @@ export const SearchBox = observer(() => {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Search for transactions, addresses, blocks, or symbols..."
             aria-label="Search for transactions, addresses, blocks, or symbols"
-            error={searchStore.validationResult ? !searchStore.validationResult.isValid : false}
-            helperText={searchStore.validationResult && !searchStore.validationResult.isValid ? getValidationMessage(searchStore.validationResult) : ''}
+            error={searchStore.validationResult ? searchStore.validationResult.type === 'invalid' : false}
+            helperText={searchStore.validationResult && searchStore.validationResult.type === 'invalid' ? getValidationMessage(searchStore.validationResult) : ''}
             variant="standard"
             slotProps={{
               input: {
