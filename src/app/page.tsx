@@ -13,9 +13,7 @@ export default function Home() {
     }
 
     const initializeStore = async () => {
-      console.log('🚀 Starting initial load...');
-      await tezosTransactionStore.getTransactions();
-      console.log('✅ Initial load completed, starting auto-refresh...');
+      await tezosTransactionStore.getTransactions({ resetStore: true, loadingMode: 'initial' });
       tezosTransactionStore.startAutoRefresh();
     };
 
