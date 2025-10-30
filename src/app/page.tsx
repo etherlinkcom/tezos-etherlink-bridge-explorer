@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Box, Container } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
-import { TransactionTable } from "@/components/TransactionTable";
+import { TransactionTable } from "@/components/TransactionTable/TransactionTable";
 import { SearchBox } from "@/components/SearchBox";
 import { Layout } from "@/components/layouts/Layout";
 

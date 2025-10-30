@@ -240,7 +240,6 @@ export class TezosTransactionStore {
   startAutoRefresh = () => {
     if (this.refreshInterval) return;
     
-    console.log(`Starting auto-refresh every ${this.AUTO_REFRESH_INTERVAL} seconds`);
     this.refreshInterval = setInterval(async () => {
       if (this.loading) return;
       
@@ -257,7 +256,6 @@ export class TezosTransactionStore {
 
   stopAutoRefresh = () => {
     if (this.refreshInterval) {
-      console.log('Stopping auto-refresh');
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
     }
@@ -269,7 +267,6 @@ export class TezosTransactionStore {
     this.setError(`${context}: ${errorMessage}`);
   };
 
-  // TODO: fetch txs with before for pagination after reaching last page
   private buildGraphQLQuery = (filters: QueryFilters = {}): string => {
     const {
       limit = this.pageSize,
@@ -441,7 +438,6 @@ export class TezosTransactionStore {
     this.error = null;
   };
 
-  //TODO: remove states we don't need now
   setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
     this.loadingState = state;
   };
