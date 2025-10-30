@@ -12,29 +12,40 @@ export const useTransactionDetailsViewModel = (tx: TezosTransaction | null) => {
     if (!value) return 'Not available';
     return isEtherlink ? formatEtherlinkValue(value) : value;
   };
+  const toBlockString = (level?: number) => (level !== undefined && level !== null ? String(level) : '-');
+
+  const l1 = {
+    network: 'Tezos',
+    hash: formatValue(tx.l1TxHash, false),
+    address: formatValue((tx.input as any)?.l1_account, false),
+    hasHash: !!tx.l1TxHash,
+    hasAddress: !!(tx.input as any)?.l1_account,
+    block: toBlockString(tx.l1Block),
+    amount: isDeposit ? tx.sendingAmount : tx.receivingAmount,
+    status: isDeposit ? tx.sourceStatus : tx.destinationStatus
+  } as const;
+
+  const l2 = {
+    network: 'Etherlink',
+    hash: formatValue(tx.l2TxHash, true),
+    address: formatValue((tx.input as any)?.l2_account, true),
+    hasHash: !!tx.l2TxHash,
+    hasAddress: !!(tx.input as any)?.l2_account,
+    block: toBlockString(tx.l2Block),
+    amount: isDeposit ? tx.receivingAmount : tx.sendingAmount,
+    status: isDeposit ? tx.destinationStatus : tx.sourceStatus
+  } as const;
 
   const transactionModel = {
     validation,
     isDeposit,
     type: isDeposit ? 'Deposit' : 'Withdrawal',
+    symbol: tx.symbol || 'Unknown',
 
-    source: {
-      network: isDeposit ? 'Tezos' : 'Etherlink',
-      hash: formatValue(isDeposit ? tx.l1TxHash : tx.l2TxHash, !isDeposit),
-      address: formatValue(isDeposit ? (tx.input as any)?.l1_account : (tx.input as any)?.l2_account, !isDeposit),
-      hasHash: !!(isDeposit ? tx.l1TxHash : tx.l2TxHash),
-      hasAddress: !!(isDeposit ? (tx.input as any)?.l1_account : (tx.input as any)?.l2_account),
-    },
+    source: isDeposit ? l1 : l2,
 
-    destination: {
-      network: isDeposit ? 'Etherlink' : 'Tezos',
-      hash: formatValue(isDeposit ? tx.l2TxHash : tx.l1TxHash, isDeposit),
-      address: formatValue(isDeposit ? (tx.input as any)?.l2_account : (tx.input as any)?.l1_account, isDeposit),
-      hasHash: !!(isDeposit ? tx.l2TxHash : tx.l1TxHash),
-      hasAddress: !!(isDeposit ? (tx.input as any)?.l2_account : (tx.input as any)?.l1_account),
-    },
+    destination: isDeposit ? l2 : l1,
 
-    amount: `${tx.sendingAmount || '0'} ${tx.symbol || 'Unknown'}`,
     status: tx.status || 'Unknown',
     networkFlow: `${isDeposit ? 'Tezos' : 'Etherlink'} → ${isDeposit ? 'Etherlink' : 'Tezos'}`,
     createdAt: tx.submittedDate ? formatDateTime(new Date(tx.submittedDate)) : 'Unknown',
@@ -45,8 +56,7 @@ export const useTransactionDetailsViewModel = (tx: TezosTransaction | null) => {
       ? {
           hash: formatValue(tx.fastWithdrawalPayOut.l1TxHash, false),
           address: formatValue((tx.fastWithdrawalPayOut.input as any)?.l1_account, false),
-          status: tx.fastWithdrawalPayOut.status || 'Pending',
-          amount: `${tx.fastWithdrawalPayOut.sendingAmount || '0'} ${tx.fastWithdrawalPayOut.symbol || tx.symbol || 'Unknown'}`,
+          amount: `${tx.fastWithdrawalPayOut.receivingAmount || '0'} ${tx.fastWithdrawalPayOut.symbol || 'Unknown'}`,
           block: String(tx.fastWithdrawalPayOut.l1Block || tx.fastWithdrawalPayOut.l2Block || 'Not available'),
           date: tx.fastWithdrawalPayOut.submittedDate
             ? formatDateTime(new Date(tx.fastWithdrawalPayOut.submittedDate))

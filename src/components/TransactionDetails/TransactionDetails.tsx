@@ -66,8 +66,9 @@ export const TransactionDetails = observer(() => {
             hasHash={vm.source.hasHash}
             address={vm.source.address}
             hasAddress={vm.source.hasAddress}
-            status={vm.status}
-            amount={vm.amount}
+            status={vm.source.status || 'Unknown'}
+            amount={`${vm.source.amount || '0'} ${vm.symbol}`}
+            block={vm.source.block}
           />
 
           <NetworkSection
@@ -76,8 +77,9 @@ export const TransactionDetails = observer(() => {
             hasHash={vm.destination.hasHash}
             address={vm.destination.address}
             hasAddress={vm.destination.hasAddress}
-            status={vm.status}
-            amount={vm.amount}
+            status={vm.destination.status || 'Unknown'}
+            amount={`${vm.destination.amount || '0'} ${vm.symbol}`}
+            block={vm.destination.block}
             showDivider
           />
 

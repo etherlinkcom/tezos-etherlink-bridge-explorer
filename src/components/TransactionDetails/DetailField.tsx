@@ -1,9 +1,10 @@
+'use client';
 import { Box, Typography, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
 
-type FieldKind = 'hash' | 'address' | 'status' | 'text';
+type FieldKind = 'hash' | 'address' | 'status' | 'text' | 'block';
 
 interface DetailFieldProps {
   label: string;
