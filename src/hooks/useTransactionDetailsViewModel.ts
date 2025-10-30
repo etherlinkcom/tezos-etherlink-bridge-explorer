@@ -2,7 +2,7 @@ import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
 import { validateTransaction } from '@/utils/validation';
 
-export const useTransactionViewModel = (tx: TezosTransaction | null) => {
+export const useTransactionDetailsViewModel = (tx: TezosTransaction | null) => {
   if (!tx) return null;
 
   const isDeposit = tx.type === 'deposit';
