@@ -3,19 +3,12 @@
 import { observer } from 'mobx-react-lite';
 import { 
   Box, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper, 
+  Typography,
   CircularProgress,
   Chip,
 } from '@mui/material';
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
-import { TransactionTableRow } from '@/components/TransactionTableRow';
+import { TransactionsTableContent } from '@/components/transaction-table/TransactionsTableContent';
 import { Pagination } from '@/components/Pagination';
 
 export const TransactionTable = observer(() => {
@@ -62,32 +55,7 @@ export const TransactionTable = observer(() => {
 
       {!loadingInitial && transactions.length > 0 && (
         <>
-          <TableContainer component={Paper} className="table-card" sx={{ overflowX: 'auto' }}>
-            <Table sx={{ 
-              minWidth: 1200,
-            }}>
-              <TableHead>
-                <TableRow sx={{ height: '48px' }}>
-                  <TableCell sx={{ width: '80px' }}>Status</TableCell>
-                  <TableCell sx={{ width: '140px' }}>Source Tx Hash</TableCell>
-                  <TableCell sx={{ width: '120px' }}>From</TableCell>
-                  <TableCell sx={{ width: '120px' }}>To</TableCell>
-                  <TableCell sx={{ width: '100px' }}>Amount</TableCell>
-                  <TableCell sx={{ width: '140px' }}>Destination Tx Hash</TableCell>
-                  <TableCell sx={{ width: '80px' }}>Type</TableCell>
-                  <TableCell sx={{ width: '100px' }}>Created</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transactions.map((transaction) => (
-                  <TransactionTableRow
-                    key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`}
-                    transaction={transaction}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <TransactionsTableContent transactions={transactions} />
           
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
             Total transactions on this page: {transactions.length}
