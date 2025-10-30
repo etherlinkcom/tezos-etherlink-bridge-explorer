@@ -267,7 +267,6 @@ export class TezosTransactionStore {
     this.setError(`${context}: ${errorMessage}`);
   };
 
-  // TODO: fetch txs with before for pagination after reaching last page
   private buildGraphQLQuery = (filters: QueryFilters = {}): string => {
     const {
       limit = this.pageSize,
@@ -439,7 +438,6 @@ export class TezosTransactionStore {
     this.error = null;
   };
 
-  //TODO: remove states we don't need now
   setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
     this.loadingState = state;
   };

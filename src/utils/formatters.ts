@@ -32,7 +32,6 @@ export const formatDateTime = (date: Date | string | number): string => {
     return 'Invalid Date';
   }
 
-  // TODO: check locale
   const exact: string = dateObj.toLocaleString('en-US', {
     weekday: 'short',
     year: 'numeric',
@@ -48,7 +47,6 @@ export const formatDateTime = (date: Date | string | number): string => {
   return `${exact} (${relative})`;
 };
 
-// TODO: check logic for large amounts
 export const formatAmount = (amount: string | number, symbol: string): string => {
   const numAmount: number = typeof amount === 'string' ? parseFloat(amount) : amount;
   
