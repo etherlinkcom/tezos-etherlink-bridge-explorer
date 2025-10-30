@@ -3,10 +3,12 @@ import { useTheme } from '@mui/material/styles';
 import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
 
+type FieldKind = 'hash' | 'address' | 'status' | 'text';
+
 interface DetailFieldProps {
   label: string;
-  value: string | React.ReactNode;
-  type?: 'status';
+  value: string;
+  kind?: FieldKind;
   copyable?: boolean;
   monospace?: boolean;
   bold?: boolean;
@@ -16,7 +18,7 @@ interface DetailFieldProps {
 export const DetailField = ({ 
   label, 
   value, 
-  type,
+  kind,
   copyable = false, 
   monospace = false,
   bold = false,
@@ -53,7 +55,7 @@ export const DetailField = ({
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
-            {type === 'status' && typeof value === 'string' ? (
+            {kind === 'status' ? (
               <StatusChip 
                 status={value}
                 size="small"
