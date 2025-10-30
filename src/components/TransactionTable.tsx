@@ -29,7 +29,7 @@ export const TransactionTable = observer(() => {
 
   const handleTransactionClick = (txHash: string) => {
     const validation: ValidationResult = validateInput(txHash);
-    if (validation.type !== 'invalid' && (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash')) {
+    if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
       router.push(`/transaction/${txHash}`);
     } else {
       console.warn('Invalid transaction hash:', txHash, validation.error);
