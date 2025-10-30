@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
-import { TransactionTableRow } from '@/components/transaction-table/TransactionTableRow';
+import { TransactionTableRow } from '@/components/TransactionTable/TransactionTableRow';
 
 export const TransactionsTableContent = memo<{ transactions: TezosTransaction[] }>(({ transactions }) => {
   return (

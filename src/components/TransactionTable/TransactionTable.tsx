@@ -8,7 +8,7 @@ import {
   Chip,
 } from '@mui/material';
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
-import { TransactionsTableContent } from '@/components/transaction-table/TransactionsTableContent';
+import { TransactionsTableContent } from '@/components/TransactionTable/TransactionsTableContent';
 import { Pagination } from '@/components/Pagination';
 
 export const TransactionTable = observer(() => {
