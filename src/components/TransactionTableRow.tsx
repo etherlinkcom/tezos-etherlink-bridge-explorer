@@ -1,18 +1,25 @@
 'use client';
 
 import { memo } from 'react';
+import { useRouter } from 'next/navigation';
 import { TableRow, TableCell, Typography, Chip, Tooltip } from '@mui/material';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { formatTimeAgo, formatAmount } from '@/utils/formatters';
+import { validateInput, ValidationResult } from '@/utils/validation';
 
-interface TransactionTableRowProps {
-  transaction: TezosTransaction;
-  onTransactionClick: (hash: string) => void;
-}
+export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ transaction }) => {
+  const router = useRouter();
 
-export const TransactionTableRow = memo<TransactionTableRowProps>(({ transaction, onTransactionClick }) => {
+  const handleTransactionClick = (hash: string) => {
+    const validation: ValidationResult = validateInput(hash);
+    if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
+      router.push(`/transaction/${hash}`);
+    } else {
+      console.warn('Invalid transaction hash:', hash, validation.error);
+    }
+  };
   const sourceHash: string | undefined = transaction.type === 'deposit' ? transaction.l1TxHash : transaction.l2TxHash;
   const destHash: string | undefined = transaction.type === 'deposit' ? transaction.l2TxHash : transaction.l1TxHash;
   const fromAccount: string | undefined = transaction.type === 'deposit' ? transaction.input.l1_account : transaction.input.l2_account;
@@ -37,7 +44,7 @@ export const TransactionTableRow = memo<TransactionTableRowProps>(({ transaction
                 textDecoration: 'underline'
               } : {}
             }}
-            onClick={() => sourceHash && sourceHash !== '-' && onTransactionClick(sourceHash)}
+            onClick={() => sourceHash && sourceHash !== '-' && handleTransactionClick(sourceHash)}
           >
             {sourceHash || '-'}
           </EllipsisBox>
@@ -92,7 +99,7 @@ export const TransactionTableRow = memo<TransactionTableRowProps>(({ transaction
                 textDecoration: 'underline'
               } : {}
             }}
-            onClick={() => destHash && destHash !== '-' && onTransactionClick(destHash)}
+            onClick={() => destHash && destHash !== '-' && handleTransactionClick(destHash)}
           >
             {destHash || '-'}
           </EllipsisBox>

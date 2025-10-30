@@ -14,27 +14,14 @@ import {
   CircularProgress,
   Chip,
 } from '@mui/material';
-import { useRouter } from 'next/navigation';
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { TransactionTableRow } from '@/components/TransactionTableRow';
 import { Pagination } from '@/components/Pagination';
-import { validateInput, ValidationResult } from '@/utils/validation';
 
 export const TransactionTable = observer(() => {
-  const router = useRouter();
-
   const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
   const loadingInitial: boolean = tezosTransactionStore.loadingInitial;
-  const loadingRefresh: boolean = tezosTransactionStore.loadingRefresh;
-
-  const handleTransactionClick = (txHash: string) => {
-    const validation: ValidationResult = validateInput(txHash);
-    if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
-      router.push(`/transaction/${txHash}`);
-    } else {
-      console.warn('Invalid transaction hash:', txHash, validation.error);
-    }
-  };
+  const loadingRefresh: boolean = tezosTransactionStore.loadingRefresh;  
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -96,7 +83,6 @@ export const TransactionTable = observer(() => {
                   <TransactionTableRow
                     key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`}
                     transaction={transaction}
-                    onTransactionClick={handleTransactionClick}
                   />
                 ))}
               </TableBody>
