@@ -21,7 +21,7 @@ export const NetworkSection = ({
   hasAddress,
   status,
   amount,
-  showDivider = false,
+  showDivider,
   block,
 }: NetworkSectionProps) => {
   return (

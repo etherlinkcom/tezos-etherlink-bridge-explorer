@@ -37,7 +37,6 @@ export class TransactionDetailsStore {
     });
   }
 
-  // TODO: optimize if possible
   async getTransactionDetails(hash: string): Promise<TezosTransaction | null> {
     this.loadingState = 'loading';
     this.error = null;
