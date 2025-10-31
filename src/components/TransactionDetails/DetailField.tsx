@@ -31,8 +31,8 @@ export const DetailField = ({
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-        {(() => {
-          const typography = (
+        {tooltip ? (
+          <Tooltip title={tooltip} arrow placement="top">
             <Typography 
               variant="caption" 
               color="text.secondary" 
@@ -40,19 +40,26 @@ export const DetailField = ({
                 minWidth: '200px',
                 fontWeight: 500,
                 flexShrink: 0,
-                cursor: tooltip ? 'help' : 'default'
+                cursor: 'help'
               }}
             >
               {label}:
             </Typography>
-          );
-          
-          return tooltip ? (
-            <Tooltip title={tooltip} arrow placement="top">
-              {typography}
-            </Tooltip>
-          ) : typography;
-        })()}
+          </Tooltip>
+        ) : (
+          <Typography 
+            variant="caption" 
+            color="text.secondary" 
+            sx={{ 
+              minWidth: '200px',
+              fontWeight: 500,
+              flexShrink: 0,
+              cursor: 'default'
+            }}
+          >
+            {label}:
+          </Typography>
+        )}
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
