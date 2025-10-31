@@ -15,7 +15,7 @@ export interface ValidationResult {
 }
 
 export function validateTezosAddress(input: string): ValidationResult {
-  const validationResult = validateAddress(input);
+  const validationResult: TaquitoValidationResult = validateAddress(input);
   if (validationResult === TaquitoValidationResult.VALID) {
     return { type: 'tezos_address' };
   }
@@ -44,7 +44,7 @@ export function validateEtherlinkTxHash(input: string): ValidationResult {
 }
 
 export function validateInput(input: string): ValidationResult {
-  const trimmed = input.trim();
+  const trimmed: string = input.trim();
   
   if (!trimmed) {
     return { type: 'invalid', error: 'Input is empty' };
