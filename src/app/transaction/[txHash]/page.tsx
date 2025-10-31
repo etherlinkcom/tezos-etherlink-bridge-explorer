@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, use } from 'react';
-import { Container, Box } from '@mui/material';
+import { Container, Box, Typography, CircularProgress } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 import { TransactionDetails } from '@/components/TransactionDetails/TransactionDetails';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 
@@ -11,7 +12,7 @@ interface TransactionPageProps {
   }>;
 }
 
-export default function TransactionPage({ params }: TransactionPageProps) {
+export default observer(function TransactionPage({ params }: TransactionPageProps) {
 
   const { txHash: transactionHash } = use(params);
 
@@ -25,11 +26,26 @@ export default function TransactionPage({ params }: TransactionPageProps) {
     };
   }, [transactionHash]);
 
+  const { loading, hasError, error } = transactionDetailsStore;
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <TransactionDetails />
+        {loading && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 4 }}>
+            <CircularProgress size={24} />
+            <Typography>Loading transaction details...</Typography>
+          </Box>
+        )}
+        
+        {hasError && (
+          <Typography color="error" sx={{ py: 4 }}>
+            {error}
+          </Typography>
+        )}
+        
+        {!loading && !hasError && <TransactionDetails />}
       </Container>
     </Box>
   );
-}
+});

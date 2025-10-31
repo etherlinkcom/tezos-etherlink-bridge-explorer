@@ -4,8 +4,7 @@ import {
   Box, 
   Typography, 
   Card,
-  CardContent,
-  CircularProgress
+  CardContent
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
@@ -18,25 +17,8 @@ import { FastWithdrawalSection } from './FastWithdrawalSection';
 import { GeneralInformationSection } from './GeneralInformationSection';
 
 export const TransactionDetails = observer(() => {
-  const { selectedTransaction, loading, hasError, error } = transactionDetailsStore;
+  const { selectedTransaction } = transactionDetailsStore;
   const transactionDetails = useTransactionDetailsViewModel(selectedTransaction);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 4 }}>
-        <CircularProgress size={24} />
-        <Typography>Loading transaction details...</Typography>
-      </Box>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <Typography color="error" sx={{ py: 4 }}>
-        {error}
-      </Typography>
-    );
-  }
 
   if (!transactionDetails) {
     return (
