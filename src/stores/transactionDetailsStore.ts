@@ -58,7 +58,7 @@ export class TransactionDetailsStore {
       hasAddress: !!(tx.input as any)?.l1_account,
       block: toBlockString(tx.l1Block),
       amount: isDeposit ? tx.sendingAmount : tx.receivingAmount,
-      status: isDeposit ? tx.sourceStatus : tx.destinationStatus
+      status: isDeposit ? tx.status : tx.destinationStatus
     };
 
     const l2 = {
@@ -69,7 +69,7 @@ export class TransactionDetailsStore {
       hasAddress: !!(tx.input as any)?.l2_account,
       block: toBlockString(tx.l2Block),
       amount: isDeposit ? tx.receivingAmount : tx.sendingAmount,
-      status: isDeposit ? tx.destinationStatus : tx.sourceStatus
+      status: isDeposit ? tx.destinationStatus : tx.status
     };
 
     return {

@@ -129,7 +129,6 @@ interface TransactionProps<Input> {
   confirmation: Confirmation | undefined;
   completed: boolean;
   status: GraphTokenStatus;
-  sourceStatus: GraphTokenStatus;
   destinationStatus: GraphTokenStatus;
   isFastWithdrawal?: boolean;
   l1Block?: number;
@@ -160,7 +159,6 @@ export class TezosTransaction<Input = GraphQLResponse>
   confirmation: Confirmation | undefined = undefined;
   completed = false;
   status: GraphTokenStatus;
-  sourceStatus: GraphTokenStatus;
   destinationStatus: GraphTokenStatus;
   isFastWithdrawal?: boolean | undefined;
   l1Block?: number;
@@ -183,7 +181,6 @@ export class TezosTransaction<Input = GraphQLResponse>
     this.receivingAmount = props.receivingAmount;
     this.symbol = props.symbol;
     this.status = props.status;
-    this.sourceStatus = props.sourceStatus;
     this.destinationStatus = props.destinationStatus;
     this.completed = props.completed;
     this.isFastWithdrawal = props.isFastWithdrawal || false;
@@ -532,7 +529,6 @@ export class TezosTransactionStore {
       serviceProvider.update({ 
         fastWithdrawalPayOut: tx,
         status: tx.status, 
-        sourceStatus: tx.status,
         destinationStatus: tx.status,
         completed: tx.completed,
         completedDate: tx.completed ? tx.completedDate : undefined,
@@ -625,7 +621,6 @@ export class TezosTransactionStore {
     const completedDate: number | undefined = data.is_completed ? new Date(data.updated_at).getTime() : undefined;
     const finalExpectedDate: number | undefined = data.is_completed ? undefined : expectedTime;
     
-    const sourceStatus: GraphTokenStatus = data.status;
     const destinationStatus: GraphTokenStatus = (data.kind === 'fast_withdrawal_service_provider')
       ? GraphTokenStatus.Pending 
       : data.status;
@@ -643,7 +638,6 @@ export class TezosTransactionStore {
       l1TxHash: l1Hash,
       l2TxHash: l2Hash,
       status: data.status,
-      sourceStatus: sourceStatus,
       destinationStatus: destinationStatus,
       completed: data.is_completed,
       l1Block: l1Block,
