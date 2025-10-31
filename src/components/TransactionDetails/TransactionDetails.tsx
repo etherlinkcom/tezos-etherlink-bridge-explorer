@@ -19,7 +19,7 @@ import { GeneralInformationSection } from './GeneralInformationSection';
 
 export const TransactionDetails = observer(() => {
   const { selectedTransaction, loading, hasError, error } = transactionDetailsStore;
-  const vm = useTransactionDetailsViewModel(selectedTransaction);
+  const transactionDetails = useTransactionDetailsViewModel(selectedTransaction);
 
   if (loading) {
     return (
@@ -38,7 +38,7 @@ export const TransactionDetails = observer(() => {
     );
   }
 
-  if (!vm) {
+  if (!transactionDetails) {
     return (
       <Typography sx={{ py: 4 }}>
         Transaction not found
@@ -52,47 +52,47 @@ export const TransactionDetails = observer(() => {
 
       <Card>
         <CardContent sx={{ p: 3 }}>
-          {!vm.validation.isValid && (
+          {!transactionDetails.validation.isValid && (
             <DataSection title="Data Validation Issues" showDivider>
-              {vm.validation.errors.map((err, index) => (
+              {transactionDetails.validation.errors.map((err, index) => (
                 <DetailField key={index} label="Error" value={err} />
               ))}
             </DataSection>
           )}
 
           <NetworkSection
-            title={`Source: ${vm.source.network}`}
-            hash={vm.source.hash}
-            hasHash={vm.source.hasHash}
-            address={vm.source.address}
-            hasAddress={vm.source.hasAddress}
-            status={vm.source.status || 'Unknown'}
-            amount={`${vm.source.amount || '0'} ${vm.symbol}`}
-            block={vm.source.block}
+            title={`Source: ${transactionDetails.source.network}`}
+            hash={transactionDetails.source.hash}
+            hasHash={transactionDetails.source.hasHash}
+            address={transactionDetails.source.address}
+            hasAddress={transactionDetails.source.hasAddress}
+            status={transactionDetails.source.status || 'Unknown'}
+            amount={`${transactionDetails.source.amount || '0'} ${transactionDetails.symbol}`}
+            block={transactionDetails.source.block}
           />
 
           <NetworkSection
-            title={`Destination: ${vm.destination.network}`}
-            hash={vm.destination.hash}
-            hasHash={vm.destination.hasHash}
-            address={vm.destination.address}
-            hasAddress={vm.destination.hasAddress}
-            status={vm.destination.status || 'Unknown'}
-            amount={`${vm.destination.amount || '0'} ${vm.symbol}`}
-            block={vm.destination.block}
+            title={`Destination: ${transactionDetails.destination.network}`}
+            hash={transactionDetails.destination.hash}
+            hasHash={transactionDetails.destination.hasHash}
+            address={transactionDetails.destination.address}
+            hasAddress={transactionDetails.destination.hasAddress}
+            status={transactionDetails.destination.status || 'Unknown'}
+            amount={`${transactionDetails.destination.amount || '0'} ${transactionDetails.symbol}`}
+            block={transactionDetails.destination.block}
             showDivider
           />
 
           <GeneralInformationSection 
-            type={vm.type}
-            kind={vm.kind}
-            networkFlow={vm.networkFlow}
-            createdAt={vm.createdAt}
-            expectedAt={vm.expectedAt}
+            type={transactionDetails.type}
+            kind={transactionDetails.kind}
+            networkFlow={transactionDetails.networkFlow}
+            createdAt={transactionDetails.createdAt}
+            expectedAt={transactionDetails.expectedAt}
           />
 
-          {vm.fastWithdrawal && (
-            <FastWithdrawalSection data={vm.fastWithdrawal} />
+          {transactionDetails.fastWithdrawal && (
+            <FastWithdrawalSection data={transactionDetails.fastWithdrawal} />
           )}
         </CardContent>
       </Card>
