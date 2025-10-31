@@ -8,7 +8,6 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
-import { useTransactionDetailsViewModel } from '@/hooks/useTransactionDetailsViewModel';
 import { DetailField } from './DetailField';
 import { DataSection } from './DataSection';
 import { NetworkSection } from './NetworkSection';
@@ -17,8 +16,7 @@ import { FastWithdrawalSection } from './FastWithdrawalSection';
 import { GeneralInformationSection } from './GeneralInformationSection';
 
 export const TransactionDetails = observer(() => {
-  const { selectedTransaction } = transactionDetailsStore;
-  const transactionDetails = useTransactionDetailsViewModel(selectedTransaction);
+  const transactionDetails = transactionDetailsStore.formattedTransactionDetails;
 
   if (!transactionDetails) {
     return (
