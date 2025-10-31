@@ -32,11 +32,9 @@ export const TransactionDetails = observer(() => {
 
       <Card>
         <CardContent sx={{ p: 3 }}>
-          {!transactionDetails.validation.isValid && (
+          {transactionDetails.validation.error && (
             <DataSection title="Data Validation Issues" showDivider>
-              {transactionDetails.validation.errors.map((err, index) => (
-                <DetailField key={index} label="Error" value={err} />
-              ))}
+              <DetailField label="Error" value={transactionDetails.validation.error} />
             </DataSection>
           )}
 

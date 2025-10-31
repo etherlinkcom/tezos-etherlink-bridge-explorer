@@ -85,26 +85,3 @@ export function validateInput(input: string): ValidationResult {
 export function getValidationMessage(result: ValidationResult): string {
   return result.error || '';
 }
-
-export interface TransactionValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-export function validateTransaction(transaction: any): TransactionValidationResult {
-  const errors: string[] = [];
-  
-  if (!transaction) {
-    errors.push('Transaction data is null or undefined');
-    return { isValid: false, errors };
-  }
-
-  if (!transaction.type || !['deposit', 'withdrawal'].includes(transaction.type)) {
-    errors.push('Invalid transaction type');
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
-}

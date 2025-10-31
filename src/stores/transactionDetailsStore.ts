@@ -2,7 +2,6 @@ import { makeAutoObservable } from "mobx";
 import { TezosTransaction, tezosTransactionStore } from "./tezosTransactionStore";
 import { GraphQLResponse } from "./tezosTransactionStore";
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
-import { validateTransaction } from '@/utils/validation';
 
 export class TransactionDetailsStore {
   selectedTransaction: TezosTransaction | null = null;
@@ -25,12 +24,24 @@ export class TransactionDetailsStore {
     return this.loadingState === 'idle'; 
   }
 
+  private validateTransaction(transaction: any): string | null {
+    if (!transaction) {
+      return 'Transaction data is null or undefined';
+    }
+
+    if (!transaction.type || !['deposit', 'withdrawal'].includes(transaction.type)) {
+      return 'Invalid transaction type';
+    }
+
+    return null;
+  }
+
   get formattedTransactionDetails() {
     if (!this.selectedTransaction) return null;
 
     const tx = this.selectedTransaction;
     const isDeposit = tx.type === 'deposit';
-    const validation = validateTransaction(tx);
+    const validationError = this.validateTransaction(tx);
 
     const formatValue = (value: string | undefined, isEtherlink: boolean) => {
       if (!value) return 'Not available';
@@ -62,7 +73,7 @@ export class TransactionDetailsStore {
     };
 
     return {
-      validation,
+      validation: { error: validationError },
       isDeposit,
       type: isDeposit ? 'Deposit' : 'Withdrawal',
       symbol: tx.symbol || 'Unknown',
