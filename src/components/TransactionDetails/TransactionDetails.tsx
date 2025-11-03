@@ -61,7 +61,6 @@ export const TransactionDetails = observer(() => {
             title={`Source: ${transactionDetails.source.network}`}
             hash={transactionDetails.source.hash}
             address={transactionDetails.source.address}
-            status={transactionDetails.source.status || 'Unknown'}
             amount={`${transactionDetails.source.amount || '0'} ${transactionDetails.symbol}`}
             block={transactionDetails.source.block}
           />
@@ -70,13 +69,13 @@ export const TransactionDetails = observer(() => {
             title={`Destination: ${transactionDetails.destination.network}`}
             hash={transactionDetails.destination.hash}
             address={transactionDetails.destination.address}
-            status={transactionDetails.destination.status || 'Unknown'}
             amount={`${transactionDetails.destination.amount || '0'} ${transactionDetails.symbol}`}
             block={transactionDetails.destination.block}
             showDivider
           />
 
           <GeneralInformationSection 
+            status={transactionDetails.status}
             type={transactionDetails.type}
             kind={transactionDetails.kind}
             networkFlow={transactionDetails.networkFlow}

@@ -55,8 +55,7 @@ export class TransactionDetailsStore {
       hash: formatValue(tx.l1TxHash, false),
       address: formatValue((tx.input as any)?.l1_account, false),
       block: toBlockString(tx.l1Block),
-      amount: isDeposit ? tx.sendingAmount : tx.receivingAmount,
-      status: isDeposit ? tx.status : tx.destinationStatus
+      amount: isDeposit ? tx.sendingAmount : tx.receivingAmount
     };
 
     const l2 = {
@@ -64,8 +63,7 @@ export class TransactionDetailsStore {
       hash: formatValue(tx.l2TxHash, true),
       address: formatValue((tx.input as any)?.l2_account, true),
       block: toBlockString(tx.l2Block),
-      amount: isDeposit ? tx.receivingAmount : tx.sendingAmount,
-      status: isDeposit ? tx.destinationStatus : tx.status
+      amount: isDeposit ? tx.receivingAmount : tx.sendingAmount
     };
 
     return {
