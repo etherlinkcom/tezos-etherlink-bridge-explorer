@@ -6,7 +6,7 @@ import { TableRow, TableCell, Typography, Chip, Tooltip } from '@mui/material';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
-import { formatTimeAgo, formatAmount } from '@/utils/formatters';
+import { formatTimeAgo, formatAmount, formatEtherlinkValue } from '@/utils/formatters';
 import { validateInput, ValidationResult } from '@/utils/validation';
 
 export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ transaction }) => {
@@ -22,9 +22,14 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
   };
   const sourceHash: string | undefined = transaction.type === 'deposit' ? transaction.l1TxHash : transaction.l2TxHash;
   const destHash: string | undefined = transaction.type === 'deposit' ? transaction.l2TxHash : transaction.l1TxHash;
-  const fromAccount: string | undefined = transaction.type === 'deposit' ? transaction.input.l1_account : transaction.input.l2_account;
-  const toAccount: string | undefined = transaction.type === 'deposit' ? transaction.input.l2_account : transaction.input.l1_account;
 
+  const fromAccount: string = transaction.type === 'deposit' 
+    ? (transaction.input.l1_account || '-')
+    : formatEtherlinkValue(transaction.input.l2_account);
+  const toAccount: string = transaction.type === 'deposit'
+    ? formatEtherlinkValue(transaction.input.l2_account)
+    : (transaction.input.l1_account || '-');
+  
   return (
     <TableRow key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`} hover>
     
