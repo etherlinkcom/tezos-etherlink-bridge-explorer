@@ -24,7 +24,7 @@ export class TransactionDetailsStore {
     return this.loadingState === 'idle'; 
   }
 
-  private validateTransaction(transaction: any): string | null {
+  private validateTransaction(transaction: TezosTransaction<GraphQLResponse>): string | null {
     if (!transaction) {
       return 'Transaction data is null or undefined';
     }
@@ -53,7 +53,7 @@ export class TransactionDetailsStore {
     const l1 = {
       network: 'Tezos',
       hash: formatValue(tx.l1TxHash, false),
-      address: formatValue((tx.input as any)?.l1_account, false),
+      address: formatValue(tx.input?.l1_account, false),
       block: toBlockString(tx.l1Block),
       amount: isDeposit ? tx.sendingAmount : tx.receivingAmount
     };
@@ -61,7 +61,7 @@ export class TransactionDetailsStore {
     const l2 = {
       network: 'Etherlink',
       hash: formatValue(tx.l2TxHash, true),
-      address: formatValue((tx.input as any)?.l2_account, true),
+      address: formatValue(tx.input?.l2_account, true),
       block: toBlockString(tx.l2Block),
       amount: isDeposit ? tx.receivingAmount : tx.sendingAmount
     };
@@ -81,7 +81,7 @@ export class TransactionDetailsStore {
       fastWithdrawal: tx.fastWithdrawalPayOut
         ? {
             hash: formatValue(tx.fastWithdrawalPayOut.l1TxHash, false),
-            address: formatValue((tx.fastWithdrawalPayOut.input as any)?.l1_account, false),
+            address: formatValue(tx.fastWithdrawalPayOut.input?.l1_account, false),
             amount: `${tx.fastWithdrawalPayOut.receivingAmount || '0'} ${tx.fastWithdrawalPayOut.symbol || 'Unknown'}`,
             block: String(tx.fastWithdrawalPayOut.l1Block || tx.fastWithdrawalPayOut.l2Block || 'Not available'),
             date: tx.fastWithdrawalPayOut.submittedDate
@@ -152,7 +152,3 @@ export class TransactionDetailsStore {
 }
 
 export const transactionDetailsStore = new TransactionDetailsStore();
-
-if (typeof window !== 'undefined') {
-  (window as any).transactionDetailsStore = transactionDetailsStore;
-}
