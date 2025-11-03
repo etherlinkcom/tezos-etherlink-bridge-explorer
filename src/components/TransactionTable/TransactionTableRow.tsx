@@ -113,10 +113,10 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
       
       <TableCell>
         <Chip 
-          label={transaction.type.toUpperCase()} 
+          label={transaction.type === 'deposit' ? 'Deposit' : 'Withdrawal'} 
           size="small" 
           variant="filled"
-          color={transaction.type === 'withdrawal' ? 'primary' : 'secondary'}
+          color={transaction.type === 'withdrawal' ? 'primary' : 'default'}
         />
       </TableCell>
       
