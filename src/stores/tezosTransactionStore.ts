@@ -209,7 +209,7 @@ export class TezosTransactionStore {
   batchSize: number = 1000; // API batch size for fetching
   
   private readonly MAX_TRANSACTIONS = 5000;
-  private readonly graphqlEndpoint = process.env.GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
+  private readonly graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
   private readonly AUTO_REFRESH_INTERVAL = 50000; // 5 mins
   private refreshInterval: NodeJS.Timeout | null = null;
   
@@ -530,7 +530,8 @@ export class TezosTransactionStore {
         completedDate: tx.completed ? tx.completedDate : undefined,
         expectedDate: tx.completed ? undefined : serviceProvider.expectedDate,
         l1TxHash: tx.l1TxHash || serviceProvider.l1TxHash,
-        l1Block: tx.l1Block || serviceProvider.l1Block
+        l1Block: tx.l1Block || serviceProvider.l1Block,
+        receivingAmount: tx.receivingAmount || serviceProvider.receivingAmount
       });
       return false;
     }
