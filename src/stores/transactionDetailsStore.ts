@@ -43,8 +43,8 @@ export class TransactionDetailsStore {
     const isDeposit = tx.type === 'deposit';
     const validationError = this.validateTransaction(tx);
 
-    const formatValue = (value: string | undefined, isEtherlink: boolean) => {
-      if (!value) return 'Not available';
+    const formatValue = (value: string | undefined, isEtherlink: boolean): string | undefined => {
+      if (!value) return undefined;
       return isEtherlink ? formatEtherlinkValue(value) : value;
     };
     
@@ -54,8 +54,6 @@ export class TransactionDetailsStore {
       network: 'Tezos',
       hash: formatValue(tx.l1TxHash, false),
       address: formatValue((tx.input as any)?.l1_account, false),
-      hasHash: !!tx.l1TxHash,
-      hasAddress: !!(tx.input as any)?.l1_account,
       block: toBlockString(tx.l1Block),
       amount: isDeposit ? tx.sendingAmount : tx.receivingAmount,
       status: isDeposit ? tx.status : tx.destinationStatus
@@ -65,8 +63,6 @@ export class TransactionDetailsStore {
       network: 'Etherlink',
       hash: formatValue(tx.l2TxHash, true),
       address: formatValue((tx.input as any)?.l2_account, true),
-      hasHash: !!tx.l2TxHash,
-      hasAddress: !!(tx.input as any)?.l2_account,
       block: toBlockString(tx.l2Block),
       amount: isDeposit ? tx.receivingAmount : tx.sendingAmount,
       status: isDeposit ? tx.destinationStatus : tx.status
@@ -93,8 +89,6 @@ export class TransactionDetailsStore {
             date: tx.fastWithdrawalPayOut.submittedDate
               ? formatDateTime(new Date(tx.fastWithdrawalPayOut.submittedDate))
               : 'Not available',
-            hasHash: !!tx.fastWithdrawalPayOut.l1TxHash,
-            hasAddress: !!(tx.fastWithdrawalPayOut.input as any)?.l1_account,
           }
         : null,
     };

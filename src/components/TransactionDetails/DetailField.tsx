@@ -8,7 +8,7 @@ type FieldKind = 'hash' | 'address' | 'status' | 'text' | 'block';
 
 interface DetailFieldProps {
   label: string;
-  value: string;
+  value: string | undefined;
   kind?: FieldKind;
   copyable?: boolean;
   monospace?: boolean;
@@ -26,7 +26,6 @@ export const DetailField = ({
   tooltip
 }: DetailFieldProps) => {
   const theme = useTheme();
-  const displayValue: string = typeof value === 'string' ? value : '';
   
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>
@@ -65,7 +64,7 @@ export const DetailField = ({
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
             {kind === 'status' ? (
               <StatusChip 
-                status={value}
+                status={value ?? ''}
                 size="small"
                 sx={{ height: '20px', fontSize: '0.7rem' }}
               />
@@ -78,14 +77,14 @@ export const DetailField = ({
                   wordBreak: 'break-all'
                 }}
               >
-                {value}
+                {value ?? ''}
               </Typography>
             )}
           </Box>
           
-          {copyable && displayValue && (
+          {copyable && value !== undefined && (
             <CopyButton 
-              text={displayValue}
+              text={value}
               size="small"
               sx={{ p: 0.25, flexShrink: 0 }}
             />
