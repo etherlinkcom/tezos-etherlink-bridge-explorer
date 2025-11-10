@@ -29,8 +29,12 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
     : (transaction.input.l1_account || '-');
   
   return (
-    <TableRow key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`} hover>
-    
+    <TableRow 
+      key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`} 
+      hover
+      onClick={() => (sourceHash || destHash) && handleTransactionClick(sourceHash || destHash)}
+      sx={{ cursor:'pointer' }}>
+        
       <TableCell>
         <StatusChip status={transaction.status} />
       </TableCell>
@@ -40,26 +44,19 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
-              cursor: sourceHash && sourceHash !== '-' ? 'pointer' : 'default', 
               maxWidth: '140px',
-              '&:hover': sourceHash && sourceHash !== '-' ? {
-                color: 'primary.main',
-                textDecoration: 'underline'
-              } : {}
             }}
-            onClick={() => sourceHash && sourceHash !== '-' && handleTransactionClick(sourceHash)}
           >
             {sourceHash || '-'}
           </EllipsisBox>
         </Tooltip>
-      </TableCell>
-      
+      </TableCell>  
+
       <TableCell>
         <Tooltip title={fromAccount || '-'}>
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
-              cursor: 'pointer', 
               maxWidth: '100px' 
             }}
           >
@@ -73,7 +70,6 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
-              cursor: 'pointer', 
               maxWidth: '100px' 
             }}
           >
@@ -95,14 +91,8 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
-              cursor: destHash && destHash !== '-' ? 'pointer' : 'default', 
               maxWidth: '140px',
-              '&:hover': destHash && destHash !== '-' ? {
-                color: 'primary.main',
-                textDecoration: 'underline'
-              } : {}
             }}
-            onClick={() => destHash && destHash !== '-' && handleTransactionClick(destHash)}
           >
             {destHash || '-'}
           </EllipsisBox>
