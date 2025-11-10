@@ -94,7 +94,6 @@ export class TransactionDetailsStore {
 
   private handleError(error: unknown, context: string) {
     const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Error in ${context}:`, error);
     this.error = `${context}: ${errorMessage}`;
     this.loadingState = 'error';
   }

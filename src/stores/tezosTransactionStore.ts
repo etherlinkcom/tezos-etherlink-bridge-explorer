@@ -263,7 +263,6 @@ export class TezosTransactionStore {
 
   private handleError = (error: unknown, context: string) => {
     const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
-    console.log(`Error in ${context}: ${errorMessage}`);
     this.setError(`${context}: ${errorMessage}`);
   };
 

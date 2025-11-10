@@ -16,8 +16,6 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
     const validation: ValidationResult = validateInput(hash);
     if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
       router.push(`/transaction/${hash}`);
-    } else {
-      console.warn('Invalid transaction hash:', hash, validation.error);
     }
   };
   const sourceHash: string | undefined = transaction.type === 'deposit' ? transaction.l1TxHash : transaction.l2TxHash;

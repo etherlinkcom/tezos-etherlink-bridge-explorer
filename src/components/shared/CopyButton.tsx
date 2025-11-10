@@ -29,7 +29,6 @@ export const CopyButton = ({
 
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
       toast.error('Failed to copy to clipboard');
     }
   };
