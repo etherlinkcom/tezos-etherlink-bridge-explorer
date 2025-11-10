@@ -80,7 +80,7 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
       
       <TableCell>
         <Tooltip title={`${transaction.sendingAmount} ${transaction.symbol}`}>
-          <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+          <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }}>
             {formatAmount(transaction.sendingAmount, transaction.symbol)}
           </Typography>
         </Tooltip>
@@ -109,7 +109,7 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
       </TableCell>
       
       <TableCell>
-        <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+        <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }}>
           {formatTimeAgo(new Date(transaction.submittedDate))}
         </Typography>
       </TableCell>
