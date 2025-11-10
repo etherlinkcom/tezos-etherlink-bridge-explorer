@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { tezosTransactionStore } from './tezosTransactionStore';
+import { tezosTransactionStore, type QueryFilters } from './tezosTransactionStore';
 import { validateInput, type ValidationResult } from '@/utils/validation';
 
 export type WithdrawalType = 'all' | 'normal' | 'fast';
@@ -26,6 +26,11 @@ export class SearchStore {
     return Boolean(this.searchInput) || this.withdrawalType !== 'all';
   }
 
+  private applyWithdrawalTypeFilter = (filters: QueryFilters): void => {
+    if (this.withdrawalType === 'fast') filters.isFastWithdrawal = true;
+    if (this.withdrawalType === 'normal') filters.isFastWithdrawal = false;
+  };
+
   buildFilters = (searchValue: string, inputType: string) => {
     const filters: Record<string, unknown> = {};
     
@@ -46,8 +51,7 @@ export class SearchStore {
         break;
     }
     
-    if (this.withdrawalType === 'fast') filters.isFastWithdrawal = true;
-    if (this.withdrawalType === 'normal') filters.isFastWithdrawal = false;
+    this.applyWithdrawalTypeFilter(filters);
     
     return filters;
   };
@@ -56,7 +60,9 @@ export class SearchStore {
     const trimmed: string = this.searchInput.trim();
     
     if (!trimmed) {
-      await tezosTransactionStore.getTransactions({ resetStore: true });
+      const filters: QueryFilters = {};
+      this.applyWithdrawalTypeFilter(filters);
+      tezosTransactionStore.setFilters(filters);
       return;
     }
 
@@ -72,7 +78,7 @@ export class SearchStore {
     }
     
     const filters: Record<string, unknown> = this.buildFilters(trimmed, validation.type);
-    await tezosTransactionStore.getTransactions({ ...filters, resetStore: true });
+    tezosTransactionStore.setFilters(filters);
   };
 
   handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
