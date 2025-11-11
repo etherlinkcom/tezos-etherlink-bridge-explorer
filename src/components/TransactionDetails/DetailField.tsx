@@ -21,7 +21,6 @@ export const DetailField = ({
   value, 
   kind,
   copyable = false, 
-  monospace = false,
   bold = false,
   tooltip
 }: DetailFieldProps) => {
