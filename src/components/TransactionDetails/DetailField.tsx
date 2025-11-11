@@ -21,7 +21,6 @@ export const DetailField = ({
   value, 
   kind,
   copyable = false, 
-  monospace = false,
   bold = false,
   tooltip
 }: DetailFieldProps) => {
@@ -33,9 +32,10 @@ export const DetailField = ({
         {tooltip ? (
           <Tooltip title={tooltip} arrow placement="top">
             <Typography 
-              variant="caption" 
               color="text.secondary" 
               sx={{ 
+                fontSize: '14px',
+                fontFamily: theme.typography.fontFamily,
                 minWidth: '200px',
                 fontWeight: 500,
                 flexShrink: 0,
@@ -47,9 +47,10 @@ export const DetailField = ({
           </Tooltip>
         ) : (
           <Typography 
-            variant="caption" 
             color="text.secondary" 
             sx={{ 
+              fontSize: '14px',
+              fontFamily: theme.typography.fontFamily,
               minWidth: '200px',
               fontWeight: 500,
               flexShrink: 0,
@@ -66,13 +67,12 @@ export const DetailField = ({
               <StatusChip 
                 status={value ?? ''}
                 size="small"
-                sx={{ height: '20px', fontSize: '0.7rem' }}
+                sx={{ height: '20px' }}
               />
             ) : (
               <Typography 
-                variant="caption" 
                 sx={{ 
-                  fontFamily: monospace ? 'monospace' : theme.typography.fontFamily,
+                  fontSize: '14px',
                   fontWeight: bold ? theme.typography.fontWeightBold : theme.typography.fontWeightRegular,
                   wordBreak: 'break-all'
                 }}

@@ -212,6 +212,7 @@ export class TezosTransactionStore {
   private readonly graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
   private readonly AUTO_REFRESH_INTERVAL = 50000; // 5 mins
   private refreshInterval: NodeJS.Timeout | null = null;
+  activeFilters: QueryFilters = {};
   
   constructor() {
     makeAutoObservable(this);
@@ -229,13 +230,15 @@ export class TezosTransactionStore {
     return Math.ceil(this.transactionMap.size / this.pageSize);
   }
 
-  get hasNextPage(): boolean {
-    return this.currentPage < this.totalPages;
-  }
-
-  get hasPreviousPage(): boolean {
-    return this.currentPage > 1;
-  }
+  setFilters = (options: GetTransactionsOptions = {}) => {
+    const { resetStore, autoRefresh, loadingMode, ...filters } = options;
+    this.activeFilters = filters;
+    this.getTransactions({ 
+      ...filters, 
+      resetStore: resetStore ?? true, 
+      loadingMode: loadingMode ?? 'initial' 
+    });
+  };
 
   startAutoRefresh = () => {
     if (this.refreshInterval) return;
@@ -244,11 +247,19 @@ export class TezosTransactionStore {
       if (this.loading) return;
       
       if (this.transactionMap.size === 0) {
-        await this.getTransactions({ resetStore: true ,loadingMode: 'initial' });
+        await this.getTransactions({ 
+          ...this.activeFilters, 
+          resetStore: true, 
+          loadingMode: 'initial' 
+        });
         return;
       }
       if (this.transactions.length > 0) {
-        await this.getTransactions({ autoRefresh: true, loadingMode: 'refresh' });
+        await this.getTransactions({ 
+          ...this.activeFilters, 
+          autoRefresh: true, 
+          loadingMode: 'refresh' 
+        });
       }
       
     }, this.AUTO_REFRESH_INTERVAL);
@@ -263,7 +274,6 @@ export class TezosTransactionStore {
 
   private handleError = (error: unknown, context: string) => {
     const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
-    console.log(`Error in ${context}: ${errorMessage}`);
     this.setError(`${context}: ${errorMessage}`);
   };
 

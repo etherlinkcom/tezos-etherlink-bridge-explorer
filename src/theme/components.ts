@@ -386,6 +386,7 @@ export const components: Components<Theme> = {
         fontWeight: 400,
         lineHeight: "18px",
         letterSpacing: "-0.02em",
+        cursor: 'pointer'
       }),
     },
   },
