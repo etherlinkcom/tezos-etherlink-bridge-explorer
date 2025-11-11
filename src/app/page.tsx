@@ -5,7 +5,7 @@ import { Box, Container } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 import { searchStore } from "@/stores/searchStore";
 import { TransactionTable } from "@/components/TransactionTable/TransactionTable";
-import { SearchBox } from "@/components/SearchBox";
+import { SearchBox } from "@/components/SearchBox/SearchBox";
 import { Layout } from "@/components/layouts/Layout";
 
 export const dynamic = 'force-dynamic';

@@ -5,10 +5,62 @@ export const designTokens = {
   searchBox: {
     height: 72,
     borderRadius: 40,
+    expandedBorderRadius: 25,
     padding: 12,
     gap: 10,
+    shadow: {
+      collapsed: '0px 0px 6px 0px',
+      expanded: '0px 0px 3px 0px',
+      hover: '0px 0px 12px 0px',
+    },
   },
 } as const;
+
+export const getFilterInputStyles = (theme: Theme) => ({
+  color: theme.palette.text.primary,
+  backgroundColor: alpha(theme.palette.background.default, 0.8),
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0px 0px 3px 0px ${theme.palette.primary.main}`,
+  },
+});
+
+export const getFilterTextFieldStyles = (theme: Theme) => ({
+  width: '100%',
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: alpha(theme.palette.background.default, 0.8),
+    '& fieldset': {
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+    },
+    '&:hover fieldset': {
+      borderColor: theme.palette.primary.main,
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0px 0px 3px 0px ${theme.palette.primary.main}`,
+    },
+  },
+});
+
+export const getFilterSelectMenuStyles = (theme: Theme) => ({
+  marginTop: 1,
+  borderRadius: '25px',
+  border: `1px solid ${theme.palette.custom.border.primary}`,
+  boxShadow: `0px 0px 6px 0px ${theme.palette.custom.shadow.primary}`,
+  backgroundColor: theme.palette.background.paper,
+  '& .MuiMenuItem-root': {
+    padding: '10px 16px',
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    },
+  },
+});
 
 export const components: Components<Theme> = {
   MuiButton: {
@@ -112,6 +164,15 @@ export const components: Components<Theme> = {
         },
         "& .MuiOutlinedInput-input": {
           color: theme.palette.text.primary,
+        },
+      }),
+    },
+  },
+  MuiSelect: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        "& .MuiSelect-icon": {
+          color: theme.palette.primary.main,
         },
       }),
     },

@@ -8,6 +8,11 @@ export class SearchStore {
   searchInput = '';
   validationResult: ValidationResult | null = null;
   activeFilters: QueryFilters = {};
+  minAmountInput = '';
+  maxAmountInput = '';
+  minAmountError: string | null = null;
+  maxAmountError: string | null = null;
+  filtersExpanded = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -18,6 +23,61 @@ export class SearchStore {
     this.validationResult = value.trim() ? validateInput(value) : null;
   };
 
+  setMinAmount = (value: string) => {
+    this.minAmountInput = value;
+    this.validateAmountFilters();
+  };
+
+  setMaxAmount = (value: string) => {
+    this.maxAmountInput = value;
+    this.validateAmountFilters();
+  };
+
+  private validateAmountFilters = () => {
+    const minTrimmed = this.minAmountInput.trim();
+    const maxTrimmed = this.maxAmountInput.trim();
+    
+    this.minAmountError = null;
+    this.maxAmountError = null;
+
+    if (!minTrimmed && !maxTrimmed) {
+      return;
+    }
+
+    if (minTrimmed) {
+      const minValue = Number(minTrimmed);
+      if (isNaN(minValue) || !isFinite(minValue)) {
+        this.minAmountError = 'Must be a valid number';
+        return;
+      }
+      if (minValue < 0) {
+        this.minAmountError = 'Must be greater than or equal to 0';
+        return;
+      }
+    }
+
+    if (maxTrimmed) {
+      const maxValue = Number(maxTrimmed);
+      if (isNaN(maxValue) || !isFinite(maxValue)) {
+        this.maxAmountError = 'Must be a valid number';
+        return;
+      }
+      if (maxValue < 0) {
+        this.maxAmountError = 'Must be greater than or equal to 0';
+        return;
+      }
+    }
+
+    if (minTrimmed && maxTrimmed) {
+      const minValue = Number(minTrimmed);
+      const maxValue = Number(maxTrimmed);
+      if (minValue >= maxValue) {
+        this.minAmountError = 'Must be less than max amount';
+        this.maxAmountError = 'Must be greater than min amount';
+      }
+    }
+  };
+
   get withdrawalType(): WithdrawalType {
     if (this.activeFilters.isFastWithdrawal === true) return 'fast';
     if (this.activeFilters.isFastWithdrawal === false) return 'normal';
@@ -25,8 +85,16 @@ export class SearchStore {
   }
 
   get hasActiveFilters() {
-    return Boolean(this.searchInput) || this.withdrawalType !== 'all';
+    return Boolean(this.searchInput) || this.withdrawalType !== 'all' || Boolean(this.minAmountInput) || Boolean(this.maxAmountInput);
   }
+
+  get hasFilterPanelFilters() {
+    return this.withdrawalType !== 'all' || Boolean(this.minAmountInput.trim()) || Boolean(this.maxAmountInput.trim());
+  }
+
+  toggleFiltersExpanded = () => {
+    this.filtersExpanded = !this.filtersExpanded;
+  };
 
   get currentFilters(): QueryFilters {
     const { limit, offset, since, before, ...filters } = this.activeFilters;
@@ -67,6 +135,25 @@ export class SearchStore {
       this.applySearchFilter(filters, trimmed, this.validationResult.type);
     }
     
+    if (!this.minAmountError && !this.maxAmountError) {
+      const minTrimmed = this.minAmountInput.trim();
+      const maxTrimmed = this.maxAmountInput.trim();
+      
+      if (minTrimmed) {
+        const minAmount = Number(minTrimmed);
+        if (!isNaN(minAmount) && isFinite(minAmount) && minAmount >= 0) {
+          filters.minAmount = minAmount;
+        }
+      }
+      
+      if (maxTrimmed) {
+        const maxAmount = Number(maxTrimmed);
+        if (!isNaN(maxAmount) && isFinite(maxAmount) && maxAmount >= 0) {
+          filters.maxAmount = maxAmount;
+        }
+      }
+    }
+    
     return filters;
   };
 
@@ -82,20 +169,28 @@ export class SearchStore {
   executeSearch = async () => {
     const trimmed: string = this.searchInput.trim();
     
-    const validation: ValidationResult = validateInput(trimmed);
-    
-    runInAction(() => {
-      this.validationResult = validation;
-    });
+    if (trimmed) {
+      const validation: ValidationResult = validateInput(trimmed);
+      
+      runInAction(() => {
+        this.validationResult = validation;
+      });
 
-    if (validation.type === 'invalid') return;
+      if (validation.type === 'invalid') return;
 
-    if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
-      return { shouldNavigate: true, hash: trimmed };
+      if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
+        return { shouldNavigate: true, hash: trimmed };
+      }
+    } else {
+      this.validationResult = null;
     }
 
     const filters = this.buildFiltersFromState(this.withdrawalType);
-    
+    this.applyFilters(filters);
+  };
+
+  applyAmountFilters = () => {
+    const filters = this.buildFiltersFromState(this.withdrawalType);
     this.applyFilters(filters);
   };
 
@@ -108,6 +203,10 @@ export class SearchStore {
   clearFilters = () => {
     this.searchInput = '';
     this.validationResult = null;
+    this.minAmountInput = '';
+    this.maxAmountInput = '';
+    this.minAmountError = null;
+    this.maxAmountError = null;
     this.activeFilters = {};
     this.applyFilters({});
   };

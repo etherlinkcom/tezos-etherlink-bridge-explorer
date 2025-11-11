@@ -18,7 +18,9 @@ export interface QueryFilters {
   since?: string;  // ISO timestamp for fetching new transactions
   before?: string; // ISO timestamp for pagination
   tokenSymbol?: string;
-  isFastWithdrawal?: boolean; 
+  isFastWithdrawal?: boolean;
+  minAmount?: number;
+  maxAmount?: number;
 }
 
 interface GetTransactionsOptions extends QueryFilters {
@@ -196,6 +198,9 @@ export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
   private _transactions = observable.array<TezosTransaction>([]);
   
+  minAmount: number | undefined = undefined;
+  maxAmount: number | undefined = undefined;
+  
   loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
   
   get loading() { return this.loadingState !== 'idle'; }
@@ -211,7 +216,7 @@ export class TezosTransactionStore {
   
   private readonly MAX_TRANSACTIONS = 5000;
   private readonly graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
-  private readonly AUTO_REFRESH_INTERVAL = 50000; // 5 mins
+  private readonly AUTO_REFRESH_INTERVAL = 50000; 
   private refreshInterval: NodeJS.Timeout | null = null;
   
   constructor() {
@@ -221,13 +226,30 @@ export class TezosTransactionStore {
     return this._transactions;
   }
 
+  get filteredTransactions(): TezosTransaction[] {
+    if (this.minAmount === undefined && this.maxAmount === undefined) {
+      return this.transactions;
+    }
+    
+    if (this.minAmount !== undefined && this.maxAmount !== undefined && this.minAmount > this.maxAmount) {
+      return [];
+    }
+    
+    return this.filterByAmount(this.transactions, this.minAmount, this.maxAmount);
+  }
+  
+  setAmountFilters = (minAmount?: number, maxAmount?: number) => {
+    this.minAmount = minAmount;
+    this.maxAmount = maxAmount;
+  };
+
   get currentTransactions(): TezosTransaction[] {
     const offset: number = (this.currentPage - 1) * this.pageSize;
-    return this.transactions.slice(offset, offset + this.pageSize);
+    return this.filteredTransactions.slice(offset, offset + this.pageSize);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.transactionMap.size / this.pageSize);
+    return Math.ceil(this.filteredTransactions.length / this.pageSize);
   }
 
   startAutoRefresh = () => {
@@ -468,6 +490,24 @@ export class TezosTransactionStore {
     return response.data.bridge_operation;
   }
 
+  private filterByAmount = (transactions: TezosTransaction[], minAmount?: number, maxAmount?: number): TezosTransaction[] => {
+    if (minAmount === undefined && maxAmount === undefined) {
+      return transactions;
+    }
+
+    return transactions.filter(tx => {
+      if (!tx.sendingAmount) return false;
+      
+      const sendingAmountDecimal = parseFloat(tx.sendingAmount);
+      if (isNaN(sendingAmountDecimal) || sendingAmountDecimal < 0) return false;
+      
+      const meetsMin = minAmount === undefined || sendingAmountDecimal >= minAmount;
+      const meetsMax = maxAmount === undefined || sendingAmountDecimal <= maxAmount;
+      
+      return meetsMin && meetsMax;
+    });
+  };
+
   private mergeTransactions = (transactions: TezosTransaction[]): void => {
     if (this.transactionMap.size === 0) {
       transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
@@ -554,7 +594,10 @@ export class TezosTransactionStore {
     }
     
     try {
-      const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
+      const { minAmount, maxAmount, ...apiFilters } = filters;
+      this.setAmountFilters(minAmount, maxAmount);
+      
+      const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...apiFilters, limit: this.batchSize });
       const allTransactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
       
       const transactionsToAdd: TezosTransaction<GraphQLResponse>[] = allTransactions.filter(tx => 
@@ -593,9 +636,8 @@ export class TezosTransactionStore {
     
     const l1Decimals: number = tokenMetadata?.decimals ?? 0;
     
-    
-    const l1Amount: number = toDecimalValue(Number(l1AmountRaw), l1Decimals);
-    const l2Amount: number = toDecimalValue(Number(l2AmountRaw), l2Decimals);
+    const l1Amount: number = toDecimalValue(l1AmountRaw, l1Decimals);
+    const l2Amount: number = toDecimalValue(l2AmountRaw, l2Decimals);
     
     const l1Block: number | undefined = txData?.l1_transaction?.level;
     

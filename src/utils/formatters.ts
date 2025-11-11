@@ -1,4 +1,18 @@
-export function toDecimalValue(amount: number, decimals: number): number {
+export function toDecimalValue(amount: string | number, decimals: number): number {
+  if (typeof amount === 'string') {
+    const num = Number(amount);
+    if (num <= Number.MAX_SAFE_INTEGER) {
+      return num / Math.pow(10, decimals);
+    }
+    // For numbers beyond safe integer range, use BigInt for precision
+    try {
+      const bigIntAmount = BigInt(amount);
+      const divisor = BigInt(Math.pow(10, decimals));
+      return Number(bigIntAmount) / Number(divisor);
+    } catch {
+      return num / Math.pow(10, decimals);
+    }
+  }
   return amount / Math.pow(10, decimals);
 }
 
