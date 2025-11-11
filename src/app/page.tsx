@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Box, Container } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
+import { searchStore } from "@/stores/searchStore";
 import { TransactionTable } from "@/components/TransactionTable/TransactionTable";
 import { SearchBox } from "@/components/SearchBox";
 import { Layout } from "@/components/layouts/Layout";
@@ -12,7 +13,12 @@ export const dynamic = 'force-dynamic';
 export default function Home() {
   useEffect(() => {
     const initializeStore = async () => {
-      await tezosTransactionStore.getTransactions({ resetStore: true, loadingMode: 'initial' });
+      await tezosTransactionStore.getTransactions({
+        ...searchStore.currentFilters,
+        resetStore: true,
+        loadingMode: 'initial'
+      });
+      
       tezosTransactionStore.startAutoRefresh();
     };
 

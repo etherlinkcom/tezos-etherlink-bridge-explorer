@@ -1,6 +1,7 @@
 import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
+import { searchStore } from "./searchStore";
 
 
 type TransactionType = string;
@@ -212,7 +213,6 @@ export class TezosTransactionStore {
   private readonly graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
   private readonly AUTO_REFRESH_INTERVAL = 50000; // 5 mins
   private refreshInterval: NodeJS.Timeout | null = null;
-  activeFilters: QueryFilters = {};
   
   constructor() {
     makeAutoObservable(this);
@@ -230,25 +230,17 @@ export class TezosTransactionStore {
     return Math.ceil(this.transactionMap.size / this.pageSize);
   }
 
-  setFilters = (options: GetTransactionsOptions = {}) => {
-    const { resetStore, autoRefresh, loadingMode, ...filters } = options;
-    this.activeFilters = filters;
-    this.getTransactions({ 
-      ...filters, 
-      resetStore: resetStore ?? true, 
-      loadingMode: loadingMode ?? 'initial' 
-    });
-  };
-
   startAutoRefresh = () => {
     if (this.refreshInterval) return;
     
     this.refreshInterval = setInterval(async () => {
       if (this.loading) return;
       
+      const filters = searchStore.currentFilters;
+      
       if (this.transactionMap.size === 0) {
         await this.getTransactions({ 
-          ...this.activeFilters, 
+          ...filters, 
           resetStore: true, 
           loadingMode: 'initial' 
         });
@@ -256,12 +248,11 @@ export class TezosTransactionStore {
       }
       if (this.transactions.length > 0) {
         await this.getTransactions({ 
-          ...this.activeFilters, 
+          ...filters, 
           autoRefresh: true, 
           loadingMode: 'refresh' 
         });
       }
-      
     }, this.AUTO_REFRESH_INTERVAL);
   };
 

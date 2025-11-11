@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { tezosTransactionStore, type QueryFilters } from './tezosTransactionStore';
+import { QueryFilters, tezosTransactionStore } from './tezosTransactionStore';
 import { validateInput, type ValidationResult } from '@/utils/validation';
 
 export type WithdrawalType = 'all' | 'normal' | 'fast';
@@ -7,7 +7,7 @@ export type WithdrawalType = 'all' | 'normal' | 'fast';
 export class SearchStore {
   searchInput = '';
   validationResult: ValidationResult | null = null;
-  withdrawalType: WithdrawalType = 'all';
+  activeFilters: QueryFilters = {};
 
   constructor() {
     makeAutoObservable(this);
@@ -18,22 +18,27 @@ export class SearchStore {
     this.validationResult = value.trim() ? validateInput(value) : null;
   };
 
-  setWithdrawalType = (type: WithdrawalType) => {
-    this.withdrawalType = type;
-  };
+  get withdrawalType(): WithdrawalType {
+    if (this.activeFilters.isFastWithdrawal === true) return 'fast';
+    if (this.activeFilters.isFastWithdrawal === false) return 'normal';
+    return 'all';
+  }
 
   get hasActiveFilters() {
     return Boolean(this.searchInput) || this.withdrawalType !== 'all';
   }
 
-  private applyWithdrawalTypeFilter = (filters: QueryFilters): void => {
-    if (this.withdrawalType === 'fast') filters.isFastWithdrawal = true;
-    if (this.withdrawalType === 'normal') filters.isFastWithdrawal = false;
+  get currentFilters(): QueryFilters {
+    const { limit, offset, since, before, ...filters } = this.activeFilters;
+    return filters;
+  }
+
+  private applyWithdrawalFilter = (filters: QueryFilters, withdrawalType: WithdrawalType): void => {
+    if (withdrawalType === 'fast') filters.isFastWithdrawal = true;
+    if (withdrawalType === 'normal') filters.isFastWithdrawal = false;
   };
 
-  buildFilters = (searchValue: string, inputType: string) => {
-    const filters: Record<string, unknown> = {};
-    
+  private applySearchFilter = (filters: QueryFilters, searchValue: string, inputType: string): void => {
     switch (inputType) {
       case 'tezos_address':
       case 'etherlink_address':
@@ -50,23 +55,35 @@ export class SearchStore {
         filters.tokenSymbol = searchValue;
         break;
     }
+  };
+
+  private buildFiltersFromState = (withdrawalType: WithdrawalType): QueryFilters => {
+    const filters: QueryFilters = {};
     
-    this.applyWithdrawalTypeFilter(filters);
+    this.applyWithdrawalFilter(filters, withdrawalType);
+    
+    const trimmed = this.searchInput.trim();
+    if (trimmed && this.validationResult && this.validationResult.type !== 'invalid') {
+      this.applySearchFilter(filters, trimmed, this.validationResult.type);
+    }
     
     return filters;
+  };
+
+  private applyFilters = (filters: QueryFilters) => {
+    this.activeFilters = filters;
+    tezosTransactionStore.getTransactions({
+      ...filters,
+      resetStore: true,
+      loadingMode: 'initial'
+    });
   };
 
   executeSearch = async () => {
     const trimmed: string = this.searchInput.trim();
     
-    if (!trimmed) {
-      const filters: QueryFilters = {};
-      this.applyWithdrawalTypeFilter(filters);
-      tezosTransactionStore.setFilters(filters);
-      return;
-    }
-
     const validation: ValidationResult = validateInput(trimmed);
+    
     runInAction(() => {
       this.validationResult = validation;
     });
@@ -76,21 +93,23 @@ export class SearchStore {
     if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
       return { shouldNavigate: true, hash: trimmed };
     }
+
+    const filters = this.buildFiltersFromState(this.withdrawalType);
     
-    const filters: Record<string, unknown> = this.buildFilters(trimmed, validation.type);
-    tezosTransactionStore.setFilters(filters);
+    this.applyFilters(filters);
   };
 
   handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
-    this.setWithdrawalType(newType);
-    await this.executeSearch();
+    // Rebuild filters from current state with new withdrawal type
+    const filters = this.buildFiltersFromState(newType);
+    this.applyFilters(filters);
   };
 
   clearFilters = () => {
     this.searchInput = '';
-    this.withdrawalType = 'all';
     this.validationResult = null;
-    this.executeSearch();
+    this.activeFilters = {};
+    this.applyFilters({});
   };
 }
 
