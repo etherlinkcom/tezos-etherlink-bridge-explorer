@@ -3,11 +3,10 @@
 import { observer } from 'mobx-react-lite';
 import { 
   Box, 
-  useTheme,
-  Collapse
+  Collapse,
+  useTheme
 } from '@mui/material';
 import { searchStore } from '@/stores/searchStore';
-import { designTokens } from '@/theme/components';
 import { SearchInput } from './SearchInput';
 import { FilterPanel } from './FilterPanel';
 
@@ -19,22 +18,20 @@ export const SearchBox = observer(() => {
       <Box
         sx={{
           background: theme.palette.background.default,
-          boxShadow: searchStore.filtersExpanded
-            ? `${designTokens.searchBox.shadow.expanded} ${theme.palette.custom.shadow.primary}`
-            : `${designTokens.searchBox.shadow.collapsed} ${theme.palette.custom.shadow.primary}`,
-          borderRadius: `${designTokens.searchBox.expandedBorderRadius}px`,
+          borderRadius: '25px',
           border: `1px solid ${theme.palette.custom.border.primary}`,
           opacity: 1,
           position: 'relative',
           width: '100%',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: `${theme.palette.custom.shadow.primary}`,
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
             boxShadow: searchStore.filtersExpanded
-              ? `${designTokens.searchBox.shadow.expanded} ${theme.palette.custom.shadow.primary}`
-              : `${designTokens.searchBox.shadow.hover} ${theme.palette.custom.shadow.secondary}`,
+              ? `0px 0px 3px 0px ${theme.palette.custom.shadow.primary}`
+              : `0px 0px 12px 0px ${theme.palette.custom.shadow.secondary}`,
             transform: searchStore.filtersExpanded ? 'none' : 'translateY(-1px)',
-          }
+          },
         }}
       >
         <SearchInput />

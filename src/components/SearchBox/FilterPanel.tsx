@@ -11,7 +11,6 @@ import {
   alpha,
 } from "@mui/material";
 import { searchStore } from "@/stores/searchStore";
-import { designTokens } from "@/theme/components";
 
 export const FilterPanel = observer(() => {
   const theme = useTheme();
@@ -19,11 +18,8 @@ export const FilterPanel = observer(() => {
   return (
     <Box
       sx={{
-        borderTop: `1px solid ${alpha(
-          theme.palette.custom.border.primary,
-          0.3
-        )}`,
-        padding: `${designTokens.searchBox.padding}px`,
+        borderTop: `1px solid ${alpha(theme.palette.custom.border.primary, 0.3)}`,
+        padding: '12px',
         width: "100%",
         boxSizing: "border-box",
       }}

@@ -18,7 +18,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { searchStore } from '@/stores/searchStore';
 import { getValidationMessage } from '@/utils/validation';
-import { designTokens } from '@/theme/components';
 
 export const SearchInput = observer(() => {
     const theme = useTheme();
@@ -33,16 +32,16 @@ export const SearchInput = observer(() => {
 
     return (
         <Box 
-        sx={{ 
-        padding: '16px',
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 2, 
-        minHeight: designTokens.searchBox.height,
-        width: '100%',
-        boxSizing: 'border-box',
-        position: 'relative'
-        }}
+          sx={{
+            padding: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(2),
+            minHeight: '72px',
+            width: '100%',
+            boxSizing: 'border-box',
+            position: 'relative',
+          }}
         >
         <SearchIcon 
         sx={{ 
