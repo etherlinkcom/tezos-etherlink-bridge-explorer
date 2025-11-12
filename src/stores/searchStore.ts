@@ -10,7 +10,6 @@ export class SearchStore {
   activeFilters: QueryFilters = {};
   minAmountInput = '';
   maxAmountInput = '';
-  filtersExpanded = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -42,10 +41,6 @@ export class SearchStore {
   get hasFilterPanelFilters() {
     return this.withdrawalType !== 'all' || Boolean(this.minAmountInput.trim()) || Boolean(this.maxAmountInput.trim());
   }
-
-  toggleFiltersExpanded = () => {
-    this.filtersExpanded = !this.filtersExpanded;
-  };
 
   get currentFilters(): QueryFilters {
     const { limit, offset, since, before, ...filters } = this.activeFilters;
