@@ -195,7 +195,6 @@ export class SearchStore {
   };
 
   handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
-    // Rebuild filters from current state with new withdrawal type
     const filters = this.buildFiltersFromState(newType);
     this.applyFilters(filters);
   };
