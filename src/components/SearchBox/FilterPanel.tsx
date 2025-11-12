@@ -23,10 +23,7 @@ export const FilterPanel = observer(() => {
           theme.palette.custom.border.primary,
           0.3
         )}`,
-        paddingTop: `${designTokens.searchBox.padding}px`,
-        paddingBottom: `${designTokens.searchBox.padding}px`,
-        paddingLeft: `${designTokens.searchBox.padding}px`,
-        paddingRight: `${designTokens.searchBox.padding}px`,
+        padding: `${designTokens.searchBox.padding}px`,
         width: "100%",
         boxSizing: "border-box",
       }}
@@ -55,8 +52,6 @@ export const FilterPanel = observer(() => {
             displayEmpty
             aria-label="Filter transactions by type"
             MenuProps={{
-              container:
-                typeof window !== "undefined" ? document.body : undefined,
               PaperProps: {
                 sx: getFilterSelectMenuStyles(theme),
               },

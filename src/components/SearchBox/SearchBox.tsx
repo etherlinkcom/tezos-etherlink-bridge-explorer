@@ -26,7 +26,6 @@ export const SearchBox = observer(() => {
           border: `1px solid ${theme.palette.custom.border.primary}`,
           opacity: 1,
           position: 'relative',
-          overflow: 'hidden',
           width: '100%',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
