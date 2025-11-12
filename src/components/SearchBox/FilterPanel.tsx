@@ -15,6 +15,37 @@ import { searchStore } from "@/stores/searchStore";
 export const FilterPanel = observer(() => {
   const theme = useTheme();
 
+  const getAmountError = (amount: string): string => {
+    const trimmed = amount.trim();
+    if (!trimmed) return "";
+    const amountValue = Number(trimmed);
+    if (isNaN(amountValue) || !isFinite(amountValue)) return "Must be a valid number";
+    if (amountValue < 0) return "Must be greater than or equal to 0";
+    return "";
+  };
+
+  const getAmountErrorText = (): string => {
+    const minTrimmed = searchStore.minAmountInput.trim();
+    const maxTrimmed = searchStore.maxAmountInput.trim();
+    
+    if (!minTrimmed && !maxTrimmed) return "";
+    
+    if (minTrimmed) {
+      const minError = getAmountError(minTrimmed);
+      if (minError) return minError;
+    }
+    
+    if (maxTrimmed) {
+      const maxError = getAmountError(maxTrimmed);
+      if (maxError) return maxError;
+    }
+    
+    if (minTrimmed && maxTrimmed && Number(minTrimmed) >= Number(maxTrimmed)) {
+      return "Min amount must be less than max amount";
+    }
+    return "";
+  };
+
   return (
     <Box
       sx={{
@@ -72,8 +103,8 @@ export const FilterPanel = observer(() => {
           placeholder="Min amount"
           aria-label="Minimum amount filter"
           type="number"
-          error={!!searchStore.minAmountError}
-          helperText={searchStore.minAmountError || ''}
+          error={getAmountErrorText() !== ""}
+          helperText={getAmountErrorText()}
           slotProps={{
             htmlInput: {
               step: "any",
@@ -95,8 +126,8 @@ export const FilterPanel = observer(() => {
           placeholder="Max amount"
           aria-label="Maximum amount filter"
           type="number"
-          error={!!searchStore.maxAmountError}
-          helperText={searchStore.maxAmountError || ''}
+          error={getAmountErrorText() !== ""}
+          helperText={getAmountErrorText()}
           slotProps={{
             htmlInput: {
               step: "any",

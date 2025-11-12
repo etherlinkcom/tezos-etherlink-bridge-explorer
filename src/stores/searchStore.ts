@@ -10,8 +10,6 @@ export class SearchStore {
   activeFilters: QueryFilters = {};
   minAmountInput = '';
   maxAmountInput = '';
-  minAmountError: string | null = null;
-  maxAmountError: string | null = null;
   filtersExpanded = false;
 
   constructor() {
@@ -25,57 +23,10 @@ export class SearchStore {
 
   setMinAmount = (value: string) => {
     this.minAmountInput = value;
-    this.validateAmountFilters();
   };
 
   setMaxAmount = (value: string) => {
     this.maxAmountInput = value;
-    this.validateAmountFilters();
-  };
-
-  private validateAmountFilters = () => {
-    const minTrimmed = this.minAmountInput.trim();
-    const maxTrimmed = this.maxAmountInput.trim();
-    
-    this.minAmountError = null;
-    this.maxAmountError = null;
-
-    if (!minTrimmed && !maxTrimmed) {
-      return;
-    }
-
-    if (minTrimmed) {
-      const minValue = Number(minTrimmed);
-      if (isNaN(minValue) || !isFinite(minValue)) {
-        this.minAmountError = 'Must be a valid number';
-        return;
-      }
-      if (minValue < 0) {
-        this.minAmountError = 'Must be greater than or equal to 0';
-        return;
-      }
-    }
-
-    if (maxTrimmed) {
-      const maxValue = Number(maxTrimmed);
-      if (isNaN(maxValue) || !isFinite(maxValue)) {
-        this.maxAmountError = 'Must be a valid number';
-        return;
-      }
-      if (maxValue < 0) {
-        this.maxAmountError = 'Must be greater than or equal to 0';
-        return;
-      }
-    }
-
-    if (minTrimmed && maxTrimmed) {
-      const minValue = Number(minTrimmed);
-      const maxValue = Number(maxTrimmed);
-      if (minValue >= maxValue) {
-        this.minAmountError = 'Must be less than max amount';
-        this.maxAmountError = 'Must be greater than min amount';
-      }
-    }
   };
 
   get withdrawalType(): WithdrawalType {
@@ -135,23 +86,15 @@ export class SearchStore {
       this.applySearchFilter(filters, trimmed, this.validationResult.type);
     }
     
-    if (!this.minAmountError && !this.maxAmountError) {
-      const minTrimmed = this.minAmountInput.trim();
-      const maxTrimmed = this.maxAmountInput.trim();
-      
-      if (minTrimmed) {
-        const minAmount = Number(minTrimmed);
-        if (!isNaN(minAmount) && isFinite(minAmount) && minAmount >= 0) {
-          filters.minAmount = minAmount;
-        }
-      }
-      
-      if (maxTrimmed) {
-        const maxAmount = Number(maxTrimmed);
-        if (!isNaN(maxAmount) && isFinite(maxAmount) && maxAmount >= 0) {
-          filters.maxAmount = maxAmount;
-        }
-      }
+    const minTrimmed = this.minAmountInput.trim();
+    const maxTrimmed = this.maxAmountInput.trim();
+    
+    if (minTrimmed) {
+      filters.minAmount = Number(minTrimmed);
+    }
+    
+    if (maxTrimmed) {
+      filters.maxAmount = Number(maxTrimmed);
     }
     
     return filters;
@@ -204,8 +147,6 @@ export class SearchStore {
     this.validationResult = null;
     this.minAmountInput = '';
     this.maxAmountInput = '';
-    this.minAmountError = null;
-    this.maxAmountError = null;
     this.activeFilters = {};
     this.applyFilters({});
   };
