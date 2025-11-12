@@ -11,7 +11,7 @@ import {
   alpha,
 } from "@mui/material";
 import { searchStore } from "@/stores/searchStore";
-import { designTokens, getFilterInputStyles, getFilterTextFieldStyles, getFilterSelectMenuStyles } from "@/theme/components";
+import { designTokens } from "@/theme/components";
 
 export const FilterPanel = observer(() => {
   const theme = useTheme();
@@ -53,10 +53,10 @@ export const FilterPanel = observer(() => {
             aria-label="Filter transactions by type"
             MenuProps={{
               PaperProps: {
-                sx: getFilterSelectMenuStyles(theme),
+                className: "FilterMenuStyles",            
               },
             }}
-            sx={getFilterInputStyles(theme)}
+            className="FilterInputStyles"
           >
             <MenuItem value="all">All Transactions</MenuItem>
             <MenuItem value="normal">Normal Transactions</MenuItem>
@@ -84,7 +84,7 @@ export const FilterPanel = observer(() => {
               min: 0,
             },
           }}
-          sx={getFilterTextFieldStyles(theme)}
+        className="FilterTextFieldStyles"
         />
 
         <TextField
@@ -107,7 +107,7 @@ export const FilterPanel = observer(() => {
               min: 0,
             },
           }}
-          sx={getFilterTextFieldStyles(theme)}
+        className="FilterTextFieldStyles"
         />
       </Box>
     </Box>
