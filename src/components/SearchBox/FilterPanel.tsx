@@ -114,13 +114,13 @@ export const FilterPanel = observer(() => {
           }}
           placeholder="Min amount"
           aria-label="Minimum amount filter"
-          type="number"
+          type="text"
+          inputMode="numeric"
           error={validateAmountRange() !== ""}
           helperText={validateAmountRange()}
           slotProps={{
             htmlInput: {
-              step: "any",
-              min: 0,
+              pattern: "[0-9.]*",
             },
           }}
         className="FilterTextFieldStyles"
@@ -137,13 +137,13 @@ export const FilterPanel = observer(() => {
           }}
           placeholder="Max amount"
           aria-label="Maximum amount filter"
-          type="number"
+          type="text"
+          inputMode="numeric"
           error={validateAmountRange() !== ""}
           helperText={validateAmountRange()}
           slotProps={{
             htmlInput: {
-              step: "any",
-              min: 0,
+              pattern: "[0-9.]*",
             },
           }}
         className="FilterTextFieldStyles"
