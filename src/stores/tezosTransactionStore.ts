@@ -2,26 +2,13 @@ import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { searchStore } from "./searchStore";
+import { QueryFilters } from "@/types/queryFilters";
 
 
 type TransactionType = string;
 type Confirmation = { txHash: string; chainId: number };
 export type TezosTransactionType = "withdrawal" | "deposit";
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-export interface QueryFilters {
-  limit?: number;
-  offset?: number;
-  txHash?: string;
-  address?: string;
-  level?: number;
-  since?: string;  // ISO timestamp for fetching new transactions
-  before?: string; // ISO timestamp for pagination
-  tokenSymbol?: string;
-  isFastWithdrawal?: boolean;
-  minAmount?: number;
-  maxAmount?: number;
-}
 
 interface GetTransactionsOptions extends QueryFilters {
   resetStore?: boolean;

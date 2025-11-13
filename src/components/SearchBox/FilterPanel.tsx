@@ -10,37 +10,51 @@ import {
   useTheme,
   alpha,
 } from "@mui/material";
-import { searchStore } from "@/stores/searchStore";
+import { searchStore, WithdrawalType } from "@/stores/searchStore";
+import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 
 export const FilterPanel = observer(() => {
   const theme = useTheme();
 
-  const getAmountError = (amount: string): string => {
-    const trimmed = amount.trim();
-    if (!trimmed) return "";
-    const amountValue = Number(trimmed);
+  const applyFiltersAndFetch = async () => {
+    const filters = searchStore.buildFiltersFromState();
+    searchStore.setActiveFilters(filters);
+    await tezosTransactionStore.getTransactions({
+      ...filters,
+      resetStore: true,
+      loadingMode: 'initial'
+    });
+  };
+
+  const handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
+    searchStore.setWithdrawalType(newType);
+    await applyFiltersAndFetch();
+  };
+
+  const validateAmount = (amount: string): string => {
+    const amountValue = Number(amount);
     if (isNaN(amountValue) || !isFinite(amountValue)) return "Must be a valid number";
     if (amountValue < 0) return "Must be greater than or equal to 0";
     return "";
   };
 
-  const getAmountErrorText = (): string => {
-    const minTrimmed = searchStore.minAmountInput.trim();
-    const maxTrimmed = searchStore.maxAmountInput.trim();
+  const validateAmountRange = (): string => {
+    const minAmount = searchStore.minAmount.trim();
+    const maxAmount = searchStore.maxAmount.trim();
     
-    if (!minTrimmed && !maxTrimmed) return "";
+    if (!minAmount && !maxAmount) return "";
     
-    if (minTrimmed) {
-      const minError = getAmountError(minTrimmed);
+    if (minAmount) {
+      const minError = validateAmount(minAmount);
       if (minError) return minError;
     }
     
-    if (maxTrimmed) {
-      const maxError = getAmountError(maxTrimmed);
+    if (maxAmount) {
+      const maxError = validateAmount(maxAmount);
       if (maxError) return maxError;
     }
     
-    if (minTrimmed && maxTrimmed && Number(minTrimmed) >= Number(maxTrimmed)) {
+    if (minAmount && maxAmount && Number(minAmount) >= Number(maxAmount)) {
       return "Min amount must be less than max amount";
     }
     return "";
@@ -71,11 +85,9 @@ export const FilterPanel = observer(() => {
         <FormControl size="small" sx={{ minWidth: "100%" }}>
           <Select
             value={searchStore.withdrawalType}
-            onChange={(e) =>
-              searchStore.handleWithdrawalTypeChange(
-                e.target.value as "all" | "normal" | "fast"
-              )
-            }
+            onChange={async (e) => {
+              await handleWithdrawalTypeChange(e.target.value as WithdrawalType);
+            }}
             displayEmpty
             aria-label="Filter transactions by type"
             MenuProps={{
@@ -93,18 +105,18 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={searchStore.minAmountInput}
+          value={searchStore.minAmount}
           onChange={(e) => searchStore.setMinAmount(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              searchStore.applyAmountFilters();
+            if (e.key === "Enter" && validateAmountRange() === "") {
+              applyFiltersAndFetch();
             }
           }}
           placeholder="Min amount"
           aria-label="Minimum amount filter"
           type="number"
-          error={getAmountErrorText() !== ""}
-          helperText={getAmountErrorText()}
+          error={validateAmountRange() !== ""}
+          helperText={validateAmountRange()}
           slotProps={{
             htmlInput: {
               step: "any",
@@ -116,18 +128,18 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={searchStore.maxAmountInput}
+          value={searchStore.maxAmount}
           onChange={(e) => searchStore.setMaxAmount(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              searchStore.applyAmountFilters();
+            if (e.key === "Enter" && validateAmountRange() === "") {
+              applyFiltersAndFetch();
             }
           }}
           placeholder="Max amount"
           aria-label="Maximum amount filter"
           type="number"
-          error={getAmountErrorText() !== ""}
-          helperText={getAmountErrorText()}
+          error={validateAmountRange() !== ""}
+          helperText={validateAmountRange()}
           slotProps={{
             htmlInput: {
               step: "any",

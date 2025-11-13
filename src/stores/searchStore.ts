@@ -1,5 +1,5 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { QueryFilters, tezosTransactionStore } from './tezosTransactionStore';
+import { makeAutoObservable } from 'mobx';
+import { QueryFilters } from '@/types/queryFilters';
 import { validateInput, type ValidationResult } from '@/utils/validation';
 
 export type WithdrawalType = 'all' | 'normal' | 'fast';
@@ -8,38 +8,44 @@ export class SearchStore {
   searchInput = '';
   validationResult: ValidationResult | null = null;
   activeFilters: QueryFilters = {};
-  minAmountInput = '';
-  maxAmountInput = '';
+  minAmount = '';
+  maxAmount = '';
+  withdrawalType: WithdrawalType = 'all';
 
   constructor() {
     makeAutoObservable(this);
   }
 
   setSearchInput = (value: string) => {
-    this.searchInput = value;
-    this.validationResult = value.trim() ? validateInput(value) : null;
+    this.searchInput = value.trim();
+  };
+
+  setValidationResult = () => {
+    this.validationResult = this.searchInput ? validateInput(this.searchInput) : null;
   };
 
   setMinAmount = (value: string) => {
-    this.minAmountInput = value;
+    this.minAmount = value.trim();
   };
 
   setMaxAmount = (value: string) => {
-    this.maxAmountInput = value;
+    this.maxAmount = value.trim();
   };
 
-  get withdrawalType(): WithdrawalType {
-    if (this.activeFilters.isFastWithdrawal === true) return 'fast';
-    if (this.activeFilters.isFastWithdrawal === false) return 'normal';
-    return 'all';
+  setWithdrawalType = (value: WithdrawalType) => {
+    this.withdrawalType = value;
+  };
+
+  setActiveFilters = (filters: QueryFilters) => {
+    this.activeFilters = filters;
+  };
+
+  get hasFilterPanelFilters() {
+    return this.withdrawalType !== 'all' || Boolean(this.minAmount) || Boolean(this.maxAmount);
   }
 
   get hasActiveFilters() {
-    return Boolean(this.searchInput) || this.withdrawalType !== 'all' || Boolean(this.minAmountInput) || Boolean(this.maxAmountInput);
-  }
-
-  get hasFilterPanelFilters() {
-    return this.withdrawalType !== 'all' || Boolean(this.minAmountInput.trim()) || Boolean(this.maxAmountInput.trim());
+    return Boolean(this.searchInput) || this.hasFilterPanelFilters;
   }
 
   get currentFilters(): QueryFilters {
@@ -47,12 +53,13 @@ export class SearchStore {
     return filters;
   }
 
-  private applyWithdrawalFilter = (filters: QueryFilters, withdrawalType: WithdrawalType): void => {
-    if (withdrawalType === 'fast') filters.isFastWithdrawal = true;
-    if (withdrawalType === 'normal') filters.isFastWithdrawal = false;
+  private setWithdrawalFilter = (filters: QueryFilters): QueryFilters => {
+    if (this.withdrawalType === 'fast') filters.isFastWithdrawal = true;
+    if (this.withdrawalType === 'normal') filters.isFastWithdrawal = false;
+    return filters;
   };
 
-  private applySearchFilter = (filters: QueryFilters, searchValue: string, inputType: string): void => {
+  private setSearchFilter = (filters: QueryFilters, searchValue: string, inputType: string): QueryFilters => {
     switch (inputType) {
       case 'tezos_address':
       case 'etherlink_address':
@@ -69,81 +76,36 @@ export class SearchStore {
         filters.tokenSymbol = searchValue;
         break;
     }
-  };
-
-  private buildFiltersFromState = (withdrawalType: WithdrawalType): QueryFilters => {
-    const filters: QueryFilters = {};
-    
-    this.applyWithdrawalFilter(filters, withdrawalType);
-    
-    const trimmed = this.searchInput.trim();
-    if (trimmed && this.validationResult && this.validationResult.type !== 'invalid') {
-      this.applySearchFilter(filters, trimmed, this.validationResult.type);
-    }
-    
-    const minTrimmed = this.minAmountInput.trim();
-    const maxTrimmed = this.maxAmountInput.trim();
-    
-    if (minTrimmed) {
-      filters.minAmount = Number(minTrimmed);
-    }
-    
-    if (maxTrimmed) {
-      filters.maxAmount = Number(maxTrimmed);
-    }
-    
     return filters;
   };
 
-  private applyFilters = (filters: QueryFilters) => {
-    this.activeFilters = filters;
-    tezosTransactionStore.getTransactions({
-      ...filters,
-      resetStore: true,
-      loadingMode: 'initial'
-    });
-  };
-
-  executeSearch = async () => {
-    const trimmed: string = this.searchInput.trim();
+  buildFiltersFromState = (): QueryFilters => {
+    let filters: QueryFilters = {};
     
-    if (trimmed) {
-      const validation: ValidationResult = validateInput(trimmed);
-      
-      runInAction(() => {
-        this.validationResult = validation;
-      });
-
-      if (validation.type === 'invalid') return;
-
-      if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
-        return { shouldNavigate: true, hash: trimmed };
-      }
-    } else {
-      this.validationResult = null;
+    filters = this.setWithdrawalFilter(filters);
+    
+    if (this.searchInput && this.validationResult && this.validationResult.type !== 'invalid') {
+      filters = this.setSearchFilter(filters, this.searchInput, this.validationResult.type);
     }
-
-    const filters = this.buildFiltersFromState(this.withdrawalType);
-    this.applyFilters(filters);
+    
+    if (this.minAmount) {
+      filters.minAmount = Number(this.minAmount);
+    }
+    
+    if (this.maxAmount) {
+      filters.maxAmount = Number(this.maxAmount);
+    }
+    return filters;
   };
 
-  applyAmountFilters = () => {
-    const filters = this.buildFiltersFromState(this.withdrawalType);
-    this.applyFilters(filters);
-  };
-
-  handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
-    const filters = this.buildFiltersFromState(newType);
-    this.applyFilters(filters);
-  };
-
-  clearFilters = () => {
+  clearFilters = (): QueryFilters => {
     this.searchInput = '';
     this.validationResult = null;
-    this.minAmountInput = '';
-    this.maxAmountInput = '';
+    this.minAmount = '';
+    this.maxAmount = '';
+    this.withdrawalType = 'all';
     this.activeFilters = {};
-    this.applyFilters({});
+    return {};
   };
 }
 

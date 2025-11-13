@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { FilterList as FilterListIcon, Close as CloseIcon } from '@mui/icons-material';
 import { searchStore } from '@/stores/searchStore';
+import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { SearchInput } from './SearchInput';
 import { FilterPanel } from './FilterPanel';
 
@@ -88,7 +89,14 @@ export const SearchBox = observer(() => {
 
             {searchStore.hasActiveFilters && (
               <IconButton
-                onClick={searchStore.clearFilters}
+                onClick={async () => {
+                  const filters = searchStore.clearFilters();
+                  await tezosTransactionStore.getTransactions({
+                    ...filters,
+                    resetStore: true,
+                    loadingMode: 'initial'
+                  });
+                }}
                 size="small"
                 sx={{ 
                   color: theme.palette.text.secondary, 
