@@ -57,6 +57,19 @@ export const components: Components<Theme> = {
           borderRadius: theme.shape.borderRadius,
           boxShadow: `0px 0px 3px 0px ${theme.palette.primary.main}`,
         },
+        "&.FilterMenuStyles": {
+          marginTop: 1,
+          borderRadius: '25px',
+          border: `1px solid ${theme.palette.custom.border.primary}`,
+          boxShadow: `0px 0px 6px 0px ${theme.palette.custom.shadow.primary}`,
+          backgroundColor: theme.palette.background.paper,
+          '& .MuiMenuItem-root': {
+            padding: '10px 16px',
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            },
+          },
+        },
       }),
     },
   },
@@ -104,29 +117,7 @@ export const components: Components<Theme> = {
         "& .MuiOutlinedInput-input": {
           color: theme.palette.text.primary,
         },
-      }),
-    },
-  },
-  MuiSelect: {
-    styleOverrides: {
-      root: ({ theme }) => ({
-        "& .MuiSelect-icon": {
-          color: theme.palette.primary.main,
-        },
-        "& .FilterMenuStyles": {
-          marginTop: 1,
-          borderRadius: '25px',
-          border: `1px solid ${theme.palette.custom.border.primary}`,
-          boxShadow: `0px 0px 6px 0px ${theme.palette.custom.shadow.primary}`,
-          backgroundColor: theme.palette.background.paper,
-          '& .MuiMenuItem-root': {
-            padding: '10px 16px',
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            },
-          },
-        },
-        "& .FilterTextFieldStyles": {
+        "&.FilterTextFieldStyles": {
           width: '100%',
           '& .MuiOutlinedInput-root': {
             backgroundColor: alpha(theme.palette.background.default, 0.8),
@@ -142,7 +133,13 @@ export const components: Components<Theme> = {
             },
           },
         },
-        "& .FilterInputStyles": {
+      })
+    }
+  },
+  MuiSelect: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        "&.FilterInputStyles": {
           color: theme.palette.text.primary,
           backgroundColor: alpha(theme.palette.background.default, 0.8),
           '& .MuiOutlinedInput-notchedOutline': {

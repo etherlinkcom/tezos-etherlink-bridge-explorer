@@ -95,7 +95,7 @@ export const FilterPanel = observer(() => {
                 className: "FilterMenuStyles",            
               },
             }}
-            className="FilterInputStyles"
+            className= "FilterInputStyles"
           >
             <MenuItem value="all">All Transactions</MenuItem>
             <MenuItem value="normal">Normal Transactions</MenuItem>
