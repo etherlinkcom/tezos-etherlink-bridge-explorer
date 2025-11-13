@@ -4,7 +4,7 @@ import { validateInput, type ValidationResult } from '@/utils/validation';
 
 export type WithdrawalType = 'all' | 'normal' | 'fast';
 
-export class SearchStore {
+export class FilterStore {
   searchInput = '';
   validationResult: ValidationResult | null = null;
   activeFilters: QueryFilters = {};
@@ -109,4 +109,4 @@ export class SearchStore {
   };
 }
 
-export const searchStore = new SearchStore();
+export const filterStore = new FilterStore();

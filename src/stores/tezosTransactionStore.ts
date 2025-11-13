@@ -1,7 +1,7 @@
 import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
-import { searchStore } from "./searchStore";
+import { filterStore } from "./filterStore";
 import { QueryFilters } from "@/types/queryFilters";
 
 
@@ -245,7 +245,7 @@ export class TezosTransactionStore {
     this.refreshInterval = setInterval(async () => {
       if (this.loading) return;
       
-      const filters = searchStore.currentFilters;
+      const filters = filterStore.currentFilters;
       
       if (this.transactionMap.size === 0) {
         await this.getTransactions({ 

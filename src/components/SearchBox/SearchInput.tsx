@@ -10,7 +10,7 @@ import {
   Search as SearchIcon
 } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import { searchStore } from '@/stores/searchStore';
+import { filterStore } from '@/stores/filterStore';
 import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
 
 export const SearchInput = observer(() => {
@@ -18,21 +18,21 @@ export const SearchInput = observer(() => {
     const router = useRouter();
 
     const handleSearch = async () => {
-        const input: string = searchStore.searchInput;
+        const input: string = filterStore.searchInput;
         
         if (!input) return;
 
-        if (searchStore.validationResult?.type === 'invalid') {
+        if (filterStore.validationResult?.type === 'invalid') {
             return;
         }
 
-        if (searchStore.validationResult?.type === 'tezos_tx_hash' || searchStore.validationResult?.type === 'etherlink_tx_hash') {
+        if (filterStore.validationResult?.type === 'tezos_tx_hash' || filterStore.validationResult?.type === 'etherlink_tx_hash') {
             router.push(`/transaction/${input}`);
             return;
         }
 
-        const filters = searchStore.buildFiltersFromState();
-        searchStore.setActiveFilters(filters);
+        const filters = filterStore.buildFiltersFromState();
+        filterStore.setActiveFilters(filters);
         await tezosTransactionStore.getTransactions({
             ...filters,
             resetStore: true,
@@ -63,16 +63,16 @@ export const SearchInput = observer(() => {
 
         <TextField
         fullWidth
-        value={searchStore.searchInput}
+        value={filterStore.searchInput}
         onChange={(e) => {
-            searchStore.setSearchInput(e.target.value);
-            searchStore.setValidationResult();
+            filterStore.setSearchInput(e.target.value);
+            filterStore.setValidationResult();
         }}
         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         placeholder="Search for transactions, addresses, blocks, or symbols..."
         aria-label="Search for transactions, addresses, blocks, or symbols"
-        error={searchStore.validationResult?.type === 'invalid'}
-        helperText={searchStore.validationResult?.type === 'invalid' ? searchStore.validationResult.error : ''}
+        error={filterStore.validationResult?.type === 'invalid'}
+        helperText={filterStore.validationResult?.type === 'invalid' ? filterStore.validationResult.error : ''}
         variant="standard"
         slotProps={{
             input: {

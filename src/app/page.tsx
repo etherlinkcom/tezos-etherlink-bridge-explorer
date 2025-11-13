@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Box, Container } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
-import { searchStore } from "@/stores/searchStore";
+import { filterStore } from "@/stores/filterStore";
 import { TransactionTable } from "@/components/TransactionTable/TransactionTable";
 import { SearchBox } from "@/components/SearchBox/SearchBox";
 import { Layout } from "@/components/layouts/Layout";
@@ -14,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     const initializeStore = async () => {
       await tezosTransactionStore.getTransactions({
-        ...searchStore.currentFilters,
+        ...filterStore.currentFilters,
         resetStore: true,
         loadingMode: 'initial'
       });

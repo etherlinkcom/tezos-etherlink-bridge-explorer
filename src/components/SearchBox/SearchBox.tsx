@@ -12,7 +12,7 @@ import {
   IconButton
 } from '@mui/material';
 import { FilterList as FilterListIcon, Close as CloseIcon } from '@mui/icons-material';
-import { searchStore } from '@/stores/searchStore';
+import { filterStore } from '@/stores/filterStore';
 import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { SearchInput } from './SearchInput';
 import { FilterPanel } from './FilterPanel';
@@ -49,7 +49,7 @@ export const SearchBox = observer(() => {
             <Badge 
               variant="dot"
               color="primary"
-              invisible={!searchStore.hasFilterPanelFilters}
+              invisible={!filterStore.hasFilterPanelFilters}
               sx={{
                 '& .MuiBadge-dot': {
                   width: 8,
@@ -87,10 +87,10 @@ export const SearchBox = observer(() => {
               </Button>
             </Badge>
 
-            {searchStore.hasActiveFilters && (
+            {filterStore.hasActiveFilters && (
               <IconButton
                 onClick={async () => {
-                  const filters = searchStore.clearFilters();
+                  const filters = filterStore.clearFilters();
                   await tezosTransactionStore.getTransactions({
                     ...filters,
                     resetStore: true,

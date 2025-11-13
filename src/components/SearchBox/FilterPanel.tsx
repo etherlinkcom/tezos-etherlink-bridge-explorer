@@ -10,15 +10,15 @@ import {
   useTheme,
   alpha,
 } from "@mui/material";
-import { searchStore, WithdrawalType } from "@/stores/searchStore";
+import { filterStore, WithdrawalType } from "@/stores/filterStore";
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 
 export const FilterPanel = observer(() => {
   const theme = useTheme();
 
   const applyFiltersAndFetch = async () => {
-    const filters = searchStore.buildFiltersFromState();
-    searchStore.setActiveFilters(filters);
+    const filters = filterStore.buildFiltersFromState();
+    filterStore.setActiveFilters(filters);
     await tezosTransactionStore.getTransactions({
       ...filters,
       resetStore: true,
@@ -27,7 +27,7 @@ export const FilterPanel = observer(() => {
   };
 
   const handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
-    searchStore.setWithdrawalType(newType);
+    filterStore.setWithdrawalType(newType);
     await applyFiltersAndFetch();
   };
 
@@ -39,8 +39,8 @@ export const FilterPanel = observer(() => {
   };
 
   const validateAmountRange = (): string => {
-    const minAmount = searchStore.minAmount.trim();
-    const maxAmount = searchStore.maxAmount.trim();
+    const minAmount = filterStore.minAmount.trim();
+    const maxAmount = filterStore.maxAmount.trim();
     
     if (!minAmount && !maxAmount) return "";
     
@@ -84,7 +84,7 @@ export const FilterPanel = observer(() => {
       >
         <FormControl size="small" sx={{ minWidth: "100%" }}>
           <Select
-            value={searchStore.withdrawalType}
+            value={filterStore.withdrawalType}
             onChange={async (e) => {
               await handleWithdrawalTypeChange(e.target.value as WithdrawalType);
             }}
@@ -105,8 +105,8 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={searchStore.minAmount}
-          onChange={(e) => searchStore.setMinAmount(e.target.value)}
+          value={filterStore.minAmount}
+          onChange={(e) => filterStore.setMinAmount(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && validateAmountRange() === "") {
               applyFiltersAndFetch();
@@ -128,8 +128,8 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={searchStore.maxAmount}
-          onChange={(e) => searchStore.setMaxAmount(e.target.value)}
+          value={filterStore.maxAmount}
+          onChange={(e) => filterStore.setMaxAmount(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && validateAmountRange() === "") {
               applyFiltersAndFetch();
