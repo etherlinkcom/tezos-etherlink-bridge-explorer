@@ -61,8 +61,7 @@ export class FilterStore {
   }
 
   get currentFilters(): QueryFilters {
-    const { limit, offset, since, before, ...filters } = this.activeFilters;
-    return filters;
+    return this.activeFilters;
   }
 
   private setSearchFilter = (filters: QueryFilters, searchValue: string, inputType: string): QueryFilters => {
