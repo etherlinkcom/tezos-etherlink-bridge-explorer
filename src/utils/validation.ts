@@ -81,7 +81,3 @@ export function validateInput(input: string): ValidationResult {
   
   return { type: 'invalid', error: 'Unrecognized format' };
 }
-
-export function getValidationMessage(result: ValidationResult): string {
-  return result.error || '';
-}
