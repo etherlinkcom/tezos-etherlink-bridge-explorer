@@ -8,8 +8,8 @@ export class FilterStore {
   searchInput = '';
   validationResult: ValidationResult | null = null;
   activeFilters: QueryFilters = {};
-  minAmount = '';
-  maxAmount = '';
+  minAmount: number | undefined = undefined;
+  maxAmount: number | undefined = undefined;
   withdrawalType: WithdrawalType = 'all';
 
   constructor() {
@@ -28,21 +28,13 @@ export class FilterStore {
     this.validationResult = this.searchInputValue ? validateInput(this.searchInputValue) : null;
   };
 
-  setMinAmount = (value: string) => {
-    this.minAmount = value;
+  setMinAmount = (value: number) => {
+    this.minAmount = value === 0 ? undefined : value;
   };
 
-  setMaxAmount = (value: string) => {
-    this.maxAmount = value;
+  setMaxAmount = (value: number) => {
+    this.maxAmount = value === 0 ? undefined : value;
   };
-
-  get minAmountValue(): string {
-    return this.minAmount.trim();
-  }
-
-  get maxAmountValue(): string {
-    return this.maxAmount.trim();
-  }
 
   setWithdrawalType = (value: WithdrawalType) => {
     this.withdrawalType = value;
@@ -53,7 +45,7 @@ export class FilterStore {
   };
 
   get hasFilterPanelFilters() {
-    return this.withdrawalType !== 'all' || Boolean(this.minAmountValue) || Boolean(this.maxAmountValue);
+    return this.withdrawalType !== 'all' || this.minAmount || this.maxAmount;
   }
 
   get hasActiveFilters() {
@@ -100,21 +92,17 @@ export class FilterStore {
       filters = this.setSearchFilter(filters, this.searchInputValue, this.validationResult.type);
     }
     
-    if (this.minAmountValue) {
-      filters.minAmount = Number(this.minAmountValue);
-    }
+    if (this.minAmount) filters.minAmount = this.minAmount;
+    if (this.maxAmount) filters.maxAmount = this.maxAmount;
     
-    if (this.maxAmountValue) {
-      filters.maxAmount = Number(this.maxAmountValue);
-    }
     return filters;
   };
 
   clearFilters = (): QueryFilters => {
     this.searchInput = '';
     this.validationResult = null;
-    this.minAmount = '';
-    this.maxAmount = '';
+    this.minAmount = undefined;
+    this.maxAmount = undefined;
     this.withdrawalType = 'all';
     this.activeFilters = {};
     return {};

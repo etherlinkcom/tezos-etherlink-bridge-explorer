@@ -211,8 +211,8 @@ export class TezosTransactionStore {
   }
 
   get filteredTransactions(): TezosTransaction[] {
-    const minAmount = filterStore.minAmountValue ? Number(filterStore.minAmountValue) : undefined;
-    const maxAmount = filterStore.maxAmountValue ? Number(filterStore.maxAmountValue) : undefined;
+    const minAmount: number | undefined = filterStore.minAmount;
+    const maxAmount: number | undefined = filterStore.maxAmount;
     
     if (minAmount === undefined && maxAmount === undefined) {
       return this.transactions;

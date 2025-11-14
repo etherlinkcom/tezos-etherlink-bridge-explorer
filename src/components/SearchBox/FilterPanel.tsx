@@ -12,9 +12,55 @@ import {
 } from "@mui/material";
 import { filterStore, WithdrawalType } from "@/stores/filterStore";
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
+import { useState } from "react";
 
 export const FilterPanel = observer(() => {
   const theme = useTheme();
+
+  const [minHelperText, setMinHelperText] = useState<string | undefined>(undefined);
+  const [maxHelperText, setMaxHelperText] = useState<string | undefined>(undefined);
+
+  const setMinAmount = (value: string) => {
+    try {
+      const numberValue: number = Number(value.trim());
+      const helperMessage: string | null = validateAmount(numberValue);
+      if (helperMessage) {
+        setMinHelperText(helperMessage);
+        return;
+      }
+      if (filterStore.maxAmount && numberValue >= filterStore.maxAmount) {
+        setMinHelperText("Min amount must be less than max amount");
+        return;
+      }
+      filterStore.setMinAmount(numberValue);
+      setMinHelperText(undefined);
+    } catch (error) {
+      setMinHelperText("Invalid amount");
+    }
+  }
+
+  const setMaxAmount = (value: string) => {
+    try {
+      const numberValue: number = Number(value.trim());
+      const helperMessage: string | null = validateAmount(numberValue);
+      if (helperMessage) {
+        setMaxHelperText(helperMessage);
+        return;
+      }
+      console.log("1");
+      if (filterStore.minAmount && numberValue <= filterStore.minAmount) {
+        setMaxHelperText("Max amount must be greater than min amount");
+        return;
+      }
+      console.log(numberValue);
+      filterStore.setMaxAmount(numberValue);
+      console.log("3");
+      setMaxHelperText(undefined);
+    } catch (error) {
+      console.log(error);
+      setMaxHelperText("Invalid amount");
+    }
+  }
 
   const setFiltersAndFetch = async () => {
     const filters = filterStore.buildFiltersFromState();
@@ -26,36 +72,11 @@ export const FilterPanel = observer(() => {
     });
   };
 
-  const validateAmount = (amount: string): string => {
-    const amountValue = Number(amount);
-    if (isNaN(amountValue) || !isFinite(amountValue)) return "Must be a valid number";
-    if (amountValue < 0) return "Must be greater than or equal to 0";
-    return "";
+  const validateAmount = (amount: number): string | null => {
+    if (isNaN(amount) || !isFinite(amount)) return "Must be a valid number";
+    if (amount < 0) return "Must be greater than or equal to 0";
+    return null;
   };
-
-  const validateAmountRange = (): string => {
-    const minAmount = filterStore.minAmountValue;
-    const maxAmount = filterStore.maxAmountValue;
-    
-    if (!minAmount && !maxAmount) return "";
-    
-    if (minAmount) {
-      const minError = validateAmount(minAmount);
-      if (minError) return minError;
-    }
-    
-    if (maxAmount) {
-      const maxError = validateAmount(maxAmount);
-      if (maxError) return maxError;
-    }
-    
-    if (minAmount && maxAmount && Number(minAmount) >= Number(maxAmount)) {
-      return "Min amount must be less than max amount";
-    }
-    return "";
-  };
-
-  const amountValidationMessage = validateAmountRange();
 
   return (
     <Box
@@ -103,10 +124,9 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={filterStore.minAmount}
-          onChange={(e) => filterStore.setMinAmount(e.target.value)}
+          onChange={(e) => setMinAmount(e.target.value)}
           onKeyDown={async (e) => {
-            if (e.key === "Enter" && amountValidationMessage === "") {
+            if (e.key === "Enter" && minHelperText) {
               await setFiltersAndFetch();
             }
           }}
@@ -114,8 +134,8 @@ export const FilterPanel = observer(() => {
           aria-label="Minimum amount filter"
           type="text"
           inputMode="numeric"
-          error={amountValidationMessage !== ""}
-          helperText={amountValidationMessage}
+          error={!!minHelperText}
+          helperText={minHelperText}
           slotProps={{
             htmlInput: {
               pattern: "[0-9.]*",
@@ -126,10 +146,9 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={filterStore.maxAmount}
-          onChange={(e) => filterStore.setMaxAmount(e.target.value)}
+          onChange={(e) => setMaxAmount(e.target.value)}
           onKeyDown={async (e) => {
-            if (e.key === "Enter" && amountValidationMessage === "") {
+            if (e.key === "Enter" && maxHelperText) {
               await setFiltersAndFetch();
             }
           }}
@@ -137,8 +156,8 @@ export const FilterPanel = observer(() => {
           aria-label="Maximum amount filter"
           type="text"
           inputMode="numeric"
-          error={amountValidationMessage !== ""}
-          helperText={amountValidationMessage}
+          error={!!maxHelperText}
+          helperText={maxHelperText}
           slotProps={{
             htmlInput: {
               pattern: "[0-9.]*",
