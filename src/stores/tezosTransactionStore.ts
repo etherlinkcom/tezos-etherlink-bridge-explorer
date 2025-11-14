@@ -185,9 +185,6 @@ export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
   private _transactions = observable.array<TezosTransaction>([]);
   
-  minAmount: number | undefined = undefined;
-  maxAmount: number | undefined = undefined;
-  
   loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
   
   get loading() { return this.loadingState !== 'idle'; }
@@ -214,21 +211,15 @@ export class TezosTransactionStore {
   }
 
   get filteredTransactions(): TezosTransaction[] {
-    if (this.minAmount === undefined && this.maxAmount === undefined) {
+    const minAmount = filterStore.minAmountValue ? Number(filterStore.minAmountValue) : undefined;
+    const maxAmount = filterStore.maxAmountValue ? Number(filterStore.maxAmountValue) : undefined;
+    
+    if (minAmount === undefined && maxAmount === undefined) {
       return this.transactions;
     }
     
-    if (this.minAmount !== undefined && this.maxAmount !== undefined && this.minAmount > this.maxAmount) {
-      return [];
-    }
-    
-    return this.filterByAmount(this.transactions, this.minAmount, this.maxAmount);
+    return this.filterByAmount(this.transactions, minAmount, maxAmount);
   }
-  
-  setAmountFilters = (minAmount?: number, maxAmount?: number) => {
-    this.minAmount = minAmount;
-    this.maxAmount = maxAmount;
-  };
 
   get currentTransactions(): TezosTransaction[] {
     const offset: number = (this.currentPage - 1) * this.pageSize;
@@ -478,10 +469,6 @@ export class TezosTransactionStore {
   }
 
   private filterByAmount = (transactions: TezosTransaction[], minAmount?: number, maxAmount?: number): TezosTransaction[] => {
-    if (minAmount === undefined && maxAmount === undefined) {
-      return transactions;
-    }
-
     return transactions.filter(tx => {
       if (!tx.sendingAmount) return false;
       
@@ -581,10 +568,7 @@ export class TezosTransactionStore {
     }
     
     try {
-      const { minAmount, maxAmount, ...apiFilters } = filters;
-      this.setAmountFilters(minAmount, maxAmount);
-      
-      const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...apiFilters, limit: this.batchSize });
+      const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
       const allTransactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
       
       const transactionsToAdd: TezosTransaction<GraphQLResponse>[] = allTransactions.filter(tx => 
