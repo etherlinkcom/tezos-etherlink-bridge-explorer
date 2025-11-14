@@ -17,20 +17,32 @@ export class FilterStore {
   }
 
   setSearchInput = (value: string) => {
-    this.searchInput = value.trim();
+    this.searchInput = value;
   };
 
+  get searchInputValue(): string {
+    return this.searchInput.trim();
+  }
+
   setValidationResult = () => {
-    this.validationResult = this.searchInput ? validateInput(this.searchInput) : null;
+    this.validationResult = this.searchInputValue ? validateInput(this.searchInputValue) : null;
   };
 
   setMinAmount = (value: string) => {
-    this.minAmount = value.trim();
+    this.minAmount = value;
   };
 
   setMaxAmount = (value: string) => {
-    this.maxAmount = value.trim();
+    this.maxAmount = value;
   };
+
+  get minAmountValue(): string {
+    return this.minAmount.trim();
+  }
+
+  get maxAmountValue(): string {
+    return this.maxAmount.trim();
+  }
 
   setWithdrawalType = (value: WithdrawalType) => {
     this.withdrawalType = value;
@@ -41,11 +53,11 @@ export class FilterStore {
   };
 
   get hasFilterPanelFilters() {
-    return this.withdrawalType !== 'all' || Boolean(this.minAmount) || Boolean(this.maxAmount);
+    return this.withdrawalType !== 'all' || Boolean(this.minAmountValue) || Boolean(this.maxAmountValue);
   }
 
   get hasActiveFilters() {
-    return Boolean(this.searchInput) || this.hasFilterPanelFilters;
+    return Boolean(this.searchInputValue) || this.hasFilterPanelFilters;
   }
 
   get currentFilters(): QueryFilters {
@@ -84,16 +96,16 @@ export class FilterStore {
     
     filters = this.setWithdrawalFilter(filters);
     
-    if (this.searchInput && this.validationResult && this.validationResult.type !== 'invalid') {
-      filters = this.setSearchFilter(filters, this.searchInput, this.validationResult.type);
+    if (this.searchInputValue && this.validationResult && this.validationResult.type !== 'invalid') {
+      filters = this.setSearchFilter(filters, this.searchInputValue, this.validationResult.type);
     }
     
-    if (this.minAmount) {
-      filters.minAmount = Number(this.minAmount);
+    if (this.minAmountValue) {
+      filters.minAmount = Number(this.minAmountValue);
     }
     
-    if (this.maxAmount) {
-      filters.maxAmount = Number(this.maxAmount);
+    if (this.maxAmountValue) {
+      filters.maxAmount = Number(this.maxAmountValue);
     }
     return filters;
   };

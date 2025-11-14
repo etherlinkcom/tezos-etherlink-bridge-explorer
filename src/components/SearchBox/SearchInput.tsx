@@ -18,7 +18,7 @@ export const SearchInput = observer(() => {
     const router = useRouter();
 
     const handleSearch = async () => {
-        const input: string = filterStore.searchInput;
+        const input: string = filterStore.searchInputValue;
         
         if (!input) return;
 

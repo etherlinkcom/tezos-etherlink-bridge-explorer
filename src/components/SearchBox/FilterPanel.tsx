@@ -16,7 +16,7 @@ import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 export const FilterPanel = observer(() => {
   const theme = useTheme();
 
-  const applyFiltersAndFetch = async () => {
+  const setFiltersAndFetch = async () => {
     const filters = filterStore.buildFiltersFromState();
     filterStore.setActiveFilters(filters);
     await tezosTransactionStore.getTransactions({
@@ -24,11 +24,6 @@ export const FilterPanel = observer(() => {
       resetStore: true,
       loadingMode: 'initial'
     });
-  };
-
-  const handleWithdrawalTypeChange = async (newType: WithdrawalType) => {
-    filterStore.setWithdrawalType(newType);
-    await applyFiltersAndFetch();
   };
 
   const validateAmount = (amount: string): string => {
@@ -39,8 +34,8 @@ export const FilterPanel = observer(() => {
   };
 
   const validateAmountRange = (): string => {
-    const minAmount = filterStore.minAmount.trim();
-    const maxAmount = filterStore.maxAmount.trim();
+    const minAmount = filterStore.minAmountValue;
+    const maxAmount = filterStore.maxAmountValue;
     
     if (!minAmount && !maxAmount) return "";
     
@@ -59,6 +54,8 @@ export const FilterPanel = observer(() => {
     }
     return "";
   };
+
+  const amountValidationMessage = validateAmountRange();
 
   return (
     <Box
@@ -86,7 +83,8 @@ export const FilterPanel = observer(() => {
           <Select
             value={filterStore.withdrawalType}
             onChange={async (e) => {
-              await handleWithdrawalTypeChange(e.target.value as WithdrawalType);
+              filterStore.setWithdrawalType(e.target.value as WithdrawalType);
+              await setFiltersAndFetch();
             }}
             displayEmpty
             aria-label="Filter transactions by type"
@@ -107,17 +105,17 @@ export const FilterPanel = observer(() => {
           size="small"
           value={filterStore.minAmount}
           onChange={(e) => filterStore.setMinAmount(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && validateAmountRange() === "") {
-              applyFiltersAndFetch();
+          onKeyDown={async (e) => {
+            if (e.key === "Enter" && amountValidationMessage === "") {
+              await setFiltersAndFetch();
             }
           }}
           placeholder="Min amount"
           aria-label="Minimum amount filter"
           type="text"
           inputMode="numeric"
-          error={validateAmountRange() !== ""}
-          helperText={validateAmountRange()}
+          error={amountValidationMessage !== ""}
+          helperText={amountValidationMessage}
           slotProps={{
             htmlInput: {
               pattern: "[0-9.]*",
@@ -130,17 +128,17 @@ export const FilterPanel = observer(() => {
           size="small"
           value={filterStore.maxAmount}
           onChange={(e) => filterStore.setMaxAmount(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && validateAmountRange() === "") {
-              applyFiltersAndFetch();
+          onKeyDown={async (e) => {
+            if (e.key === "Enter" && amountValidationMessage === "") {
+              await setFiltersAndFetch();
             }
           }}
           placeholder="Max amount"
           aria-label="Maximum amount filter"
           type="text"
           inputMode="numeric"
-          error={validateAmountRange() !== ""}
-          helperText={validateAmountRange()}
+          error={amountValidationMessage !== ""}
+          helperText={amountValidationMessage}
           slotProps={{
             htmlInput: {
               pattern: "[0-9.]*",
