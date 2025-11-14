@@ -57,12 +57,6 @@ export class FilterStore {
     return filters;
   }
 
-  private setWithdrawalFilter = (filters: QueryFilters): QueryFilters => {
-    if (this.withdrawalType === 'fast') filters.isFastWithdrawal = true;
-    if (this.withdrawalType === 'normal') filters.isFastWithdrawal = false;
-    return filters;
-  };
-
   private setSearchFilter = (filters: QueryFilters, searchValue: string, inputType: string): QueryFilters => {
     switch (inputType) {
       case 'tezos_address':
@@ -86,7 +80,8 @@ export class FilterStore {
   buildFiltersFromState = (): QueryFilters => {
     let filters: QueryFilters = {};
     
-    filters = this.setWithdrawalFilter(filters);
+    if (this.withdrawalType === 'fast') filters.isFastWithdrawal = true;
+    if (this.withdrawalType === 'normal') filters.isFastWithdrawal = false;
     
     if (this.searchInputValue && this.validationResult && this.validationResult.type !== 'invalid') {
       filters = this.setSearchFilter(filters, this.searchInputValue, this.validationResult.type);
