@@ -1,19 +1,13 @@
 export function toDecimalValue(amount: string | number, decimals: number): number {
-  if (typeof amount === 'string') {
-    const num = Number(amount);
-    if (num <= Number.MAX_SAFE_INTEGER) {
-      return num / Math.pow(10, decimals);
-    }
-    // For numbers beyond safe integer range, use BigInt for precision
-    try {
-      const bigIntAmount = BigInt(amount);
-      const divisor = BigInt(Math.pow(10, decimals));
-      return Number(bigIntAmount) / Number(divisor);
-    } catch {
-      return num / Math.pow(10, decimals);
-    }
+  let formatted = typeof amount === 'string' ? amount : amount.toString();
+  
+  if (formatted.length > decimals) {
+    formatted = formatted.substring(0, formatted.length - decimals) + '.' + formatted.substring(formatted.length - decimals);
+  } else {
+    formatted = '0.' + '0'.repeat(decimals - formatted.length) + formatted;
   }
-  return amount / Math.pow(10, decimals);
+  
+  return Number(formatted);
 }
 
 export const formatEtherlinkValue = (value: string | undefined): string => {
