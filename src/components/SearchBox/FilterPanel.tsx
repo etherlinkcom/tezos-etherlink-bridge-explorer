@@ -22,6 +22,7 @@ export const FilterPanel = observer(() => {
 
   const setMinAmount = (value: string) => {
     try {
+      filterStore.setMinRawAmount(value);
       const numberValue: number = Number(value.trim());
       const helperMessage: string | null = validateAmount(numberValue);
       if (helperMessage) {
@@ -34,30 +35,27 @@ export const FilterPanel = observer(() => {
       }
       filterStore.setMinAmount(numberValue);
       setMinHelperText(undefined);
-    } catch (error) {
+    } catch {
       setMinHelperText("Invalid amount");
     }
   }
 
   const setMaxAmount = (value: string) => {
     try {
+      filterStore.setMaxRawAmount(value);
       const numberValue: number = Number(value.trim());
       const helperMessage: string | null = validateAmount(numberValue);
       if (helperMessage) {
         setMaxHelperText(helperMessage);
         return;
       }
-      console.log("1");
       if (filterStore.minAmount && numberValue <= filterStore.minAmount) {
         setMaxHelperText("Max amount must be greater than min amount");
         return;
       }
-      console.log(numberValue);
       filterStore.setMaxAmount(numberValue);
-      console.log("3");
       setMaxHelperText(undefined);
-    } catch (error) {
-      console.log(error);
+    } catch {
       setMaxHelperText("Invalid amount");
     }
   }
@@ -124,7 +122,9 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          onChange={(e) => setMinAmount(e.target.value)}
+          value={filterStore.minRawAmount}
+          onChange={(e) => 
+            setMinAmount(e.target.value)}
           onKeyDown={async (e) => {
             if (e.key === "Enter" && minHelperText) {
               await setFiltersAndFetch();
@@ -146,6 +146,7 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
+          value={filterStore.maxRawAmount}
           onChange={(e) => setMaxAmount(e.target.value)}
           onKeyDown={async (e) => {
             if (e.key === "Enter" && maxHelperText) {

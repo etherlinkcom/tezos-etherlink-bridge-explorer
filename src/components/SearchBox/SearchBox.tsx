@@ -21,6 +21,15 @@ export const SearchBox = observer(() => {
   const theme = useTheme();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
+  const clearFilters = async () => {
+    filterStore.clearFilters();
+    await tezosTransactionStore.getTransactions({
+      ...filterStore.currentFilters,
+      resetStore: true,
+      loadingMode: 'initial'
+    });  
+  };
+
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
       <Box
@@ -89,14 +98,7 @@ export const SearchBox = observer(() => {
 
             {filterStore.hasActiveFilters && (
               <IconButton
-                onClick={async () => {
-                  const filters = filterStore.clearFilters();
-                  await tezosTransactionStore.getTransactions({
-                    ...filters,
-                    resetStore: true,
-                    loadingMode: 'initial'
-                  });
-                }}
+                onClick={clearFilters}
                 size="small"
                 sx={{ 
                   color: theme.palette.text.secondary, 

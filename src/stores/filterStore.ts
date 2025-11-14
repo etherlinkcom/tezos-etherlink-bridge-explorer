@@ -9,7 +9,9 @@ export class FilterStore {
   validationResult: ValidationResult | null = null;
   activeFilters: QueryFilters = {};
   minAmount: number | undefined = undefined;
+  minRawAmount: string | undefined = undefined;
   maxAmount: number | undefined = undefined;
+  maxRawAmount: string | undefined = undefined;
   withdrawalType: WithdrawalType = 'all';
 
   constructor() {
@@ -42,6 +44,12 @@ export class FilterStore {
 
   setActiveFilters = (filters: QueryFilters) => {
     this.activeFilters = filters;
+  };
+  setMinRawAmount = (value: string) => {
+    this.minRawAmount = value;
+  };
+  setMaxRawAmount = (value: string) => {
+    this.maxRawAmount = value;
   };
 
   get hasFilterPanelFilters() {
@@ -93,14 +101,15 @@ export class FilterStore {
     return filters;
   };
 
-  clearFilters = (): QueryFilters => {
+  clearFilters = (): void => {
     this.searchInput = '';
     this.validationResult = null;
     this.minAmount = undefined;
     this.maxAmount = undefined;
+    this.minRawAmount = '';
+    this.maxRawAmount = '';
     this.withdrawalType = 'all';
     this.activeFilters = {};
-    return {};
   };
 }
 
