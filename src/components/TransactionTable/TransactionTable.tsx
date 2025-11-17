@@ -10,6 +10,7 @@ import {
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { TransactionsTableContent } from '@/components/TransactionTable/TransactionsTableContent';
 import { Pagination } from '@/components/Pagination';
+import { TransactionCards } from './TransactionCards';
 
 export const TransactionTable = observer(() => {
   const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
@@ -55,8 +56,8 @@ export const TransactionTable = observer(() => {
 
       {!loadingInitial && transactions.length > 0 && (
         <>
-          <TransactionsTableContent transactions={transactions} />
-          
+          <TransactionsTableContent transactions={transactions} sx={{ display: { xs: 'none', lg: 'block' } }} />
+          <TransactionCards transactions={transactions} sx={{ display: { xs: 'flex', lg: 'none' } }} />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
             Total transactions on this page: {transactions.length}
           </Typography>

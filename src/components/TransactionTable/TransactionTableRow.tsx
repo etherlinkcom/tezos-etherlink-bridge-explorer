@@ -1,38 +1,23 @@
 'use client';
 
-import { memo } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
 import { TableRow, TableCell, Typography, Chip, Tooltip } from '@mui/material';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
-import { formatTimeAgo, formatAmount, formatEtherlinkValue } from '@/utils/formatters';
-import { validateInput, ValidationResult } from '@/utils/validation';
+import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
 
-export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ transaction }) => {
+export const TransactionTableRow = observer<{ transaction: TezosTransaction }>(({ transaction }) => {
   const router = useRouter();
-
-  const handleTransactionClick = (hash: string) => {
-    const validation: ValidationResult = validateInput(hash);
-    if (validation.type === 'tezos_tx_hash' || validation.type === 'etherlink_tx_hash') {
-      router.push(`/transaction/${hash}`);
-    }
-  };
-  const sourceHash: string | undefined = transaction.type === 'deposit' ? transaction.l1TxHash : transaction.l2TxHash;
-  const destHash: string | undefined = transaction.type === 'deposit' ? transaction.l2TxHash : transaction.l1TxHash;
-
-  const fromAccount: string = transaction.type === 'deposit' 
-    ? (transaction.input.l1_account || '-')
-    : formatEtherlinkValue(transaction.input.l2_account);
-  const toAccount: string = transaction.type === 'deposit'
-    ? formatEtherlinkValue(transaction.input.l2_account)
-    : (transaction.input.l1_account || '-');
+  const transactionData: TransactionData = getTransactionData(transaction);
+  const handleTransactionClick = createTransactionClickHandler(router);
   
   return (
     <TableRow 
       key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`} 
       hover
-      onClick={() => (sourceHash || destHash) && handleTransactionClick(sourceHash || destHash)}
+      onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{ cursor:'pointer' }}>
         
       <TableCell>
@@ -40,77 +25,76 @@ export const TransactionTableRow = memo<{ transaction: TezosTransaction }>(({ tr
       </TableCell>
       
       <TableCell>
-        <Tooltip title={sourceHash || '-'}>
+        <Tooltip title={transactionData.sourceHash || '-'}>
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
               maxWidth: '140px',
             }}
           >
-            {sourceHash || '-'}
+            {transactionData.sourceHash || '-'}
           </EllipsisBox>
         </Tooltip>
       </TableCell>  
 
       <TableCell>
-        <Tooltip title={fromAccount || '-'}>
+        <Tooltip title={transactionData.fromAccount || '-'}>
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
               maxWidth: '100px' 
             }}
           >
-            {fromAccount || '-'}
+            {transactionData.fromAccount || '-'}
           </EllipsisBox>
         </Tooltip>
       </TableCell>
       
       <TableCell>
-        <Tooltip title={toAccount || '-'}>
+        <Tooltip title={transactionData.toAccount || '-'}>
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
               maxWidth: '100px' 
             }}
           >
-            {toAccount || '-'}
+            {transactionData.toAccount || '-'}
           </EllipsisBox>
         </Tooltip>
       </TableCell>
       
       <TableCell>
-        <Tooltip title={`${transaction.sendingAmount} ${transaction.symbol}`}>
+        <Tooltip title={`${transactionData.formattedAmount} ${transaction.symbol}`}>
           <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }}>
-            {formatAmount(transaction.sendingAmount, transaction.symbol)}
+            {transactionData.formattedAmount}
           </Typography>
         </Tooltip>
       </TableCell>
       
       <TableCell>
-        <Tooltip title={destHash || '-'}>
+        <Tooltip title={transactionData.destHash || '-'}>
           <EllipsisBox 
             sx={{ 
               fontFamily: 'monospace', 
               maxWidth: '140px',
             }}
           >
-            {destHash || '-'}
+            {transactionData.destHash || '-'}
           </EllipsisBox>
         </Tooltip>
       </TableCell>
       
       <TableCell>
         <Chip 
-          label={transaction.type === 'deposit' ? 'Deposit' : 'Withdrawal'} 
+          label={transactionData.typeLabel} 
           size="small" 
           variant="filled"
-          color={transaction.type === 'withdrawal' ? 'primary' : 'default'}
         />
       </TableCell>
       
       <TableCell>
         <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }}>
-          {formatTimeAgo(new Date(transaction.submittedDate))}
+          {transactionData.formattedTimeAgo}
         </Typography>
       </TableCell>
     </TableRow>
