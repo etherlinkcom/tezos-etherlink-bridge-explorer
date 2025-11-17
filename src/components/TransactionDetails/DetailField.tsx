@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
+import { EllipsisBox } from '../shared/EllipsisBox';
 
 type FieldKind = 'hash' | 'address' | 'status' | 'text' | 'block';
 
@@ -51,15 +52,15 @@ export const DetailField = ({
                 sx={{ height: '20px' }}
               />
             ) : (
-              <Typography 
+              <EllipsisBox 
                 sx={{ 
                   fontSize: '14px',
                   fontWeight: bold ? theme.typography.fontWeightBold : theme.typography.fontWeightRegular,
-                  wordBreak: 'break-all'
+                  maxWidth: { xs: '100%', md: '450px', lg: '100%' }
                 }}
               >
                 {value ?? ''}
-              </Typography>
+              </EllipsisBox>
             )}
           </Box>
           
