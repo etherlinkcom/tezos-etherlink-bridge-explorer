@@ -13,9 +13,7 @@ interface TransactionsTableContentProps {
 export const TransactionsTableContent = observer<TransactionsTableContentProps>(({ transactions, sx }) => {
   return (
     <TableContainer component={Paper} className="table-card" sx={{ overflowX: 'auto', ...sx }}>
-      <Table sx={{ ...sx,
-        minWidth: 1200,
-      }}>
+      <Table>
         <TableHead>
           <TableRow sx={{ height: '48px' }}>
             <TableCell sx={{ width: '80px' }}>Status</TableCell>
