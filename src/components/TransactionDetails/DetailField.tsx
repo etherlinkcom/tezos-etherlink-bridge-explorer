@@ -43,7 +43,7 @@ export const DetailField = ({
             {label}:
           </Typography>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', md: 'auto' }}}>
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
             {kind === 'status' ? (
               <StatusChip 
