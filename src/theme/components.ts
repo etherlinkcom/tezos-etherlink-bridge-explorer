@@ -80,11 +80,6 @@ export const components: Components<Theme> = {
         boxShadow: `0px 0px 6px 0px ${theme.palette.custom.shadow.primary}`,
         border: "none",
         borderRadius: "25px",
-        "&:hover": {
-          boxShadow: `0px 0px 10px 2px ${theme.palette.custom.shadow.secondary}`,
-          transform: "translateY(-2px)",
-          transition: "all 0.2s ease-in-out",
-        },
       }),
     },
   },

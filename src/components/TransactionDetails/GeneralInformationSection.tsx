@@ -24,9 +24,9 @@ export const GeneralInformationSection = ({
       <DetailField label="Transaction Type" value={type} bold />
       {kind && <DetailField label="Transaction Kind" value={kind} />}
       <DetailField label="Network Flow" value={networkFlow} />
-      <DetailField label="Created" value={createdAt} tooltip="When the transaction was created" />
+      <DetailField label="Created" value={createdAt} />
       {expectedAt && (
-        <DetailField label="Expected" value={expectedAt} tooltip="Expected completion time" />
+        <DetailField label="Expected" value={expectedAt} />
       )}
     </DataSection>
   );

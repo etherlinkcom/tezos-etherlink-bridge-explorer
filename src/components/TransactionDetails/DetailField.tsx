@@ -1,5 +1,5 @@
 'use client';
-import { Box, Typography, Tooltip } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
@@ -13,7 +13,6 @@ interface DetailFieldProps {
   copyable?: boolean;
   monospace?: boolean;
   bold?: boolean;
-  tooltip?: string;
 }
 
 export const DetailField = ({ 
@@ -22,44 +21,26 @@ export const DetailField = ({
   kind,
   copyable = false, 
   bold = false,
-  tooltip
 }: DetailFieldProps) => {
   const theme = useTheme();
   
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-        {tooltip ? (
-          <Tooltip title={tooltip} arrow placement="top">
-            <Typography 
-              color="text.secondary" 
-              sx={{ 
-                fontSize: '14px',
-                fontFamily: theme.typography.fontFamily,
-                minWidth: '200px',
-                fontWeight: 500,
-                flexShrink: 0,
-                cursor: 'help'
-              }}
-            >
-              {label}:
-            </Typography>
-          </Tooltip>
-        ) : (
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flexDirection: { xs: 'column', md: 'row' } }}> 
           <Typography 
-            color="text.secondary" 
+            variant="caption"
+            color="text.secondary"
             sx={{ 
               fontSize: '14px',
               fontFamily: theme.typography.fontFamily,
               minWidth: '200px',
               fontWeight: 500,
               flexShrink: 0,
-              cursor: 'default'
+              cursor: 'default',
             }}
           >
             {label}:
           </Typography>
-        )}
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>

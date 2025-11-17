@@ -49,11 +49,13 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
         <Stack spacing={1.5}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <StatusChip status={transaction.status} />
-            <Chip 
-              label={transactionData.typeLabel} 
-              size="small" 
-              variant="filled"
-            />
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ display: 'block', mb: 0.5 }}
+            >
+              {transactionData.typeLabel} 
+            </Typography>
           </Stack>
 
           {/* From/To */}
