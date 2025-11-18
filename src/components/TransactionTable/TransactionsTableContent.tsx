@@ -1,16 +1,19 @@
 'use client';
 
-import { memo } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, SxProps, Theme } from '@mui/material';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { TransactionTableRow } from '@/components/TransactionTable/TransactionTableRow';
+import { observer } from 'mobx-react-lite';
 
-export const TransactionsTableContent = memo<{ transactions: TezosTransaction[] }>(({ transactions }) => {
+interface TransactionsTableContentProps {
+  transactions: TezosTransaction[];
+  sx?: SxProps<Theme>;
+}
+
+export const TransactionsTableContent = observer<TransactionsTableContentProps>(({ transactions, sx }) => {
   return (
-    <TableContainer component={Paper} className="table-card" sx={{ overflowX: 'auto' }}>
-      <Table sx={{
-        minWidth: 1200,
-      }}>
+    <TableContainer component={Paper} className="table-card" sx={{ overflowX: 'auto', ...sx }}>
+      <Table>
         <TableHead>
           <TableRow sx={{ height: '48px' }}>
             <TableCell sx={{ width: '80px' }}>Status</TableCell>
@@ -37,5 +40,3 @@ export const TransactionsTableContent = memo<{ transactions: TezosTransaction[] 
 });
 
 TransactionsTableContent.displayName = 'TransactionsTableContent';
-
-

@@ -90,7 +90,6 @@ export const FilterPanel = observer(() => {
           display: "grid",
           gridTemplateColumns: {
             xs: "1fr",
-            sm: "repeat(2, 1fr)",
             md: "repeat(3, 1fr)",
           },
           gap: 2.5,
@@ -122,7 +121,7 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={filterStore.minRawAmount}
+          value={filterStore.minRawAmount ?? ''}
           onChange={(e) => 
             setMinAmount(e.target.value)}
           onKeyDown={async (e) => {
@@ -146,7 +145,7 @@ export const FilterPanel = observer(() => {
 
         <TextField
           size="small"
-          value={filterStore.maxRawAmount}
+          value={filterStore.maxRawAmount ?? ''}
           onChange={(e) => setMaxAmount(e.target.value)}
           onKeyDown={async (e) => {
             if (e.key === "Enter" && maxHelperText) {
