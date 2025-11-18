@@ -24,6 +24,17 @@ export class TransactionDetailsStore {
     return this.loadingState === 'idle'; 
   }
 
+  get isTransactionStuck(): boolean {
+    if (!this.selectedTransaction) return false;
+    
+    const tx = this.selectedTransaction;
+    
+    if (tx.completed || tx.status === 'FINISHED' || tx.status === 'FAILED') return false;
+    if (tx.expectedDate) return Date.now() > tx.expectedDate;
+    
+    return false;
+  }
+
   private validateTransaction(transaction: TezosTransaction<GraphQLResponse>): string | null {
     if (!transaction) {
       return 'Transaction data is null or undefined';
