@@ -73,7 +73,7 @@ export const PendingTransactionGuidance = observer(() => {
                 Time-sensitive action required
               </Typography>
               <Typography variant="body2">
-                You must contact support within 24 hours of submission. After 24 hours, we won't be able to execute your withdrawal.
+                You must contact support within 24 hours of submission. After 24 hours, we won&apos;t be able to execute your withdrawal.
               </Typography>
             </Alert>
             <DiscordSupportButton />
