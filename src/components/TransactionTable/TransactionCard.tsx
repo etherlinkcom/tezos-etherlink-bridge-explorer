@@ -1,12 +1,10 @@
 'use client';
 
-import { memo, useCallback } from 'react';
 import { 
   Card,
   CardContent,
   Box,
   Typography,
-  Chip,
   Stack
 } from '@mui/material';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
