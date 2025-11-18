@@ -14,22 +14,27 @@ export const formatEtherlinkValue = (value: string | undefined): string => {
   return value.startsWith('0x') ? value : `0x${value}`;
 };
 
-export const formatTimeAgo = (date: Date) => {
+export const formatRelativeTime = (date: Date) => {
   const now: Date = new Date();
   const diffInSeconds: number = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const isFuture: boolean = diffInSeconds < 0;
+  const absDiffInSeconds: number = Math.abs(diffInSeconds);
   
-  if (diffInSeconds < 60) {
-    return `${diffInSeconds} second${diffInSeconds !== 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 3600) {
-    const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  let timeString: string;
+  if (absDiffInSeconds < 60) {
+    timeString = `${absDiffInSeconds} second${absDiffInSeconds !== 1 ? 's' : ''}`;
+  } else if (absDiffInSeconds < 3600) {
+    const minutes = Math.floor(absDiffInSeconds / 60);
+    timeString = `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  } else if (absDiffInSeconds < 86400) {
+    const hours = Math.floor(absDiffInSeconds / 3600);
+    timeString = `${hours} hour${hours !== 1 ? 's' : ''}`;
   } else {
-    const days = Math.floor(diffInSeconds / 86400);
-    return `${days} day${days !== 1 ? 's' : ''} ago`;
+    const days = Math.floor(absDiffInSeconds / 86400);
+    timeString = `${days} day${days !== 1 ? 's' : ''}`;
   }
+  
+  return isFuture ? `in ${timeString}` : `${timeString} ago`;
 };
 
 export const formatDateTime = (date: Date | string | number): string => {
@@ -50,7 +55,7 @@ export const formatDateTime = (date: Date | string | number): string => {
     timeZoneName: 'short'
   });
 
-  const relative: string = formatTimeAgo(dateObj);
+  const relative: string = formatRelativeTime(dateObj);
   return `${exact} (${relative})`;
 };
 
