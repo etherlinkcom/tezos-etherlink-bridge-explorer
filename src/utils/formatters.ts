@@ -1,6 +1,5 @@
-export function toDecimalValue(amount: string | number, decimals: number): number {
-  let formatted = typeof amount === 'string' ? amount : amount.toString();
-  
+export function toDecimalValue(amount: string, decimals: number): number {
+  let formatted: string = amount;
   if (formatted.length > decimals) {
     formatted = formatted.substring(0, formatted.length - decimals) + '.' + formatted.substring(formatted.length - decimals);
   } else {
