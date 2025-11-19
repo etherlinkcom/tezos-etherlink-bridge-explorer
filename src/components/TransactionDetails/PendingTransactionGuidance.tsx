@@ -1,45 +1,47 @@
-import { Box, Typography, Link, Button, Alert } from '@mui/material';
+import { Box, Typography, Link, Button } from '@mui/material';
 import { Launch } from '@mui/icons-material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
+import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
+
+const DiscordSupportButton = () => (
+  <Button
+    variant="contained"
+    color="primary"
+    href="https://discord.gg/T6WnWB3dcr"
+    target="_blank"
+    rel="noopener noreferrer"
+    component={Link}
+    endIcon={<Launch />}
+    sx={{ textDecoration: 'none' }}
+  >
+    Open Discord Support
+  </Button>
+);
+
+const DiscordSupportSteps = (): React.ReactNode => (
+  <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
+    <Typography component="li" variant="body1">
+      Join our Discord server using the button below
+    </Typography>
+    <Typography component="li" variant="body1">
+      Navigate to the <Box component="strong">support channel</Box> and create a ticket
+    </Typography>
+    <Typography component="li" variant="body1">
+      Provide your transaction hash and a description of the issue
+    </Typography>
+  </Box>
+);
 
 export const PendingTransactionGuidance = observer(() => {
-  const transaction = transactionDetailsStore.selectedTransaction;
+  const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
   const transactionDetails = transactionDetailsStore.formattedTransactionDetails;
 
   if (!transaction || !transactionDetails) return null;
 
-  const isDeposit = transactionDetails.isDeposit;
-  const isFastWithdrawal = transaction.isFastWithdrawal || false;
-  const isFaTokenDeposit = isDeposit && transactionDetails.symbol !== 'XTZ';
-  const isStandardFlow = !isFastWithdrawal && !isFaTokenDeposit;
-
-  const DiscordSupportButton = () => (
-    <Button
-      variant="contained"
-      color="primary"
-      href="https://discord.gg/T6WnWB3dcr"
-      target="_blank"
-      rel="noopener noreferrer"
-      component={Link}
-      endIcon={<Launch />}
-      sx={{ textDecoration: 'none' }}
-    >
-      Open Discord Support
-    </Button>
-  );
-
-  const discordSupportSteps = [
-    <Typography key="discord-join" component="li" variant="body1">
-      Join our Discord server using the button below
-    </Typography>,
-    <Typography key="discord-navigate" component="li" variant="body1">
-      Navigate to the <Box component="strong">support channel</Box> and create a ticket
-    </Typography>,
-    <Typography key="discord-hash" component="li" variant="body1">
-      Provide your transaction hash and a description of the issue
-    </Typography>
-  ];
+  const isDeposit: boolean = transactionDetails.isDeposit;
+  const isFastWithdrawal: boolean = transaction.isFastWithdrawal || false;
+  const isStandardFlow: boolean = !isFastWithdrawal
 
   return (
     <Box>
@@ -64,36 +66,13 @@ export const PendingTransactionGuidance = observer(() => {
           <Box sx={{ mb: 2 }}>
             <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
               <Typography component="li" variant="body1">
-                Your fast withdrawal has exceeded the expected 5-minute completion time. Please contact support within the next <Box component="span" fontWeight="bold">24 hours.</Box>
+                Your fast withdrawal has exceeded the expected 5-minute completion time. 
+                If you don't contact support within 24 hours,
+                this would be executed as a normal withdrawal and take 15 days to complete.
               </Typography>
-              {discordSupportSteps}
+              <DiscordSupportSteps />
             </Box>
-            <Alert severity="warning" sx={{ mb: 2.5 }}>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
-                Time-sensitive action required
-              </Typography>
-              <Typography variant="body2">
-                You must contact support within 24 hours of submission. After 24 hours, we won&apos;t be able to execute your withdrawal.
-              </Typography>
-            </Alert>
             <DiscordSupportButton />
-          </Box>
-        )}
-
-        {/* FA Token Deposit Actions */}
-        {isFaTokenDeposit && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              You can claim your FA token deposit by calling the claim function.
-            </Typography>
-            {/* TODO: Add claim button*/}
-            <Button 
-              variant="contained" 
-              color="primary"
-              disabled
-            >
-              Claim FA Token Deposit
-            </Button>
           </Box>
         )}
 
@@ -105,7 +84,7 @@ export const PendingTransactionGuidance = observer(() => {
             </Typography>
 
             <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
-              {discordSupportSteps}
+              <DiscordSupportSteps />
             </Box>
 
             <DiscordSupportButton />
