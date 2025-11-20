@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { BrowserProvider, Contract, JsonRpcProvider, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
+import { BrowserProvider, JsonRpcProvider, Signer } from 'ethers';
 import { EthereumProvider } from '@/types/ethereum';
 
 const ETHERLINK_CHAIN_ID = process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID || '0xa729';

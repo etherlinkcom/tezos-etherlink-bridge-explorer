@@ -3,6 +3,7 @@ import { Launch } from '@mui/icons-material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
+import { ClaimFADepositButton } from './ClaimFADepositButton';
 
 const DiscordSupportButton = () => (
   <Button
@@ -41,7 +42,8 @@ export const PendingTransactionGuidance = observer(() => {
 
   const isDeposit: boolean = transactionDetails.isDeposit;
   const isFastWithdrawal: boolean = transaction.isFastWithdrawal || false;
-  const isStandardFlow: boolean = !isFastWithdrawal
+  const isFaTokenDepositClaimable: boolean = isDeposit && transaction.symbol !== 'XTZ'
+  const isStandardFlow: boolean = !isFastWithdrawal && !isFaTokenDepositClaimable;
 
   return (
     <Box>
@@ -64,15 +66,23 @@ export const PendingTransactionGuidance = observer(() => {
         {/* Fast Withdrawal Actions */}
         {isFastWithdrawal && (
           <Box sx={{ mb: 2 }}>
-            <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
-              <Typography component="li" variant="body1">
-                Your fast withdrawal has exceeded the expected 5-minute completion time. 
-                If you don't contact support within 24 hours,
-                this would be executed as a normal withdrawal and take 15 days to complete.
-              </Typography>
-              <DiscordSupportSteps />
-            </Box>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Your fast withdrawal has exceeded the expected 5-minute completion time. 
+              If you don&apos;t contact support within 24 hours,
+              this would be executed as a normal withdrawal and take 15 days to complete.
+            </Typography>
+            <DiscordSupportSteps />
             <DiscordSupportButton />
+          </Box>
+        )}
+
+        {/* FA Token Deposit Actions */}
+        {isFaTokenDepositClaimable && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              You can claim your FA token deposit directly using the button below.
+            </Typography>
+            <ClaimFADepositButton />
           </Box>
         )}
 
