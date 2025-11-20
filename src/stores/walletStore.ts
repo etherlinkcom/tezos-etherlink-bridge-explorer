@@ -1,31 +1,21 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { BrowserProvider, Contract, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
+import { BrowserProvider, Contract, JsonRpcProvider, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
 import { EthereumProvider } from '@/types/ethereum';
 
-const PRECOMPILE_ADDRESS = process.env.NEXT_PUBLIC_PRECOMPILE_ADDRESS || '0xff00000000000000000000000000000000000002';
 const ETHERLINK_CHAIN_ID = process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID || '0xa729';
 const ETHERLINK_RPC_URL = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || 'https://node.mainnet.etherlink.com';
 const ETHERLINK_NETWORK_NAME = process.env.NEXT_PUBLIC_ETHERLINK_NETWORK_NAME || 'Etherlink Mainnet';
-const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';    
-
-const CLAIM_ABI = [
-  {
-    inputs: [{ name: 'depositId', type: 'uint256' }],
-    name: 'claim',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function'
-  }
-];
+const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
 
 export class WalletStore {
   connectedAddress: string | null = null;
   connectedSigner: Signer | null = null;
-  isClaiming: boolean = false;
   error: string | null | undefined = null;
+  private readOnlyProvider: JsonRpcProvider;
 
   constructor() {
     makeAutoObservable(this);
+    this.readOnlyProvider = new JsonRpcProvider(ETHERLINK_RPC_URL);
   }
 
   private get ethereum(): EthereumProvider | undefined {
@@ -110,32 +100,23 @@ export class WalletStore {
     }
   }
 
-  public async claimDeposit(depositId: string | number | bigint): Promise<string | undefined> {
+  public async connectWallet(): Promise<Signer> {
     runInAction(() => {
-      this.isClaiming = true;
       this.error = null;
     });
 
     try {
-      if (!this.ethereum) return;
-      
       await this.switchToEtherlinkNetwork();
 
       if (!this.connectedAddress || !this.connectedSigner) await this.connect();
 
-      const claimContract: Contract = new Contract(PRECOMPILE_ADDRESS, CLAIM_ABI, this.connectedSigner);
-      const tx: TransactionResponse = await claimContract.claim(depositId);
-      const receipt: TransactionReceipt | null = await tx.wait();
+      if (!this.connectedSigner) throw new Error('Failed to get wallet signer');
+      return this.connectedSigner;
 
-      runInAction(() => {
-        this.isClaiming = false;
-      });
-
-      return receipt?.hash;
     } catch (error) {
+      const errorMessage: string = error instanceof Error ? error.message : 'Failed to connect wallet';
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : 'Failed to claim deposit';
-        this.isClaiming = false;
+        this.error = errorMessage;
       });
       throw error;
     }
@@ -143,6 +124,10 @@ export class WalletStore {
 
   get isConnected(): boolean {
     return this.connectedAddress !== null;
+  }
+
+  getReadOnlyProvider(): JsonRpcProvider {
+    return this.readOnlyProvider;
   }
 }
 
