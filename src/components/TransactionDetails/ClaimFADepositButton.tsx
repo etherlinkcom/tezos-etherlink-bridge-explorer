@@ -61,25 +61,18 @@ export const ClaimFADepositButton = observer(() => {
   };
 
   const queryEvents = async (contract: Contract, blockNumber: number): Promise<bigint | null> => {
-    const ranges: Array<{ fromBlock: number; toBlock: number }> = [
-      { fromBlock: blockNumber - 249, toBlock: blockNumber + 250 }, 
-      { fromBlock: blockNumber + 250, toBlock: blockNumber + 749 },
-      { fromBlock: blockNumber - 748, toBlock: blockNumber - 249 }, 
-    ];
+    const increment: number = 499;
+    const maxBlockNumber: number = blockNumber + (3 * increment);
 
-    for (let attempt: number = 0; attempt < ranges.length; attempt++) {
-      const { fromBlock, toBlock } = ranges[attempt];
-        
+    for (let startBlock: number = blockNumber - increment; startBlock < maxBlockNumber; startBlock += increment) {
       try {
         const filter: DeferredTopicFilter = contract.filters.QueuedDeposit();
-        const events: Array<EventLog | Log> = await contract.queryFilter(filter, fromBlock, toBlock);
+        const events: Array<EventLog | Log> = await contract.queryFilter(filter, startBlock, startBlock + increment);
         const nonce: bigint | null = findMatchingEvent(events);
         
-        if (nonce !== null) {
-          return nonce;
-        }
+        if (nonce !== null) return nonce;
       } catch (error) {
-        console.error(`Error querying events on attempt ${attempt + 1}:`, error);
+        console.error(`Error querying events from block ${startBlock}:`, error);
       }
     }
     
@@ -111,9 +104,7 @@ export const ClaimFADepositButton = observer(() => {
       const tx: TransactionResponse = await claimContract.claim(nonce);
       const receipt: TransactionReceipt | null = await tx.wait();
 
-      if (receipt?.hash) {
-        setTxHash(receipt.hash);
-      }
+      if (receipt?.hash) setTxHash(receipt.hash);
     } catch (error) {
       const errorMessage: string = parseClaimError(error);
       setError(errorMessage);
