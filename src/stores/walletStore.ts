@@ -64,6 +64,8 @@ export class WalletStore {
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error && error.code === 4902) {
         await this.addEtherlinkNetwork();
+      } else {
+        throw error;
       }
     }
   }
@@ -73,35 +75,29 @@ export class WalletStore {
       throw new Error('Please install MetaMask or another Web3 wallet');
     }
 
-    try {
-      await this.switchToEtherlinkNetwork();
+    await this.switchToEtherlinkNetwork();
 
-      if (!this.connectedAddress || !this.connectedSigner) {
-        const accounts: string[] = await this.ethereum.request({ 
-          method: 'eth_requestAccounts' 
-        });
+    if (!this.connectedAddress || !this.connectedSigner) {
+      const accounts: string[] = await this.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
 
-        if (!accounts || accounts.length === 0) {
-          throw new Error('No wallet accounts found');
-        }
-
-        const provider: BrowserProvider = new BrowserProvider(this.ethereum);
-        const signer: Signer = await provider.getSigner();
-
-        runInAction(() => {
-          this.connectedAddress = accounts[0];
-          this.connectedSigner = signer;
-        });
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No wallet accounts found');
       }
 
-      if (!this.connectedSigner) throw new Error('Failed to get wallet signer');
-      return this.connectedSigner;
+      const provider: BrowserProvider = new BrowserProvider(this.ethereum);
+      const signer: Signer = await provider.getSigner();
 
-    } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to connect wallet');
+      runInAction(() => {
+        this.connectedAddress = accounts[0];
+        this.connectedSigner = signer;
+      });
     }
+
+    if (!this.connectedSigner) throw new Error('Failed to get wallet signer');
+    return this.connectedSigner;
   }
 }
 
 export const walletStore = new WalletStore();
-

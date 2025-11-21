@@ -23,12 +23,14 @@ interface BlockscoutBlockResponse {
 export const ClaimFADepositButton = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   
   if (!transaction) return null;
   
   const receiverAddress: string = transaction.input!.l2_account!;
+  const isWalletConnected: boolean = walletStore.isConnected;
 
   const getBlockNumberAtTimestamp = async (timestamp: number): Promise<number | undefined> => {
     const timestampInSeconds: number = Math.floor(timestamp / 1000);
@@ -90,18 +92,34 @@ export const ClaimFADepositButton = observer(() => {
     return await queryEvents(contract, l2BlockNumber);
   };
 
+  const handleConnectWallet = async (): Promise<void> => {
+    setIsConnecting(true);
+    setError(null);
+
+    try {
+      await walletStore.connectWallet();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to connect wallet');
+      setIsConnecting(false);
+    }
+  };
+
   const claimDeposit = async (): Promise<void> => {
     setIsClaiming(true);
     setError(null);
     setTxHash(null);
 
     try {
+      const signer: Signer | null = walletStore.connectedSigner;
+      if (!signer) {
+        throw new Error('Wallet is not connected');
+      }
+
       const nonce: bigint | null = await queryQueuedDepositNonce();
       if (!nonce) {
         throw new Error('Unable to claim the deposit at this time. The deposit may still be processing or may not be available for claiming.');
       }
 
-      const signer: Signer = await walletStore.connectWallet();
       const claimContract: Contract = new Contract(PRECOMPILE_ADDRESS, CLAIM_ABI, signer);
       const tx: TransactionResponse = await claimContract.claim(nonce);
       const receipt: TransactionReceipt | null = await tx.wait();
@@ -155,15 +173,35 @@ export const ClaimFADepositButton = observer(() => {
           </Link>
         </Alert>
       )}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={claimDeposit}
-        disabled={isClaiming}
-        startIcon={isClaiming ? <CircularProgress size={20} /> : null}
-      >
-        {isClaiming ? 'Claiming...' : 'Claim FA Token Deposit'}
-      </Button>
+      {!isWalletConnected ? (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleConnectWallet}
+          disabled={isConnecting}
+          startIcon={isConnecting ? <CircularProgress size={20} /> : null}
+        >
+          {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+        </Button>
+      ) : (
+        <Box>
+          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Connected:
+            </Typography>
+              {walletStore.connectedAddress}
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={claimDeposit}
+            disabled={isClaiming}
+            startIcon={isClaiming ? <CircularProgress size={20} /> : null}
+          >
+            {isClaiming ? 'Claiming...' : 'Claim FA Token Deposit'}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 });
