@@ -14,7 +14,7 @@ export const formatEtherlinkValue = (value: string | undefined): string => {
   return value.startsWith('0x') ? value : `0x${value}`;
 };
 
-export const formatRelativeTime = (date: Date) => {
+export const formatRelativeTime = (date: Date): string => {
   const now: Date = new Date();
   const diffInSeconds: number = Math.floor((now.getTime() - date.getTime()) / 1000);
   const isFuture: boolean = diffInSeconds < 0;
@@ -24,13 +24,13 @@ export const formatRelativeTime = (date: Date) => {
   if (absDiffInSeconds < 60) {
     timeString = `${absDiffInSeconds} second${absDiffInSeconds !== 1 ? 's' : ''}`;
   } else if (absDiffInSeconds < 3600) {
-    const minutes = Math.floor(absDiffInSeconds / 60);
+    const minutes: number = Math.floor(absDiffInSeconds / 60);
     timeString = `${minutes} minute${minutes !== 1 ? 's' : ''}`;
   } else if (absDiffInSeconds < 86400) {
-    const hours = Math.floor(absDiffInSeconds / 3600);
+    const hours: number = Math.floor(absDiffInSeconds / 3600);
     timeString = `${hours} hour${hours !== 1 ? 's' : ''}`;
   } else {
-    const days = Math.floor(absDiffInSeconds / 86400);
+    const days: number = Math.floor(absDiffInSeconds / 86400);
     timeString = `${days} day${days !== 1 ? 's' : ''}`;
   }
   
