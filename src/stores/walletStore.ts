@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { BrowserProvider, JsonRpcProvider, Signer } from 'ethers';
+import { BrowserProvider, Signer } from 'ethers';
 import { EthereumProvider } from '@/types/ethereum';
 
 const ETHERLINK_CHAIN_ID = process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID || '0xa729';
@@ -10,50 +10,18 @@ const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL 
 export class WalletStore {
   connectedAddress: string | null = null;
   connectedSigner: Signer | null = null;
-  error: string | null | undefined = null;
-  private readOnlyProvider: JsonRpcProvider;
 
   constructor() {
     makeAutoObservable(this);
-    this.readOnlyProvider = new JsonRpcProvider(ETHERLINK_RPC_URL);
+  }
+
+  get isConnected(): boolean {
+    return this.connectedAddress !== null;
   }
 
   private get ethereum(): EthereumProvider | undefined {
     if (typeof window === 'undefined' || !window.ethereum) return undefined;
     return window.ethereum;
-  }
-
-  public async connect(): Promise<{ address: string; signer: Signer }> {
-    if (!this.ethereum) {
-      throw new Error('Please install MetaMask or another Web3 wallet');
-    }
-
-    const accounts: string[] = await this.ethereum.request({ 
-      method: 'eth_requestAccounts' 
-    });
-
-    if (!accounts || accounts.length === 0) {
-      throw new Error('No wallet accounts found');
-    }
-
-    const provider: BrowserProvider = new BrowserProvider(this.ethereum);
-    const signer: Signer = await provider.getSigner();
-
-    runInAction(() => {
-      this.connectedAddress = accounts[0];
-      this.connectedSigner = signer;
-      this.error = null;
-    });
-
-    return { address: accounts[0], signer: signer };
-  }
-
-  public disconnect(): void {
-    runInAction(() => {
-      this.connectedAddress = null;
-      this.connectedSigner = null;
-      this.error = null;
-    });
   }
 
   private async addEtherlinkNetwork(): Promise<void> {
@@ -93,41 +61,45 @@ export class WalletStore {
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: ETHERLINK_CHAIN_ID }],
       });
-    } catch (switchError) {
-      if (switchError && typeof switchError === 'object' && 'code' in switchError && switchError.code === 4902) {
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 4902) {
         await this.addEtherlinkNetwork();
       }
     }
   }
 
   public async connectWallet(): Promise<Signer> {
-    runInAction(() => {
-      this.error = null;
-    });
+    if (!this.ethereum) {
+      throw new Error('Please install MetaMask or another Web3 wallet');
+    }
 
     try {
       await this.switchToEtherlinkNetwork();
 
-      if (!this.connectedAddress || !this.connectedSigner) await this.connect();
+      if (!this.connectedAddress || !this.connectedSigner) {
+        const accounts: string[] = await this.ethereum.request({ 
+          method: 'eth_requestAccounts' 
+        });
+
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No wallet accounts found');
+        }
+
+        const provider: BrowserProvider = new BrowserProvider(this.ethereum);
+        const signer: Signer = await provider.getSigner();
+
+        runInAction(() => {
+          this.connectedAddress = accounts[0];
+          this.connectedSigner = signer;
+        });
+      }
 
       if (!this.connectedSigner) throw new Error('Failed to get wallet signer');
       return this.connectedSigner;
 
     } catch (error) {
-      const errorMessage: string = error instanceof Error ? error.message : 'Failed to connect wallet';
-      runInAction(() => {
-        this.error = errorMessage;
-      });
-      throw error;
+      throw error instanceof Error ? error : new Error('Failed to connect wallet');
     }
-  }
-
-  get isConnected(): boolean {
-    return this.connectedAddress !== null;
-  }
-
-  getReadOnlyProvider(): JsonRpcProvider {
-    return this.readOnlyProvider;
   }
 }
 

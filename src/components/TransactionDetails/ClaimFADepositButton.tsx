@@ -9,6 +9,7 @@ import { CLAIM_ABI, QUEUED_DEPOSIT_ABI } from '@/abi/claimAbi';
 import { fetchJson } from '@/utils/fetchJson';
 
 const PRECOMPILE_ADDRESS = process.env.NEXT_PUBLIC_PRECOMPILE_ADDRESS || '0xff00000000000000000000000000000000000002';
+const ETHERLINK_RPC_URL = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || 'https://node.mainnet.etherlink.com';
 const BLOCK_EXPLORER_URL = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
 
 interface BlockscoutBlockResponse {
@@ -81,7 +82,7 @@ export const ClaimFADepositButton = observer(() => {
   };
 
   const queryQueuedDepositNonce = async (): Promise<bigint | null> => {
-    const provider: JsonRpcProvider = walletStore.getReadOnlyProvider();
+    const provider: JsonRpcProvider = new JsonRpcProvider(ETHERLINK_RPC_URL);
     const contract: Contract = new Contract(PRECOMPILE_ADDRESS, QUEUED_DEPOSIT_ABI, provider);
     
     const l2BlockNumber: number | undefined = await getBlockNumberAtTimestamp(transaction.submittedDate);
@@ -137,11 +138,6 @@ export const ClaimFADepositButton = observer(() => {
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
-        </Alert>
-      )}
-      {walletStore.error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {walletStore.error}
         </Alert>
       )}
       {txHash && (
