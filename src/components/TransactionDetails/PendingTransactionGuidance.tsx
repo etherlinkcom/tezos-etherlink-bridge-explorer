@@ -42,7 +42,8 @@ export const PendingTransactionGuidance = observer(() => {
 
   const isDeposit: boolean = transactionDetails.isDeposit;
   const isFastWithdrawal: boolean = transaction.isFastWithdrawal || false;
-  const isFaTokenDepositClaimable: boolean = isDeposit && transaction.symbol !== 'XTZ'
+  const receiverAddress: string | undefined = transaction?.input?.l2_account;
+  const isFaTokenDepositClaimable: boolean = isDeposit && transaction.symbol !== 'XTZ' && !!receiverAddress;
   const isStandardFlow: boolean = !isFastWithdrawal && !isFaTokenDepositClaimable;
 
   return (
@@ -77,14 +78,7 @@ export const PendingTransactionGuidance = observer(() => {
         )}
 
         {/* FA Token Deposit Actions */}
-        {isFaTokenDepositClaimable && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              You can claim your FA token deposit directly using the button below.
-            </Typography>
-            <ClaimFADepositButton />
-          </Box>
-        )}
+        {isFaTokenDepositClaimable && <ClaimFADepositButton />}
 
         {/* Standard Withdrawal/Deposit Actions */}
         {isStandardFlow && (

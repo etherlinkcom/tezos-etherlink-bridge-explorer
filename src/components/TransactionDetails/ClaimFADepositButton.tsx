@@ -24,9 +24,10 @@ export const ClaimFADepositButton = observer(() => {
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const receiverAddress: string | undefined = transaction?.input?.l2_account;
-
-  if (!transaction || !receiverAddress) return null;
+  
+  if (!transaction) return null;
+  
+  const receiverAddress: string = transaction.input!.l2_account!;
 
   const getBlockNumberAtTimestamp = async (timestamp: number): Promise<number | undefined> => {
     const timestampInSeconds: number = Math.floor(timestamp / 1000);
@@ -130,6 +131,9 @@ export const ClaimFADepositButton = observer(() => {
 
   return (
     <Box sx={{ mb: 2 }}>
+      <Typography variant="body1" sx={{ mb: 2 }}>
+        You can claim your FA token deposit directly using the button below.
+      </Typography>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
