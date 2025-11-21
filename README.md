@@ -118,14 +118,28 @@ npm start
 The application supports different networks through environment variables. Create a `.env.local` file in the root directory:
 
 ```bash
+# GraphQL Endpoint
 # Mainnet (default)
 NEXT_PUBLIC_GRAPHQL_ENDPOINT=https://bridge.indexer.etherlink.com/v1/graphql
 
 # Testnet
-NEXT_PUBLIC_GRAPHQL_ENDPOINT=https://testnet.bridge.indexer.etherlink.com/v1/graphql
+# NEXT_PUBLIC_GRAPHQL_ENDPOINT=https://testnet.bridge.indexer.etherlink.com/v1/graphql
+
+# Etherlink Network Configuration (for wallet connections)
+# Mainnet (default)
+NEXT_PUBLIC_ETHERLINK_CHAIN_ID=0xa729  # Mainnet chain ID (42793 in decimal)
+NEXT_PUBLIC_ETHERLINK_RPC_URL=https://node.mainnet.etherlink.com
+NEXT_PUBLIC_ETHERLINK_NETWORK_NAME=Etherlink Mainnet
+NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL=https://explorer.etherlink.com
+
+# Testnet (Ghostnet)
+# NEXT_PUBLIC_ETHERLINK_CHAIN_ID=0x1f3eb  # Testnet chain ID (128123 in decimal)
+# NEXT_PUBLIC_ETHERLINK_RPC_URL=https://node.ghostnet.etherlink.com
+# NEXT_PUBLIC_ETHERLINK_NETWORK_NAME=Etherlink Testnet
+# NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL=https://testnet.explorer.etherlink.com
 ```
 
-If no environment variable is set, it defaults to the mainnet endpoint.
+If no environment variables are set, the application defaults to mainnet endpoints.
 
 ## Data Source
 

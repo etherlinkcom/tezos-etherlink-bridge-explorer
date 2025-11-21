@@ -1,5 +1,5 @@
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
-import { formatEtherlinkValue, formatTimeAgo, formatAmount } from '@/utils/formatters';
+import { formatEtherlinkValue, formatRelativeTime, formatAmount } from '@/utils/formatters';
 import { validateInput, ValidationResult } from '@/utils/validation';
 import { useRouter } from 'next/navigation';
 
@@ -35,7 +35,7 @@ export const getTransactionData = (transaction: TezosTransaction): TransactionDa
     typeLabel = 'Withdrawal';
   }
   const formattedAmount = formatAmount(transaction.sendingAmount, transaction.symbol);
-  const formattedTimeAgo = formatTimeAgo(new Date(transaction.submittedDate));
+  const formattedTimeAgo = formatRelativeTime(new Date(transaction.submittedDate));
 
   return {
     sourceHash,
