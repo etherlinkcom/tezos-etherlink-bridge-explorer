@@ -1,38 +1,9 @@
-import { Box, Typography, Link, Button } from '@mui/material';
-import { Launch } from '@mui/icons-material';
+import { Box, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
-import { ClaimFADepositButton } from './ClaimFADepositButton';
-
-const DiscordSupportButton = () => (
-  <Button
-    variant="contained"
-    color="primary"
-    href="https://discord.gg/T6WnWB3dcr"
-    target="_blank"
-    rel="noopener noreferrer"
-    component={Link}
-    endIcon={<Launch />}
-    sx={{ textDecoration: 'none' }}
-  >
-    Open Discord Support
-  </Button>
-);
-
-const DiscordSupportSteps = (): React.ReactNode => (
-  <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
-    <Typography component="li" variant="body1">
-      Join our Discord server using the button below
-    </Typography>
-    <Typography component="li" variant="body1">
-      Navigate to the <Box component="strong">support channel</Box> and create a ticket
-    </Typography>
-    <Typography component="li" variant="body1">
-      Provide your transaction hash and a description of the issue
-    </Typography>
-  </Box>
-);
+import { FATokenDepositFlow } from './FATokenDepositFlow';
+import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
 
 export const PendingTransactionGuidance = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
@@ -72,13 +43,15 @@ export const PendingTransactionGuidance = observer(() => {
               If you don&apos;t contact support within 24 hours,
               this would be executed as a normal withdrawal and take 15 days to complete.
             </Typography>
-            <DiscordSupportSteps />
+            <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
+              <DiscordSupportSteps />
+            </Box>
             <DiscordSupportButton />
           </Box>
         )}
 
         {/* FA Token Deposit Actions */}
-        {isFaTokenDepositClaimable && <ClaimFADepositButton />}
+        {isFaTokenDepositClaimable && <FATokenDepositFlow />}
 
         {/* Standard Withdrawal/Deposit Actions */}
         {isStandardFlow && (

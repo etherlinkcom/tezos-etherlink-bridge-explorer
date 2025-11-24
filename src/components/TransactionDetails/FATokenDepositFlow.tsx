@@ -5,11 +5,12 @@ import toast from 'react-hot-toast';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { walletStore } from '@/stores/walletStore';
 import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
-import { useClaimFADeposit } from './useClaimFADeposit';
+import { useClaimFADeposit } from './useClaimFATokenDeposit';
+import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
 
 const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
 
-export const ClaimFADepositButton = observer(() => {
+export const FATokenDepositFlow = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
   if (!transaction) return null;
   
@@ -18,6 +19,7 @@ export const ClaimFADepositButton = observer(() => {
     isConnecting,
     error,
     txHash,
+    needsSupport,
     handleConnectWallet,
     claimDeposit,
   } = useClaimFADeposit(transaction);
@@ -25,17 +27,29 @@ export const ClaimFADepositButton = observer(() => {
   const isWalletConnected: boolean = walletStore.isConnected;
   const connectedAddress: string | null = walletStore.connectedAddress;
 
+  
   useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
+    txHash && toast.success('Deposit claimed successfully!');
+  }, [txHash]);
 
   useEffect(() => {
-    if (txHash) {
-      toast.success('Deposit claimed successfully!');
-    }
-  }, [txHash]);
+    if (error) toast.error(error);
+  }, [error]);
+
+  if (needsSupport) {
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          {error || 'Unable to process your request. Please contact support.'}
+          What to do:
+        </Typography>
+        <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
+          <DiscordSupportSteps />
+        </Box>
+        <DiscordSupportButton />
+      </Box>
+    );
+  }
   
   return (
     <Box sx={{ mb: 2 }}>
