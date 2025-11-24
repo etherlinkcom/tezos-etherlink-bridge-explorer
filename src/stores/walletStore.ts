@@ -71,9 +71,7 @@ export class WalletStore {
   }
 
   public async connectWallet(): Promise<Signer> {
-    if (!this.ethereum) {
-      throw new Error('Please install MetaMask or another Web3 wallet');
-    }
+    if (!this.ethereum) throw new Error('Please install MetaMask or another Web3 wallet');
 
     await this.switchToEtherlinkNetwork();
 
@@ -82,9 +80,7 @@ export class WalletStore {
         method: 'eth_requestAccounts' 
       });
 
-      if (!accounts || accounts.length === 0) {
-        throw new Error('No wallet accounts found');
-      }
+      if (!accounts || accounts.length === 0) throw new Error('No wallet accounts found');
 
       const provider: BrowserProvider = new BrowserProvider(this.ethereum);
       const signer: Signer = await provider.getSigner();
