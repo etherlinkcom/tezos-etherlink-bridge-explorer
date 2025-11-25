@@ -1,9 +1,18 @@
 'use server';
 
 import { createPagerDutyIncident } from '@/utils/pagerDuty';
-import { TezosTransaction } from '@/stores/tezosTransactionStore';
 
-export async function triggerFastWithdrawalIncident(transaction: TezosTransaction): Promise<void> {
+export interface FastWithdrawalTransactionData {
+  l2TxHash: string;
+  l1TxHash?: string;
+  status?: string;
+  symbol?: string;
+  l2Block?: number;
+  l1Block?: number;
+  submittedDate?: number;
+}
+
+export async function triggerFastWithdrawalIncident(transaction: FastWithdrawalTransactionData): Promise<void> {
   const l2TxHash: string = transaction.l2TxHash;
   
   const additionalDetails: Record<string, unknown> = {

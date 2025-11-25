@@ -4,7 +4,7 @@ import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
 import { FATokenDepositFlow } from './FATokenDepositFlow';
 import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
-import { triggerFastWithdrawalIncident } from '@/app/actions/pagerDuty';
+import { triggerFastWithdrawalIncident, FastWithdrawalTransactionData } from '@/app/actions/pagerDuty';
 
 export const PendingTransactionGuidance = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
@@ -19,7 +19,18 @@ export const PendingTransactionGuidance = observer(() => {
   const isStandardFlow: boolean = !isFastWithdrawal && !isFaTokenDepositClaimable;
 
   const handleFastWithdrawalDiscordClick = async (): Promise<void> => {
-    if (transaction.l2TxHash) triggerFastWithdrawalIncident(transaction);
+    if (transaction.l2TxHash) {
+      const transactionData: FastWithdrawalTransactionData = {
+        l2TxHash: transaction.l2TxHash,
+        l1TxHash: transaction.l1TxHash,
+        status: transaction.status,
+        symbol: transaction.symbol,
+        l2Block: transaction.l2Block,
+        l1Block: transaction.l1Block,
+        submittedDate: transaction.submittedDate,
+      };
+      triggerFastWithdrawalIncident(transactionData);
+    }
   };
 
   return (
