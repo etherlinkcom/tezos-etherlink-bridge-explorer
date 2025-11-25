@@ -29,7 +29,7 @@ export const FATokenDepositFlow = observer(() => {
 
   
   useEffect(() => {
-    txHash && toast.success('Deposit claimed successfully!');
+    if (txHash) toast.success('Deposit claimed successfully!');
   }, [txHash]);
 
   useEffect(() => {
