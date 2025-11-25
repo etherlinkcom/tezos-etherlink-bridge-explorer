@@ -3,18 +3,16 @@ import { BrowserProvider, Signer } from 'ethers';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 
-const ETHERLINK_CHAIN_ID: string = process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID || '0xa729';
+const ETHERLINK_CHAIN_ID: number = Number(process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID) || 42857;
 const ETHERLINK_RPC_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || 'https://node.mainnet.etherlink.com';
 const ETHERLINK_NETWORK_NAME: string = process.env.NEXT_PUBLIC_ETHERLINK_NETWORK_NAME || 'Etherlink Mainnet';
 const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
-
-const ETHERLINK_CHAIN_ID_DECIMAL: number = parseInt(ETHERLINK_CHAIN_ID, 16);
 
 const onboard = Onboard({
   wallets: [injectedModule()],
   chains: [
     {
-      id: ETHERLINK_CHAIN_ID_DECIMAL,
+      id: ETHERLINK_CHAIN_ID,
       token: 'XTZ',
       label: ETHERLINK_NETWORK_NAME,
       rpcUrl: ETHERLINK_RPC_URL,
