@@ -68,13 +68,16 @@ export const FATokenDepositFlow = observer(() => {
         </Button>
       ) : (
         <Box>
-          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Connected:
-            </Typography>
-            <Typography variant="body2">
-              {connectedAddress}
-            </Typography>
+          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: { sm: 1 }, minWidth: 0 }}>
+              <Typography variant="body2" color="text.secondary">Connected:</Typography>
+              <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {connectedAddress}
+              </Typography>
+            </Box>
+            <Button variant="text" size="small" onClick={() => walletStore.disconnect()} sx={{ ml: { xs: 'auto', sm: 'auto' }, flexShrink: 0 }}>
+              Disconnect
+            </Button>
           </Box>
           <Button
             variant="contained"
