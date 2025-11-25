@@ -132,7 +132,7 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
     try {
       const signer: Signer = await walletStore.connectWallet();
       return signer;
-    } catch (error) {
+    } catch (error: unknown) {
       const errorMessage: string = error instanceof Error ? error.message : 'Failed to connect wallet';
       setError(errorMessage);
       return null;
@@ -151,15 +151,18 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
       const nonce: bigint | null = await queryQueuedDepositNonce();
       if (!nonce) throw new Error('Could not find deposit');
 
-      const signer: Signer | null = await handleConnectWallet();
-      if (!signer) return;
+      let signer: Signer | null = walletStore.connectedSigner;
+      if (!signer) {
+        signer = await handleConnectWallet();
+        if (!signer) return;
+      }
 
       const claimContract: Contract = new Contract(PRECOMPILE_ADDRESS, CLAIM_ABI, signer);
       const tx: TransactionResponse = await claimContract.claim(nonce);
       const receipt: TransactionReceipt | null = await tx.wait();
 
       if (receipt?.hash) setTxHash(receipt.hash);
-    } catch (error) {
+    } catch (error: unknown) {
       const { message, needsSupport: errorNeedsSupport } = parseClaimError(error);
       setError(message);
       setNeedsSupport(errorNeedsSupport);

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import { Box, Button, CircularProgress, Link, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
