@@ -1,4 +1,4 @@
-import { Box, Button, Link, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { Launch } from '@mui/icons-material';
 
 const DISCORD_SUPPORT_URL: string = 'https://discord.gg/T6WnWB3dcr';
@@ -17,17 +17,20 @@ export const DiscordSupportSteps = (): React.ReactNode => (
   </>
 );
 
-export const DiscordSupportButton = (): React.ReactNode => (
-  <Button
-    variant="contained"
-    color="primary"
-    href={DISCORD_SUPPORT_URL}
-    target="_blank"
-    rel="noopener noreferrer"
-    component={Link}
-    endIcon={<Launch />}
-    sx={{ textDecoration: 'none' }}
-  >
-    Open Discord Support
-  </Button>
-);
+export const DiscordSupportButton = ({ onClick }: { onClick?: () => Promise<void> }): React.ReactNode => {
+  const handleClick = (): void => {
+    onClick?.();
+    window.open(DISCORD_SUPPORT_URL, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={handleClick}
+      endIcon={<Launch />}
+    >
+      Open Discord Support
+    </Button>
+  );
+};
