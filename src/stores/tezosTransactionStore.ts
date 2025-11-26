@@ -123,6 +123,7 @@ interface TransactionProps<Input> {
   l1Block?: number;
   l2Block?: number;
   fastWithdrawalPayOut?: TezosTransaction;
+  depositNonce?: bigint | null;
 }
 type TransactionConstructorProps<Input> = Optional<
   TransactionProps<Input>,
@@ -152,6 +153,7 @@ export class TezosTransaction<Input = GraphQLResponse>
   l1Block?: number;
   l2Block?: number;
   fastWithdrawalPayOut?: TezosTransaction;
+  depositNonce?: bigint | null;
   
   constructor(props: TransactionConstructorProps<Input>) {
     makeAutoObservable(this, {
