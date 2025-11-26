@@ -43,6 +43,7 @@ export const FATokenDepositFlow = observer(() => {
       <Box sx={{ mb: 2 }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
           {error || 'Unable to process your request. Please contact support.'}
+          <br />
           What to do:
         </Typography>
         <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>

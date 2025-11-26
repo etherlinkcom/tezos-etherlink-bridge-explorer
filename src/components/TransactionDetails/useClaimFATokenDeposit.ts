@@ -68,7 +68,7 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
 
   const findMatchingEvent = (events: Array<EventLog | Log>): bigint | null => {
     if (!receiverAddress) return null;
-    const normalizedReceiverAddress: string = `0x${receiverAddress.toLowerCase()}`;
+    const normalizedReceiverAddress: string = receiverAddress.toLowerCase().startsWith('0x') ? receiverAddress.toLowerCase() : `0x${receiverAddress.toLowerCase()}`;
     
     for (const event of events) {
       if (event instanceof EventLog) {
