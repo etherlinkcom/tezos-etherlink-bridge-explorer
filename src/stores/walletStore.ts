@@ -1,43 +1,70 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, reaction } from 'mobx';
 import { BrowserProvider, Signer } from 'ethers';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
-
-const ETHERLINK_CHAIN_ID: number = process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID != null ? Number(process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID): 42793;
-const ETHERLINK_RPC_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || 'https://node.mainnet.etherlink.com';
-const ETHERLINK_NETWORK_NAME: string = process.env.NEXT_PUBLIC_ETHERLINK_NETWORK_NAME || 'Etherlink Mainnet';
-const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
-
-const onboard = Onboard({
-  wallets: [injectedModule()],
-  chains: [
-    {
-      id: ETHERLINK_CHAIN_ID,
-      token: 'XTZ',
-      label: ETHERLINK_NETWORK_NAME,
-      rpcUrl: ETHERLINK_RPC_URL,
-      blockExplorerUrl: BLOCK_EXPLORER_URL,
-    },
-  ],
-  accountCenter: {
-    desktop: {
-      enabled: false,
-    },
-    mobile: {
-      enabled: false,
-    },
-  },
-  theme: 'dark',
-});
+import { networkStore, type NetworkConfig } from './networkStore';
 
 export class WalletStore {
+  private onboard: ReturnType<typeof Onboard>;
   connectedAddress: string | null = null;
   connectedSigner: Signer | null = null;
   connectedWallet: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
+    this.onboard = this.createOnboard();
+    
+    reaction(
+      () => networkStore.currentNetwork,
+      async () => {
+        if (this.isConnected) {
+          await this.switchNetwork();
+        } else {
+          this.onboard = this.createOnboard();
+        }
+      }
+    );
   }
+
+  private async switchNetwork(): Promise<void> {
+    try {
+      const config: NetworkConfig = networkStore.config;
+      const success: boolean = await this.onboard.setChain({ 
+        chainId: config.chainId 
+      });
+      
+      if (!success) {
+        console.warn('Failed to switch network');
+      }
+    } catch (error: unknown) {
+      console.error('Network switch error:', error);
+    }
+  }
+
+  private createOnboard = (): ReturnType<typeof Onboard> => {
+    const config = networkStore.config;
+    return Onboard({
+      wallets: [injectedModule()],
+      chains: [
+        {
+          id: config.chainId,
+          token: 'XTZ',
+          label: config.networkName,
+          rpcUrl: config.rpcUrl,
+          blockExplorerUrl: config.blockExplorerUrl,
+        },
+      ],
+      accountCenter: {
+        desktop: {
+          enabled: false,
+        },
+        mobile: {
+          enabled: false,
+        },
+      },
+      theme: 'dark',
+});
+  };
 
   get isConnected(): boolean {
     return this.connectedAddress !== null;
@@ -45,7 +72,7 @@ export class WalletStore {
 
   public async connectWallet(): Promise<Signer> {
     try {
-      const wallets = await onboard.connectWallet();
+      const wallets = await this.onboard.connectWallet();
 
       if (!wallets || wallets.length === 0) throw new Error('No wallet selected');
 
@@ -71,10 +98,10 @@ export class WalletStore {
   }
 
   public async disconnect(): Promise<void> {
-    const wallets = onboard.state.get().wallets;
+    const wallets = this.onboard.state.get().wallets;
     if (wallets.length > 0) {
       const [primaryWallet] = wallets;
-      await onboard.disconnectWallet({ label: primaryWallet.label });
+      await this.onboard.disconnectWallet({ label: primaryWallet.label });
     }
     
     runInAction(() => {
