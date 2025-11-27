@@ -2,6 +2,7 @@ import { makeAutoObservable, observable, action } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { filterStore } from "./filterStore";
+import { networkStore } from "./networkStore";
 import { QueryFilters } from "@/types/queryFilters";
 
 
@@ -201,8 +202,11 @@ export class TezosTransactionStore {
   batchSize: number = 1000; // API batch size for fetching
   
   private readonly MAX_TRANSACTIONS = 5000;
-  private readonly graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'https://bridge.indexer.etherlink.com/v1/graphql';
-  private readonly AUTO_REFRESH_INTERVAL = 50000; 
+  private readonly AUTO_REFRESH_INTERVAL = 50000;
+  
+  get graphqlEndpoint(): string {
+    return networkStore.config.graphqlEndpoint;
+  } 
   private refreshInterval: NodeJS.Timeout | null = null;
   
   constructor() {
