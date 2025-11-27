@@ -16,7 +16,7 @@ export const TransactionsTableContent = observer<TransactionsTableContentProps>(
       <Table>
         <TableHead>
           <TableRow sx={{ height: '48px' }}>
-            <TableCell sx={{ width: '80px' }}>Status</TableCell>
+            <TableCell sx={{ width: '100px' }}>Status</TableCell>
             <TableCell sx={{ width: '140px' }}>Source Tx Hash</TableCell>
             <TableCell sx={{ width: '120px' }}>From</TableCell>
             <TableCell sx={{ width: '120px' }}>To</TableCell>
