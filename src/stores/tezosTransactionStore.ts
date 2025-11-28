@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, action } from "mobx";
+import { makeAutoObservable, observable, action, reaction } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { filterStore } from "./filterStore";
@@ -211,6 +211,19 @@ export class TezosTransactionStore {
   
   constructor() {
     makeAutoObservable(this);
+    
+    reaction(
+      () => networkStore.currentNetwork,
+      async () => {
+        this.stopAutoRefresh();
+        await this.getTransactions({
+          ...filterStore.currentFilters,
+          resetStore: true,
+          loadingMode: 'initial'
+        });
+        this.startAutoRefresh();
+      }
+    );
   }
   get transactions(): TezosTransaction[] {
     return this._transactions;
