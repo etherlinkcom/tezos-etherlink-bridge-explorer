@@ -1,5 +1,6 @@
 'use client';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Link, Tooltip, IconButton } from '@mui/material';
+import { OpenInNew } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
@@ -14,6 +15,8 @@ interface DetailFieldProps {
   copyable?: boolean;
   monospace?: boolean;
   bold?: boolean;
+  explorerUrl?: string | null;
+  explorerName?: string | null;
 }
 
 export const DetailField = ({ 
@@ -22,6 +25,9 @@ export const DetailField = ({
   kind,
   copyable = false, 
   bold = false,
+  monospace = false,
+  explorerUrl,
+  explorerName,
 }: DetailFieldProps) => {
   const theme = useTheme();
   
@@ -56,6 +62,7 @@ export const DetailField = ({
                 sx={{ 
                   fontSize: '14px',
                   fontWeight: bold ? theme.typography.fontWeightBold : theme.typography.fontWeightRegular,
+                  fontFamily: monospace ? 'monospace' : 'inherit',
                   maxWidth: { xs: '100%', md: '450px', lg: '100%' }
                 }}
               >
@@ -70,6 +77,26 @@ export const DetailField = ({
               size="small"
               sx={{ p: 0.25, flexShrink: 0 }}
             />
+          )}
+          
+          {explorerUrl && explorerName && (
+            <Tooltip title={`View on ${explorerName}`}>
+              <IconButton
+                component="a"
+                href={explorerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                sx={{ 
+                  p: 0.25,
+                  flexShrink: 0,
+                  color: 'inherit',
+                  '&:hover': { color: 'primary.main' }
+                }}
+              >
+                <OpenInNew fontSize="small" />
+              </IconButton>
+            </Tooltip>
           )}
         </Box>
       </Box>
