@@ -6,7 +6,7 @@ export interface NetworkConfig {
   chainId: number;
   rpcUrl: string;
   networkName: string;
-  blockExplorerUrl: string;
+  etherlinkExplorerUrl: string;
   tezosExplorerUrl: string;
   graphqlEndpoint: string;
 }
@@ -15,7 +15,7 @@ const MAINNET_CONFIG: NetworkConfig = {
   chainId: 42793,
   rpcUrl: 'https://node.mainnet.etherlink.com',
   networkName: 'Etherlink Mainnet',
-  blockExplorerUrl: 'https://explorer.etherlink.com',
+  etherlinkExplorerUrl: 'https://explorer.etherlink.com',
   tezosExplorerUrl: 'https://tzkt.io',
   graphqlEndpoint: 'https://bridge.indexer.etherlink.com/v1/graphql',
 };
@@ -24,7 +24,7 @@ const TESTNET_CONFIG: NetworkConfig = {
   chainId: 127823,
   rpcUrl: 'https://node.shadownet.etherlink.com',
   networkName: 'Etherlink Shadownet Testnet',
-  blockExplorerUrl: 'https://shadownet.explorer.etherlink.com',
+  etherlinkExplorerUrl: 'https://shadownet.explorer.etherlink.com',
   tezosExplorerUrl: 'https://shadownet.tzkt.io',
   graphqlEndpoint: 'https://shadownet.bridge.indexer.etherlink.com/v1/graphql',
 };
@@ -78,7 +78,7 @@ export class NetworkStore {
     
     if (chain === 'Etherlink') {
       return {
-        url: `${config.blockExplorerUrl}/tx/${trimmed}`,
+        url: `${config.etherlinkExplorerUrl}/tx/${trimmed}`,
         name: 'Etherlink Explorer'
       };
     }

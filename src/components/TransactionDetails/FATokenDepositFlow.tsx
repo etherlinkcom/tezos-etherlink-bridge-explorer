@@ -80,7 +80,7 @@ export const FATokenDepositFlow = observer(() => {
           variant="contained"
           color="primary"
           component="a"
-          href={`${networkStore.config.blockExplorerUrl}/tx/${txHash}`}
+          href={`${networkStore.config.etherlinkExplorerUrl}/tx/${txHash}`}
           target="_blank"
           rel="noopener noreferrer"
         >

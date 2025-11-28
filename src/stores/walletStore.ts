@@ -24,7 +24,7 @@ export class WalletStore {
           token: 'XTZ',
           label: config.networkName,
           rpcUrl: config.rpcUrl,
-          blockExplorerUrl: config.blockExplorerUrl,
+          blockExplorerUrl: config.etherlinkExplorerUrl,
         },
       ],
       accountCenter: {
