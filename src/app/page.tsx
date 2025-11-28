@@ -31,7 +31,7 @@ const Home = observer(() => {
     return () => {
       tezosTransactionStore.stopAutoRefresh();
     };
-  }, [networkStore.currentNetwork]);
+  }, []);
   
   return (
     <Layout>
