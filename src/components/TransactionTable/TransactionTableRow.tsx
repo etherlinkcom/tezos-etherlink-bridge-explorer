@@ -20,7 +20,7 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{ cursor:'pointer' }}>
         
-      <TableCell>
+      <TableCell sx={{ width: '100px', maxWidth: '100px' }}>
         <StatusChip status={transaction.status} />
       </TableCell>
       

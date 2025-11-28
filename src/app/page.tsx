@@ -1,18 +1,22 @@
 'use client';
 
 import { useEffect } from "react";
+import { observer } from 'mobx-react-lite';
 import { Box, Container } from '@mui/material';
 import { tezosTransactionStore } from "@/stores/tezosTransactionStore";
 import { filterStore } from "@/stores/filterStore";
+import { networkStore } from "@/stores/networkStore";
 import { TransactionTable } from "@/components/TransactionTable/TransactionTable";
 import { SearchBox } from "@/components/SearchBox/SearchBox";
 import { Layout } from "@/components/layouts/Layout";
 
 export const dynamic = 'force-dynamic';
 
-export default function Home() {
+const Home = observer(() => {
   useEffect(() => {
-    const initializeStore = async () => {
+    networkStore.initialize();
+    
+    const initializeStore = async () => {      
       await tezosTransactionStore.getTransactions({
         ...filterStore.currentFilters,
         resetStore: true,
@@ -39,4 +43,6 @@ export default function Home() {
       </Container>
     </Layout>
   );
-}
+});
+
+export default Home;
