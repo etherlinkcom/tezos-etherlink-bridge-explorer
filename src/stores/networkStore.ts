@@ -7,6 +7,7 @@ export interface NetworkConfig {
   rpcUrl: string;
   networkName: string;
   blockExplorerUrl: string;
+  tezosExplorerUrl: string;
   graphqlEndpoint: string;
 }
 
@@ -15,6 +16,7 @@ const MAINNET_CONFIG: NetworkConfig = {
   rpcUrl: 'https://node.mainnet.etherlink.com',
   networkName: 'Etherlink Mainnet',
   blockExplorerUrl: 'https://explorer.etherlink.com',
+  tezosExplorerUrl: 'https://tzkt.io',
   graphqlEndpoint: 'https://bridge.indexer.etherlink.com/v1/graphql',
 };
 
@@ -23,6 +25,7 @@ const TESTNET_CONFIG: NetworkConfig = {
   rpcUrl: 'https://node.shadownet.etherlink.com',
   networkName: 'Etherlink Shadownet Testnet',
   blockExplorerUrl: 'https://shadownet.explorer.etherlink.com',
+  tezosExplorerUrl: 'https://shadownet.tzkt.io',
   graphqlEndpoint: 'https://shadownet.bridge.indexer.etherlink.com/v1/graphql',
 };
 
@@ -58,6 +61,29 @@ export class NetworkStore {
   setNetwork = (network: NetworkType): void => {
     this._currentNetwork = network;
     this.saveNetworkToStorage();
+  };
+
+  getBlockExplorerInfo = (hash: string | undefined, chain: string): { url: string; name: string } | null => {
+    if (!hash || hash === '-') return null;
+    
+    const trimmed: string = hash.trim();
+    const config: NetworkConfig = this.config;
+    
+    if (chain === 'Tezos') {
+      return {
+        url: `${config.tezosExplorerUrl}/${trimmed}`,
+        name: 'TzKT Explorer'
+      };
+    }
+    
+    if (chain === 'Etherlink') {
+      return {
+        url: `${config.blockExplorerUrl}/tx/${trimmed}`,
+        name: 'Etherlink Explorer'
+      };
+    }
+    
+    return null;
   };
 
   private loadNetworkFromStorage = (): void => {
