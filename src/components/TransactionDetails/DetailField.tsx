@@ -1,5 +1,5 @@
 'use client';
-import { Box, Typography, Link, Tooltip, IconButton } from '@mui/material';
+import { Box, Typography, Tooltip, IconButton } from '@mui/material';
 import { OpenInNew } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { CopyButton } from '../shared/CopyButton';
