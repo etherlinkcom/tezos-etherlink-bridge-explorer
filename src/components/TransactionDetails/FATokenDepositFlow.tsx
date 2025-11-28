@@ -93,7 +93,7 @@ export const FATokenDepositFlow = observer(() => {
           {txHash && (
             <Box sx={{ mt: 2 }}>
               <Link
-                href={`${networkStore.config.blockExplorerUrl}/tx/${txHash}`}
+                href={`${networkStore.config.etherlinkExplorerUrl}/tx/${txHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{ fontSize: '0.875rem' }}
