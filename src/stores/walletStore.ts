@@ -44,11 +44,11 @@ export class WalletStore {
 
   public async connectWallet(): Promise<Signer> {
     try {
-      const walletsState = await onboard.connectWallet();
+      const wallets = await onboard.connectWallet();
 
-      if (!walletsState || walletsState.length === 0) throw new Error('No wallet selected');
+      if (!wallets || wallets.length === 0) throw new Error('No wallet selected');
 
-      const wallet = walletsState[0];
+      const wallet = wallets[0];
       const provider: BrowserProvider = new BrowserProvider(wallet.provider);
       const signer: Signer = await provider.getSigner();
       const address: string = await signer.getAddress();
@@ -70,9 +70,9 @@ export class WalletStore {
   }
 
   public async disconnect(): Promise<void> {
-    const walletsState = onboard.state.get().wallets;
-    if (walletsState.length > 0) {
-      const [primaryWallet] = walletsState;
+    const wallets = onboard.state.get().wallets;
+    if (wallets.length > 0) {
+      const [primaryWallet] = wallets;
       await onboard.disconnectWallet({ label: primaryWallet.label });
     }
     
