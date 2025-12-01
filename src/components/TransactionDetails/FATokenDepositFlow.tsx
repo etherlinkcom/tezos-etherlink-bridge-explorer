@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Box, Button, CircularProgress, Link, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import toast from 'react-hot-toast';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
@@ -56,7 +56,7 @@ export const FATokenDepositFlow = observer(() => {
     return (
       <Box sx={{ mb: 2 }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          Claim your FA token deposit using the button below.
+          Connect your wallet to claim your FA token deposit.
         </Typography>
         <Button
           variant="contained"
@@ -75,18 +75,18 @@ export const FATokenDepositFlow = observer(() => {
     return (
       <Box sx={{ mb: 2 }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          Claim your FA token deposit using the button below.
+          Your FA token deposit has been claimed successfully.
         </Typography>
-        <Box sx={{ mt: 2 }}>
-          <Link
-            href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ fontSize: '0.875rem' }}
-          >
-            View transaction on explorer
-          </Link>
-        </Box>
+        <Button
+          variant="contained"
+          color="primary"
+          component="a"
+          href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View transaction on explorer
+        </Button>
       </Box>
     );
   }
