@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
 import { FATokenDepositFlow } from './FATokenDepositFlow';
+import { FastWithdrawalGuidance } from './FastWithdrawalGuidance';
 import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
-import { triggerFastWithdrawalIncident, FastWithdrawalTransactionData } from '@/app/actions/pagerDuty';
 
 export const PendingTransactionGuidance = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
@@ -13,76 +13,69 @@ export const PendingTransactionGuidance = observer(() => {
   if (!transaction || !transactionDetails) return null;
 
   const isDeposit: boolean = transactionDetails.isDeposit;
-  const isFastWithdrawal: boolean = transaction.isFastWithdrawal || false;
-  const receiverAddress: string | undefined = transaction?.input?.l2_account;
-  const isFaTokenDepositClaimable: boolean = isDeposit && transaction.symbol !== 'XTZ' && !!receiverAddress;
-  const isStandardFlow: boolean = !isFastWithdrawal && !isFaTokenDepositClaimable;
 
-  const handleFastWithdrawalDiscordClick = async (): Promise<void> => {
-    if (transaction.l2TxHash) {
-      const transactionData: FastWithdrawalTransactionData = {
-        l2TxHash: transaction.l2TxHash,
-        l1TxHash: transaction.l1TxHash,
-        status: transaction.status,
-        symbol: transaction.symbol,
-        l2Block: transaction.l2Block,
-        l1Block: transaction.l1Block,
-        submittedDate: transaction.submittedDate,
-      };
-      triggerFastWithdrawalIncident(transactionData);
-    }
-  };
+  const headerSection: React.ReactNode = (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="body1" fontWeight={600} sx={{ mb: 1 }}>
+        Your transaction has been pending for longer than expected.
+      </Typography>
+      {transactionDetails.expectedAt && (
+        <Typography variant="body2" color="text.secondary">
+          Expected completion: {transactionDetails.expectedAt}
+        </Typography>
+      )}
+    </Box>
+  );
 
+  const guidanceTitle: React.ReactNode = (
+    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+      What to do:
+    </Typography>
+  );
+
+  // Fast withdrawal flow
+  if (transaction.isFastWithdrawal || false) {
+    return (
+      <Box>
+        {headerSection}
+        <Box>
+          {guidanceTitle}
+          <FastWithdrawalGuidance />
+        </Box>
+      </Box>
+    );
+  }
+
+  // FA token deposit flow
+  if (isDeposit && transaction.symbol !== 'XTZ' && !!transaction?.input?.l2_account) {
+    return (
+      <Box>
+        {headerSection}
+        <Box>
+          {guidanceTitle}
+          <FATokenDepositFlow />
+        </Box>
+      </Box>
+    );
+  }
+
+  // Standard withdrawal/deposit flow
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="body1" fontWeight={600} sx={{ mb: 1 }}>
-          Your transaction has been pending for longer than expected.
-        </Typography>
-        {transactionDetails.expectedAt && (
-          <Typography variant="body2" color="text.secondary">
-            Expected completion: {transactionDetails.expectedAt}
-          </Typography>
-        )}
-      </Box>
-
+      {headerSection}
       <Box>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          What to do:
-        </Typography>
+        {guidanceTitle}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Please reach out to our support team for assistance with your {isDeposit ? 'deposit' : 'withdrawal'}.
+          </Typography>
 
-        {/* Fast Withdrawal Actions */}
-        {isFastWithdrawal && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              Your fast withdrawal has exceeded the expected 5-minute completion time. 
-              If you don&apos;t contact support within 24 hours,
-              this would be executed as a normal withdrawal and take 15 days to complete.
-            </Typography>
-            <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
-              <DiscordSupportSteps />
-            </Box>
-            <DiscordSupportButton onClick={handleFastWithdrawalDiscordClick} />
+          <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
+            <DiscordSupportSteps />
           </Box>
-        )}
 
-        {/* FA Token Deposit Actions */}
-        {isFaTokenDepositClaimable && <FATokenDepositFlow />}
-
-        {/* Standard Withdrawal/Deposit Actions */}
-        {isStandardFlow && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              Please reach out to our support team for assistance with your {isDeposit ? 'deposit' : 'withdrawal'}.
-            </Typography>
-
-            <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
-              <DiscordSupportSteps />
-            </Box>
-
-            <DiscordSupportButton />
-          </Box>
-        )}
+          <DiscordSupportButton />
+        </Box>
       </Box>
     </Box>
   );
