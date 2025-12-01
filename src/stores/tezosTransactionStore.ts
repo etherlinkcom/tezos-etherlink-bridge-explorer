@@ -204,9 +204,6 @@ export class TezosTransactionStore {
   private readonly MAX_TRANSACTIONS = 5000;
   private readonly AUTO_REFRESH_INTERVAL = 50000;
   
-  get graphqlEndpoint(): string {
-    return networkStore.config.graphqlEndpoint;
-  } 
   private refreshInterval: NodeJS.Timeout | null = null;
   
   constructor() {
@@ -476,7 +473,7 @@ export class TezosTransactionStore {
     const response: { 
       data: { bridge_operation: GraphQLResponse[] };
       errors?: Array<{ message: string }>;
-    } = await fetchJson(this.graphqlEndpoint, {
+    } = await fetchJson(networkStore.config.graphqlEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })
