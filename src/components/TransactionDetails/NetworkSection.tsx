@@ -11,7 +11,6 @@ interface NetworkSectionProps {
   address: string | undefined;
   amount: string;
   block: string;
-  network: string;
   showDivider?: boolean;
 }
 
@@ -22,9 +21,8 @@ export const NetworkSection = observer(({
   amount,
   showDivider,
   block,
-  network,
 }: NetworkSectionProps) => {
-  const explorerInfo: { url: string; name: string } | null = networkStore.getBlockExplorerInfo(hash, network);
+  const explorerInfo: { url: string; name: string } | null = networkStore.getBlockExplorerInfo(hash);
   
   return (
     <DataSection title={title} showDivider={showDivider}>

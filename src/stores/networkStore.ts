@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import { validateInput, ValidationResult } from '@/utils/validation';
 
 export type NetworkType = 'mainnet' | 'testnet';
 
@@ -63,20 +64,21 @@ export class NetworkStore {
     this.saveNetworkToStorage();
   };
 
-  getBlockExplorerInfo = (hash: string | undefined, chain: string): { url: string; name: string } | null => {
+  getBlockExplorerInfo = (hash: string | undefined): { url: string; name: string } | null => {
     if (!hash || hash === '-') return null;
     
     const trimmed: string = hash.trim();
     const config: NetworkConfig = this.config;
+    const validation: ValidationResult = validateInput(trimmed);
     
-    if (chain === 'Tezos') {
+    if (validation.type === 'tezos_tx_hash') {
       return {
         url: `${config.tezosExplorerUrl}/${trimmed}`,
         name: 'TzKT Explorer'
       };
     }
     
-    if (chain === 'Etherlink') {
+    if (validation.type === 'etherlink_tx_hash') {
       return {
         url: `${config.etherlinkExplorerUrl}/tx/${trimmed}`,
         name: 'Etherlink Explorer'
