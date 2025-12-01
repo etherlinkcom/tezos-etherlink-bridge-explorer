@@ -44,14 +44,6 @@ export class NetworkStore {
     return this._currentNetwork === 'mainnet' ? MAINNET_CONFIG : TESTNET_CONFIG;
   }
 
-  get isMainnet(): boolean {
-    return this._currentNetwork === 'mainnet';
-  }
-
-  get isTestnet(): boolean {
-    return this._currentNetwork === 'testnet';
-  }
-
   get isInitialized(): boolean {
     return this._isInitialized;
   }
@@ -66,10 +58,6 @@ export class NetworkStore {
   setNetwork = (network: NetworkType): void => {
     this._currentNetwork = network;
     this.saveNetworkToStorage();
-  };
-
-  toggleNetwork = (): void => {
-    this.setNetwork(this._currentNetwork === 'mainnet' ? 'testnet' : 'mainnet');
   };
 
   private loadNetworkFromStorage = (): void => {
