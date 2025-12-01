@@ -6,6 +6,8 @@ import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStor
 import { CLAIM_ABI, QUEUED_DEPOSIT_ABI } from '@/abi/claimAbi';
 import { fetchJson } from '@/utils/fetchJson';
 
+const PRECOMPILE_ADDRESS: string = process.env.NEXT_PUBLIC_PRECOMPILE_ADDRESS || '0xff00000000000000000000000000000000000002';
+
 interface BlockscoutBlockResponse {
   status: string;
   result?: {
@@ -34,7 +36,6 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
   const receiverAddress: string = transaction.input.l2_account;
   
   const networkConfig = networkStore.config;
-  const precompileAddress: string = networkConfig.precompileAddress;
 
   const getBlockNumberAtTimestamp = async (timestamp: number): Promise<number | undefined> => {
     const timestampInSeconds: number = Math.floor(timestamp / 1000);
@@ -57,7 +58,7 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
     if (transaction.depositNonce !== undefined) return transaction.depositNonce;
     
     const provider: JsonRpcProvider = new JsonRpcProvider(networkConfig.rpcUrl);
-    const contract: Contract = new Contract(precompileAddress, QUEUED_DEPOSIT_ABI, provider);
+    const contract: Contract = new Contract(PRECOMPILE_ADDRESS, QUEUED_DEPOSIT_ABI, provider);
     const l2BlockNumber: number | undefined = await getBlockNumberAtTimestamp(transaction.submittedDate);
     if (!l2BlockNumber) return null;
     
@@ -157,7 +158,7 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
         if (!signer) return;
       }
 
-      const claimContract: Contract = new Contract(precompileAddress, CLAIM_ABI, signer);
+      const claimContract: Contract = new Contract(PRECOMPILE_ADDRESS, CLAIM_ABI, signer);
       const tx: TransactionResponse = await claimContract.claim(nonce);
       const receipt: TransactionReceipt | null = await tx.wait();
 

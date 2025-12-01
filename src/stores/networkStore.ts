@@ -8,7 +8,6 @@ export interface NetworkConfig {
   networkName: string;
   blockExplorerUrl: string;
   graphqlEndpoint: string;
-  precompileAddress: string;
 }
 
 const MAINNET_CONFIG: NetworkConfig = {
@@ -17,7 +16,6 @@ const MAINNET_CONFIG: NetworkConfig = {
   networkName: 'Etherlink Mainnet',
   blockExplorerUrl: 'https://explorer.etherlink.com',
   graphqlEndpoint: 'https://bridge.indexer.etherlink.com/v1/graphql',
-  precompileAddress: '0xff00000000000000000000000000000000000002',
 };
 
 const TESTNET_CONFIG: NetworkConfig = {
@@ -26,7 +24,6 @@ const TESTNET_CONFIG: NetworkConfig = {
   networkName: 'Etherlink Shadownet Testnet',
   blockExplorerUrl: 'https://shadownet.explorer.etherlink.com',
   graphqlEndpoint: 'https://shadownet.bridge.indexer.etherlink.com/v1/graphql',
-  precompileAddress: '0xff00000000000000000000000000000000000002',
 };
 
 const STORAGE_KEY: string = 'tezos-etherlink-selected-network';
