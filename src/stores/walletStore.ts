@@ -27,6 +27,7 @@ const onboard = Onboard({
       enabled: false,
     },
   },
+  theme: 'dark',
 });
 
 export class WalletStore {
