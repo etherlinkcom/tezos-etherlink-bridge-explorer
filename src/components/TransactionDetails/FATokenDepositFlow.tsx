@@ -27,9 +27,7 @@ export const FATokenDepositFlow = observer(() => {
   } = useClaimFADeposit(transaction);
 
   const isWalletConnected: boolean = walletStore.isConnected;
-  const connectedAddress: string | null = walletStore.connectedAddress;
 
-  
   useEffect(() => {
     if (txHash) toast.success('Deposit claimed successfully!');
   }, [txHash]);
@@ -53,13 +51,13 @@ export const FATokenDepositFlow = observer(() => {
       </Box>
     );
   }
-  
-  return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Claim your FA token deposit using the button below.
-      </Typography>
-      {!isWalletConnected ? (
+
+  if (!isWalletConnected) {
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Claim your FA token deposit using the button below.
+        </Typography>
         <Button
           variant="contained"
           color="primary"
@@ -69,42 +67,44 @@ export const FATokenDepositFlow = observer(() => {
         >
           {isConnecting ? 'Connecting...' : 'Connect Wallet'}
         </Button>
-      ) : (
-        <Box>
-          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: { sm: 1 }, minWidth: 0 }}>
-              <Typography variant="body2" color="text.secondary">Connected:</Typography>
-              <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {connectedAddress}
-              </Typography>
-            </Box>
-            <Button variant="text" size="small" onClick={() => walletStore.disconnect()} sx={{ ml: { xs: 'auto', sm: 'auto' }, flexShrink: 0 }}>
-              Disconnect
-            </Button>
-          </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={claimDeposit}
-            disabled={isClaiming}
-            startIcon={isClaiming ? <CircularProgress size={20} /> : null}
+      </Box>
+    );
+  }
+
+  if (txHash) {
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Claim your FA token deposit using the button below.
+        </Typography>
+        <Box sx={{ mt: 2 }}>
+          <Link
+            href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ fontSize: '0.875rem' }}
           >
-            {isClaiming ? 'Claiming...' : 'Claim FA Token Deposit'}
-          </Button>
-          {txHash && (
-            <Box sx={{ mt: 2 }}>
-              <Link
-                href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ fontSize: '0.875rem' }}
-              >
-                View transaction on explorer
-              </Link>
-            </Box>
-          )}
+            View transaction on explorer
+          </Link>
         </Box>
-      )}
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="body1" sx={{ mb: 2 }}>
+        Claim your FA token deposit using the button below.
+      </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={claimDeposit}
+        disabled={isClaiming}
+        startIcon={isClaiming ? <CircularProgress size={20} /> : null}
+      >
+        {isClaiming ? 'Claiming...' : 'Claim FA Token Deposit'}
+      </Button>
     </Box>
   );
 });
