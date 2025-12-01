@@ -1,44 +1,17 @@
-import { makeAutoObservable, runInAction, reaction } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { BrowserProvider, Signer } from 'ethers';
 import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
-import { networkStore, type NetworkConfig } from './networkStore';
+import { networkStore } from './networkStore';
 
 export class WalletStore {
-  private onboard: ReturnType<typeof Onboard>;
+  private onboard?: ReturnType<typeof Onboard>;
   connectedAddress: string | null = null;
   connectedSigner: Signer | null = null;
   connectedWallet: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
-    this.onboard = this.createOnboard();
-    
-    reaction(
-      () => networkStore.currentNetwork,
-      async () => {
-        if (this.isConnected) {
-          await this.switchNetwork();
-        } else {
-          this.onboard = this.createOnboard();
-        }
-      }
-    );
-  }
-
-  private async switchNetwork(): Promise<void> {
-    try {
-      const config: NetworkConfig = networkStore.config;
-      const success: boolean = await this.onboard.setChain({ 
-        chainId: config.chainId 
-      });
-      
-      if (!success) {
-        console.warn('Failed to switch network');
-      }
-    } catch (error: unknown) {
-      console.error('Network switch error:', error);
-    }
   }
 
   private createOnboard = (): ReturnType<typeof Onboard> => {
@@ -72,6 +45,7 @@ export class WalletStore {
 
   public async connectWallet(): Promise<Signer> {
     try {
+      this.onboard = this.createOnboard();
       const wallets = await this.onboard.connectWallet();
 
       if (!wallets || wallets.length === 0) throw new Error('No wallet selected');
@@ -98,10 +72,12 @@ export class WalletStore {
   }
 
   public async disconnect(): Promise<void> {
-    const wallets = this.onboard.state.get().wallets;
-    if (wallets.length > 0) {
-      const [primaryWallet] = wallets;
-      await this.onboard.disconnectWallet({ label: primaryWallet.label });
+    if (this.onboard) {
+      const wallets = this.onboard.state.get().wallets;
+      if (wallets.length > 0) {
+        const [primaryWallet] = wallets;
+        await this.onboard.disconnectWallet({ label: primaryWallet.label });
+      }
     }
     
     runInAction(() => {
