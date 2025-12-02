@@ -67,20 +67,20 @@ export class NetworkStore {
   getBlockExplorerInfo = (hash: string | undefined): { url: string; name: string } | null => {
     if (!hash || hash === '-') return null;
     
-    const trimmed: string = hash.trim();
+    const trimmedHash: string = hash.trim();
     const config: NetworkConfig = this.config;
-    const validation: ValidationResult = validateInput(trimmed);
+    const validation: ValidationResult = validateInput(trimmedHash);
     
     if (validation.type === 'tezos_tx_hash') {
       return {
-        url: `${config.tezosExplorerUrl}/${trimmed}`,
+        url: `${config.tezosExplorerUrl}/${trimmedHash}`,
         name: 'TzKT Explorer'
       };
     }
     
     if (validation.type === 'etherlink_tx_hash') {
       return {
-        url: `${config.etherlinkExplorerUrl}/tx/${trimmed}`,
+        url: `${config.etherlinkExplorerUrl}/tx/${trimmedHash}`,
         name: 'Etherlink Explorer'
       };
     }
