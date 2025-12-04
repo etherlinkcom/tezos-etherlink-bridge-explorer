@@ -4,14 +4,14 @@ import { observer } from 'mobx-react-lite';
 import { useState, useEffect } from 'react';
 import { Select, MenuItem, FormControl, Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { networkStore } from '@/stores/networkStore';
+import { networkStore, NetworkType } from '@/stores/networkStore';
 
 export const NetworkSelector = observer(() => {
   const theme = useTheme();
   const [open, setOpen] = useState<boolean>(false);
   
   const handleNetworkChange = (event: { target: { value: unknown } }): void => {
-    const newNetwork: 'mainnet' | 'testnet' = event.target.value as 'mainnet' | 'testnet';
+    const newNetwork: NetworkType = event.target.value as NetworkType;
     networkStore.setNetwork(newNetwork);
   };
 
