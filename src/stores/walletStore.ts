@@ -4,11 +4,6 @@ import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import { networkStore } from './networkStore';
 
-const ETHERLINK_CHAIN_ID: number = process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID != null ? Number(process.env.NEXT_PUBLIC_ETHERLINK_CHAIN_ID): 42793;
-const ETHERLINK_RPC_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || 'https://node.mainnet.etherlink.com';
-const ETHERLINK_NETWORK_NAME: string = process.env.NEXT_PUBLIC_ETHERLINK_NETWORK_NAME || 'Etherlink Mainnet';
-const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
-
 let onboardInstance: ReturnType<typeof Onboard> | null = null;
 
 const getOnboard = (): ReturnType<typeof Onboard> => {
