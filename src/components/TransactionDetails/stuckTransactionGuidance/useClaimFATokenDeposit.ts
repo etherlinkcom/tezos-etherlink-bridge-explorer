@@ -6,7 +6,7 @@ import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStor
 import { CLAIM_ABI, QUEUED_DEPOSIT_ABI } from '@/abi/claimAbi';
 import { fetchJson } from '@/utils/fetchJson';
 
-const PRECOMPILE_ADDRESS: string = process.env.NEXT_PUBLIC_PRECOMPILE_ADDRESS || '0xff00000000000000000000000000000000000002';
+const PRECOMPILE_ADDRESS: string = '0xff00000000000000000000000000000000000002';
 
 interface BlockscoutBlockResponse {
   status: string;

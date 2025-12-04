@@ -25,13 +25,13 @@ export const DataSection = ({
           sx={{ 
             fontWeight: 'bold', 
             color: 'primary.main',
-            mb: theme.spacing(1)
+            my: theme.spacing(2.5)
           }}
         >
           {title}
         </Typography>
         
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.7) }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }}>
           {children}
         </Box>
       </Box>

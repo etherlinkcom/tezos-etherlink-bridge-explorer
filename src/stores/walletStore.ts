@@ -4,27 +4,23 @@ import Onboard from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets';
 import { networkStore } from './networkStore';
 
-export class WalletStore {
-  private onboard?: ReturnType<typeof Onboard>;
-  connectedAddress: string | null = null;
-  connectedSigner: Signer | null = null;
-  connectedWallet: string | null = null;
+let onboardInstance: ReturnType<typeof Onboard> | null = null;
 
-  constructor() {
-    makeAutoObservable(this);
+const getOnboard = (): ReturnType<typeof Onboard> => {
+  if (typeof window === 'undefined') {
+    throw new Error('Onboard can only be initialized on the client side');
   }
-
-  private createOnboard = (): ReturnType<typeof Onboard> => {
-    const config = networkStore.config;
-    return Onboard({
+  
+  if (!onboardInstance) {
+    onboardInstance = Onboard({
       wallets: [injectedModule()],
       chains: [
         {
-          id: config.chainId,
+          id: networkStore.config.chainId,
           token: 'XTZ',
-          label: config.networkName,
-          rpcUrl: config.rpcUrl,
-          blockExplorerUrl: config.etherlinkExplorerUrl,
+          label: networkStore.config.networkName,
+          rpcUrl: networkStore.config.rpcUrl,
+          blockExplorerUrl: networkStore.config.etherlinkExplorerUrl,
         },
       ],
       accountCenter: {
@@ -36,8 +32,20 @@ export class WalletStore {
         },
       },
       theme: 'dark',
-});
-  };
+    });
+  }
+  
+  return onboardInstance;
+};
+
+export class WalletStore {
+  connectedAddress: string | null = null;
+  connectedSigner: Signer | null = null;
+  connectedWallet: string | null = null;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
 
   get isConnected(): boolean {
     return this.connectedAddress !== null;
@@ -45,8 +53,8 @@ export class WalletStore {
 
   public async connectWallet(): Promise<Signer> {
     try {
-      this.onboard = this.createOnboard();
-      const wallets = await this.onboard.connectWallet();
+      const onboard = getOnboard();
+      const wallets = await onboard.connectWallet();
 
       if (!wallets || wallets.length === 0) throw new Error('No wallet selected');
 
@@ -71,13 +79,12 @@ export class WalletStore {
     }
   }
 
-  public async disconnect(): Promise<void> {
-    if (this.onboard) {
-      const wallets = this.onboard.state.get().wallets;
-      if (wallets.length > 0) {
-        const [primaryWallet] = wallets;
-        await this.onboard.disconnectWallet({ label: primaryWallet.label });
-      }
+  public async disconnect(): Promise<void> {    
+    const onboard = getOnboard();
+    const wallets = onboard.state.get().wallets;
+    if (wallets.length > 0) {
+      const [primaryWallet] = wallets;
+      await onboard.disconnectWallet({ label: primaryWallet.label });
     }
     
     runInAction(() => {
