@@ -17,10 +17,11 @@ export const DetailField = observer(({ label, value, }: DetailFieldProps) => {
   const theme = useTheme();
   const lowerLabel: string = label.toLowerCase();
   const isHash: boolean = lowerLabel.includes('hash');
-  const isCopyable: boolean = isHash || lowerLabel.includes('address') || lowerLabel.includes('block');
+  const isAddress: boolean = lowerLabel.includes('address');
+  const isCopyable: boolean = isHash || isAddress || lowerLabel.includes('block');
   const bold: boolean = lowerLabel.includes('type') || lowerLabel.includes('amount');
   const explorerInfo: { url: string; name: string } | null = 
-  (value && value !== '-' && isHash) ? networkStore.getBlockExplorerInfo(value) : null;
+  (value && value !== '-' && (isHash || isAddress)) ? networkStore.getExplorerInfo(value) : null;
 
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>
