@@ -14,10 +14,10 @@
     "ethers": "^6.15.0",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
-    "next": "15.5.4",
+    "next": "15.5.7",
     "posthog-js": "^1.277.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
     "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
@@ -32,7 +32,14 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.4",
+    "eslint-config-next": "15.5.7",
     "typescript": "^5"
+  },
+  "overrides": {
+    "crypto-es": ">=2.1.0",
+    "esbuild": ">=0.24.3",
+    "nanoid": ">=5.0.9",
+    "svelte": ">=4.2.19",
+    "ws": ">=8.18.0"
   }
 }
