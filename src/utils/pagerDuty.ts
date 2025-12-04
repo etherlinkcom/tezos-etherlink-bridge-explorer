@@ -15,20 +15,17 @@ export async function createPagerDutyIncident(transactionHash: string, additiona
     return null;
   }
 
-  const summary: string = 'Unclaimed Fast Withdrawal';
   const severity: string = 'critical';
   const source: string = 'Bridge Explorer';
 
   const customDetails: Record<string, unknown> = {
     transaction_hash: transactionHash,
     issue_type: 'unclaimed_fast_withdrawal',
-    timestamp: new Date().toISOString(),
     ...additionalDetails,
   };
 
   const requestBody: string = JSON.stringify({
     payload: {
-      summary: summary,
       severity: severity,
       source: source,
       custom_details: customDetails,
