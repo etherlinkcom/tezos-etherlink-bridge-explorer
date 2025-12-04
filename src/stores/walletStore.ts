@@ -8,27 +8,39 @@ const ETHERLINK_RPC_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || '
 const ETHERLINK_NETWORK_NAME: string = process.env.NEXT_PUBLIC_ETHERLINK_NETWORK_NAME || 'Etherlink Mainnet';
 const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
 
-const onboard = Onboard({
-  wallets: [injectedModule()],
-  chains: [
-    {
-      id: ETHERLINK_CHAIN_ID,
-      token: 'XTZ',
-      label: ETHERLINK_NETWORK_NAME,
-      rpcUrl: ETHERLINK_RPC_URL,
-      blockExplorerUrl: BLOCK_EXPLORER_URL,
-    },
-  ],
-  accountCenter: {
-    desktop: {
-      enabled: false,
-    },
-    mobile: {
-      enabled: false,
-    },
-  },
-  theme: 'dark',
-});
+let onboardInstance: ReturnType<typeof Onboard> | null = null;
+
+const getOnboard = (): ReturnType<typeof Onboard> => {
+  if (typeof window === 'undefined') {
+    throw new Error('Onboard can only be initialized on the client side');
+  }
+  
+  if (!onboardInstance) {
+    onboardInstance = Onboard({
+      wallets: [injectedModule()],
+      chains: [
+        {
+          id: ETHERLINK_CHAIN_ID,
+          token: 'XTZ',
+          label: ETHERLINK_NETWORK_NAME,
+          rpcUrl: ETHERLINK_RPC_URL,
+          blockExplorerUrl: BLOCK_EXPLORER_URL,
+        },
+      ],
+      accountCenter: {
+        desktop: {
+          enabled: false,
+        },
+        mobile: {
+          enabled: false,
+        },
+      },
+      theme: 'dark',
+    });
+  }
+  
+  return onboardInstance;
+};
 
 export class WalletStore {
   connectedAddress: string | null = null;
@@ -45,6 +57,7 @@ export class WalletStore {
 
   public async connectWallet(): Promise<Signer> {
     try {
+      const onboard = getOnboard();
       const wallets = await onboard.connectWallet();
 
       if (!wallets || wallets.length === 0) throw new Error('No wallet selected');
@@ -70,7 +83,8 @@ export class WalletStore {
     }
   }
 
-  public async disconnect(): Promise<void> {
+  public async disconnect(): Promise<void> {    
+    const onboard = getOnboard();
     const wallets = onboard.state.get().wallets;
     if (wallets.length > 0) {
       const [primaryWallet] = wallets;
