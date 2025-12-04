@@ -5,7 +5,8 @@ import {
   Typography, 
   Card,
   CardContent,
-  CircularProgress
+  CircularProgress,
+  Divider
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
@@ -15,6 +16,7 @@ import { NetworkSection } from './NetworkSection';
 import { TransactionHeader } from './TransactionHeader';
 import { FastWithdrawalSection } from './FastWithdrawalSection';
 import { GeneralInformationSection } from './GeneralInformationSection';
+import { PendingTransactionGuidance } from './stuckTransactionGuidance/PendingTransactionGuidance';
 
 export const TransactionDetails = observer(() => {
   const { loading, hasError, error } = transactionDetailsStore;
@@ -50,7 +52,7 @@ export const TransactionDetails = observer(() => {
       <TransactionHeader />
 
       <Card>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: 3, pt: 1.5}}>
           {transactionDetails.validation.error && (
             <DataSection title="Data Validation Issues" showDivider>
               <DetailField label="Error" value={transactionDetails.validation.error} />
@@ -85,6 +87,13 @@ export const TransactionDetails = observer(() => {
 
           {transactionDetails.fastWithdrawal && (
             <FastWithdrawalSection data={transactionDetails.fastWithdrawal} />
+          )}
+
+          {transactionDetailsStore.isTransactionStuck && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <PendingTransactionGuidance />
+            </>
           )}
         </CardContent>
       </Card>

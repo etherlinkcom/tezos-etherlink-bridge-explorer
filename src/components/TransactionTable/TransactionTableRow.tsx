@@ -64,7 +64,7 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       </TableCell>
       
       <TableCell>
-        <Tooltip title={`${transactionData.formattedAmount} ${transaction.symbol}`}>
+        <Tooltip title={`${transactionData.formattedAmount}`}>
           <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }}>
             {transactionData.formattedAmount}
           </Typography>
