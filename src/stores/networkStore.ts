@@ -69,11 +69,6 @@ export class NetworkStore {
         runInAction(() => {
           this._currentNetwork = stored;
         });
-      } else {
-        const envNetwork: string | undefined = process.env.NEXT_PUBLIC_NETWORK;
-        runInAction(() => {
-          this._currentNetwork = envNetwork === 'testnet' ? 'testnet' : 'mainnet';
-        });
       }
     } catch (error) {
       console.error('Failed to load network from storage:', error);
