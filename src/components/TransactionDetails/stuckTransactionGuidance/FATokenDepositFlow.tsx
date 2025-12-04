@@ -9,7 +9,7 @@ import { walletStore } from '@/stores/walletStore';
 import { networkStore } from '@/stores/networkStore';
 import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
 import { useClaimFADeposit } from './useClaimFATokenDeposit';
-import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
+import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';
 
 export const FATokenDepositFlow = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
@@ -35,13 +35,31 @@ export const FATokenDepositFlow = observer(() => {
     if (error) toast.error(error);
   }, [error]);
 
+  if (txHash) {
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Your FA token deposit has been claimed successfully.
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          component="a"
+          href={`${networkStore.config.blockExplorerUrl}/tx/${txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View transaction on explorer
+        </Button>
+      </Box>
+    );
+  }
+
   if (needsSupport) {
     return (
       <Box sx={{ mb: 2 }}>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          {error || 'Unable to process your request. Please contact support.'}
-          <br />
-          What to do:
+          Unable to process your request. Please contact support.
         </Typography>
         <Box component="ol" sx={{ m: 0, pl: 2.5, mb: 2.5, '& > li': { mb: 1.5 } }}>
           <DiscordSupportSteps />
@@ -65,26 +83,6 @@ export const FATokenDepositFlow = observer(() => {
           startIcon={isConnecting ? <CircularProgress size={20} /> : null}
         >
           {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-        </Button>
-      </Box>
-    );
-  }
-
-  if (txHash) {
-    return (
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Your FA token deposit has been claimed successfully.
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          component="a"
-          href={`${networkStore.config.blockExplorerUrl}/tx/${txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View transaction on explorer
         </Button>
       </Box>
     );
