@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Contract, DeferredTopicFilter, EventLog, JsonRpcProvider, Log, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
 import { walletStore } from '@/stores/walletStore';
+import { networkStore } from '@/stores/networkStore';
 import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
 import { CLAIM_ABI, QUEUED_DEPOSIT_ABI } from '@/abi/claimAbi';
 import { fetchJson } from '@/utils/fetchJson';
 
-const PRECOMPILE_ADDRESS: string = process.env.NEXT_PUBLIC_PRECOMPILE_ADDRESS || '0xff00000000000000000000000000000000000002';
-const ETHERLINK_RPC_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_RPC_URL || 'https://node.mainnet.etherlink.com';
-const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
-const PROVIDER: JsonRpcProvider = new JsonRpcProvider(ETHERLINK_RPC_URL);
+const PRECOMPILE_ADDRESS: string = '0xff00000000000000000000000000000000000002';
 
 interface BlockscoutBlockResponse {
   status: string;
@@ -36,12 +34,14 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
   const [needsSupport, setNeedsSupport] = useState<boolean>(false);
 
   const receiverAddress: string = transaction.input.l2_account;
+  
+  const networkConfig = networkStore.config;
 
   const getBlockNumberAtTimestamp = async (timestamp: number): Promise<number | undefined> => {
     const timestampInSeconds: number = Math.floor(timestamp / 1000);
     
     try {
-      const url: string = `${BLOCK_EXPLORER_URL}/api?module=block&action=getblocknobytime&timestamp=${timestampInSeconds}&closest=before`;
+      const url: string = `${networkConfig.blockExplorerUrl}/api?module=block&action=getblocknobytime&timestamp=${timestampInSeconds}&closest=before`;
       const data: BlockscoutBlockResponse = await fetchJson(url);
       
       if (data.status === '1' && data.message === 'OK' && data.result && data.result.blockNumber) {
@@ -57,7 +57,8 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
   const queryQueuedDepositNonce = async (): Promise<bigint | null> => {
     if (transaction.depositNonce !== undefined) return transaction.depositNonce;
     
-    const contract: Contract = new Contract(PRECOMPILE_ADDRESS, QUEUED_DEPOSIT_ABI, PROVIDER);
+    const provider: JsonRpcProvider = new JsonRpcProvider(networkConfig.rpcUrl);
+    const contract: Contract = new Contract(PRECOMPILE_ADDRESS, QUEUED_DEPOSIT_ABI, provider);
     const l2BlockNumber: number | undefined = await getBlockNumberAtTimestamp(transaction.submittedDate);
     if (!l2BlockNumber) return null;
     

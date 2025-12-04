@@ -6,11 +6,10 @@ import { observer } from 'mobx-react-lite';
 import toast from 'react-hot-toast';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { walletStore } from '@/stores/walletStore';
+import { networkStore } from '@/stores/networkStore';
 import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
 import { useClaimFADeposit } from './useClaimFATokenDeposit';
 import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';
-
-const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
 
 export const FATokenDepositFlow = observer(() => {
   const transaction: TezosTransaction<GraphQLResponse> | null = transactionDetailsStore.selectedTransaction;
@@ -46,7 +45,7 @@ export const FATokenDepositFlow = observer(() => {
           variant="contained"
           color="primary"
           component="a"
-          href={`${BLOCK_EXPLORER_URL}/tx/${txHash}`}
+          href={`${networkStore.config.blockExplorerUrl}/tx/${txHash}`}
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -2,6 +2,7 @@
 
 import { Box, Container, Typography } from '@mui/material';
 import { ReactNode } from 'react';
+import { NetworkSelector } from '@/components/shared/NetworkSelector';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,6 +19,9 @@ export const Layout = ({ children }: LayoutProps) => {
     >
       <Box sx={{ textAlign: 'center', py: 6, backgroundColor: 'background.default' }}>
         <Container maxWidth="xl">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <NetworkSelector />
+          </Box>
           <Typography 
             variant="h2" 
             component="h1" 
