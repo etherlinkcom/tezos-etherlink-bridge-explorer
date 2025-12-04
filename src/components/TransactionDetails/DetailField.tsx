@@ -2,35 +2,26 @@
 import { Box, Typography, Tooltip, IconButton } from '@mui/material';
 import { OpenInNew } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
+import { observer } from 'mobx-react-lite';
 import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
 import { EllipsisBox } from '../shared/EllipsisBox';
-
-type FieldKind = 'hash' | 'address' | 'status' | 'text' | 'block';
+import { networkStore } from '@/stores/networkStore';
 
 interface DetailFieldProps {
   label: string;
   value: string | undefined;
-  kind?: FieldKind;
-  copyable?: boolean;
-  monospace?: boolean;
-  bold?: boolean;
-  explorerUrl?: string | null;
-  explorerName?: string | null;
 }
 
-export const DetailField = ({ 
-  label, 
-  value, 
-  kind,
-  copyable = false, 
-  bold = false,
-  monospace = false,
-  explorerUrl,
-  explorerName,
-}: DetailFieldProps) => {
+export const DetailField = observer(({ label, value, }: DetailFieldProps) => {
   const theme = useTheme();
-  
+  const lowerLabel: string = label.toLowerCase();
+  const isHash: boolean = lowerLabel.includes('hash');
+  const isCopyable: boolean = isHash || lowerLabel.includes('address') || lowerLabel.includes('block');
+  const bold: boolean = lowerLabel.includes('type') || lowerLabel.includes('amount');
+  const explorerInfo: { url: string; name: string } | null = 
+  (value && value !== '-' && isHash) ? networkStore.getBlockExplorerInfo(value) : null;
+
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flexDirection: { xs: 'column', md: 'row' } }}> 
@@ -51,7 +42,7 @@ export const DetailField = ({
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', md: 'auto' }}}>
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
-            {kind === 'status' ? (
+            {lowerLabel.includes('status') ? (
               <StatusChip 
                 status={value ?? ''}
                 size="small"
@@ -62,7 +53,7 @@ export const DetailField = ({
                 sx={{ 
                   fontSize: '14px',
                   fontWeight: bold ? theme.typography.fontWeightBold : theme.typography.fontWeightRegular,
-                  fontFamily: monospace ? 'monospace' : 'inherit',
+                  fontFamily: isCopyable ? 'monospace' : 'inherit',
                   maxWidth: { xs: '100%', md: '450px', lg: '100%' }
                 }}
               >
@@ -71,7 +62,7 @@ export const DetailField = ({
             )}
           </Box>
           
-          {copyable && value !== undefined && (
+          {isCopyable && value !== undefined && (
             <CopyButton 
               text={value}
               size="small"
@@ -79,11 +70,11 @@ export const DetailField = ({
             />
           )}
           
-          {explorerUrl && explorerName && (
-            <Tooltip title={`View on ${explorerName}`}>
+          {explorerInfo && (
+            <Tooltip title={`View on ${explorerInfo.name}`}>
               <IconButton
                 component="a"
-                href={explorerUrl}
+                href={explorerInfo.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 size="small"
@@ -102,4 +93,4 @@ export const DetailField = ({
       </Box>
     </Box>
   );
-};
+});
