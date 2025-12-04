@@ -8,7 +8,7 @@ import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { walletStore } from '@/stores/walletStore';
 import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
 import { useClaimFADeposit } from './useClaimFATokenDeposit';
-import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
+import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';
 
 const BLOCK_EXPLORER_URL: string = process.env.NEXT_PUBLIC_ETHERLINK_BLOCK_EXPLORER_URL || 'https://explorer.etherlink.com';
 

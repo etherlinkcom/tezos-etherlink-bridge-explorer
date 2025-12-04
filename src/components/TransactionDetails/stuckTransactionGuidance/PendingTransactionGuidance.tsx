@@ -4,7 +4,7 @@ import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
 import { FATokenDepositFlow } from './FATokenDepositFlow';
 import { FastWithdrawalGuidance } from './FastWithdrawalGuidance';
-import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
+import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';
 
 const GuidanceTitle = (): React.ReactNode => (
   <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>

@@ -16,7 +16,7 @@ import { NetworkSection } from './NetworkSection';
 import { TransactionHeader } from './TransactionHeader';
 import { FastWithdrawalSection } from './FastWithdrawalSection';
 import { GeneralInformationSection } from './GeneralInformationSection';
-import { PendingTransactionGuidance } from './PendingTransactionGuidance';
+import { PendingTransactionGuidance } from './stuckTransactionGuidance/PendingTransactionGuidance';
 
 export const TransactionDetails = observer(() => {
   const { loading, hasError, error } = transactionDetailsStore;

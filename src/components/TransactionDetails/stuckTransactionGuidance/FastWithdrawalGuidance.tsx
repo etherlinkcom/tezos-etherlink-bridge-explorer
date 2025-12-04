@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
-import { DiscordSupportSteps, DiscordSupportButton } from '@/components/TransactionDetails/DiscordSupport';
+import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';
 import { triggerFastWithdrawalIncident, FastWithdrawalTransactionData } from '@/app/actions/pagerDuty';
 
 export const FastWithdrawalGuidance = observer(() => {
