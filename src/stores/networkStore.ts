@@ -95,7 +95,7 @@ export class NetworkStore {
     const config: NetworkConfig = this.config;
     const validation: ValidationResult = validateInput(trimmed);
     
-    if (validation.type === 'tezos_tx_hash') {
+    if (validation.type === 'tezos_tx_hash' || validation.type === 'tezos_address') {
       return {
         url: `${config.tezosExplorerUrl}/${trimmed}`,
         name: 'TzKT Explorer'
@@ -106,13 +106,6 @@ export class NetworkStore {
       return {
         url: `${config.etherlinkExplorerUrl}/tx/${trimmed}`,
         name: 'Etherlink Explorer'
-      };
-    }
-    
-    if (validation.type === 'tezos_address') {
-      return {
-        url: `${config.tezosExplorerUrl}/${trimmed}`,
-        name: 'TzKT Explorer'
       };
     }
     
