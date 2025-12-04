@@ -52,7 +52,7 @@ export const TransactionDetails = observer(() => {
       <TransactionHeader />
 
       <Card>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: 3, pt: 1.5}}>
           {transactionDetails.validation.error && (
             <DataSection title="Data Validation Issues" showDivider>
               <DetailField label="Error" value={transactionDetails.validation.error} />
