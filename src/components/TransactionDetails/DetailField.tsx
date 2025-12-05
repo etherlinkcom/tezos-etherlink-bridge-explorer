@@ -8,20 +8,29 @@ import { StatusChip } from '../shared/StatusChip';
 import { EllipsisBox } from '../shared/EllipsisBox';
 import { networkStore } from '@/stores/networkStore';
 
+export type DetailFieldLabel =
+  | 'Error' | 'Transaction Hash' | 'Address' | 'Block' | 'Amount'
+  | 'Status' | 'Transaction Type' | 'Transaction Kind' | 'Network Flow'
+  | 'Created' | 'Expected' | 'Date';
+
+const COPYABLE_AND_MONOSPACE_LABELS: ReadonlySet<DetailFieldLabel> = new Set(['Transaction Hash', 'Address', 'Block']);
+
+const BOLD_LABELS: ReadonlySet<DetailFieldLabel> = new Set(['Transaction Type', 'Amount']);
+
+const EXPLORER_LABELS: ReadonlySet<DetailFieldLabel> = new Set(['Transaction Hash', 'Address']);
+
 interface DetailFieldProps {
-  label: string;
+  label: DetailFieldLabel;
   value: string | undefined;
 }
 
-export const DetailField = observer(({ label, value, }: DetailFieldProps) => {
+export const DetailField = observer(({ label, value }: DetailFieldProps) => {
   const theme = useTheme();
-  const lowerLabel: string = label.toLowerCase();
-  const isHash: boolean = lowerLabel.includes('hash');
-  const isAddress: boolean = lowerLabel.includes('address');
-  const isCopyable: boolean = isHash || isAddress || lowerLabel.includes('block');
-  const bold: boolean = lowerLabel.includes('type') || lowerLabel.includes('amount');
+  const isCopyableAndMonospace: boolean = COPYABLE_AND_MONOSPACE_LABELS.has(label);
+  const bold: boolean = BOLD_LABELS.has(label);
+  const hasExplorer: boolean = EXPLORER_LABELS.has(label);
   const explorerInfo: { url: string; name: string } | null = 
-  (value && value !== '-' && (isHash || isAddress)) ? networkStore.getExplorerInfo(value) : null;
+  (value && value !== '-' && hasExplorer) ? networkStore.getExplorerInfo(value) : null;
 
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>
@@ -43,7 +52,7 @@ export const DetailField = observer(({ label, value, }: DetailFieldProps) => {
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', md: 'auto' }}}>
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
-            {lowerLabel.includes('status') ? (
+            {label === 'Status' ? (
               <StatusChip 
                 status={value ?? ''}
                 size="small"
@@ -54,7 +63,7 @@ export const DetailField = observer(({ label, value, }: DetailFieldProps) => {
                 sx={{ 
                   fontSize: '14px',
                   fontWeight: bold ? theme.typography.fontWeightBold : theme.typography.fontWeightRegular,
-                  fontFamily: isCopyable ? 'monospace' : 'inherit',
+                  fontFamily: isCopyableAndMonospace ? 'monospace' : 'inherit',
                   maxWidth: { xs: '100%', md: '450px', lg: '100%' }
                 }}
               >
@@ -63,7 +72,7 @@ export const DetailField = observer(({ label, value, }: DetailFieldProps) => {
             )}
           </Box>
           
-          {isCopyable && value !== undefined && (
+          {isCopyableAndMonospace && value !== undefined && (
             <CopyButton 
               text={value}
               size="small"

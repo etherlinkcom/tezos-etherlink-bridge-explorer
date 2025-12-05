@@ -11,12 +11,12 @@ interface FastWithdrawalData {
 
 export const FastWithdrawalSection = ({ data }: { data: FastWithdrawalData }) => {
   return (
-    <DataSection title="Fast Withdrawal Information" showDivider>
-      <DetailField label="Payout Transaction Hash" value={data.hash} />
-      <DetailField label="Payout Address" value={data.address} />
-      <DetailField label="Payout Amount" value={data.amount} />
-      <DetailField label="Payout Block" value={data.block} />
-      <DetailField label="Payout Date" value={data.date} />
+    <DataSection title="Payout Fast Withdrawal Information" showDivider>
+      <DetailField label="Transaction Hash" value={data.hash} />
+      <DetailField label="Address" value={data.address} />
+      <DetailField label="Amount" value={data.amount} />
+      <DetailField label="Block" value={data.block} />
+      <DetailField label="Date" value={data.date} />
     </DataSection>
   );
 };
