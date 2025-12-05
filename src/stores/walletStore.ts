@@ -20,7 +20,7 @@ const getOnboard = (): ReturnType<typeof Onboard> => {
           token: 'XTZ',
           label: networkStore.config.networkName,
           rpcUrl: networkStore.config.rpcUrl,
-          blockExplorerUrl: networkStore.config.blockExplorerUrl,
+          blockExplorerUrl: networkStore.config.etherlinkExplorerUrl,
         },
       ],
       accountCenter: {

@@ -1,6 +1,6 @@
 'use server';
 
-import { createPagerDutyIncident } from '@/utils/createPagerDutyIncident';
+import { createPagerDutyIncident } from './createPagerDutyIncident';
 
 export interface FastWithdrawalTransactionData {
   l2TxHash: string;

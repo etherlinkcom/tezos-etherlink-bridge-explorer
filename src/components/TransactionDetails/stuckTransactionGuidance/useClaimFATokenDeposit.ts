@@ -41,7 +41,7 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
     const timestampInSeconds: number = Math.floor(timestamp / 1000);
     
     try {
-      const url: string = `${networkConfig.blockExplorerUrl}/api?module=block&action=getblocknobytime&timestamp=${timestampInSeconds}&closest=before`;
+      const url: string = `${networkConfig.etherlinkExplorerUrl}/api?module=block&action=getblocknobytime&timestamp=${timestampInSeconds}&closest=before`;
       const data: BlockscoutBlockResponse = await fetchJson(url);
       
       if (data.status === '1' && data.message === 'OK' && data.result && data.result.blockNumber) {

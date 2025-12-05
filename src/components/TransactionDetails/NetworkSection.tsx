@@ -1,3 +1,6 @@
+'use client';
+
+import { observer } from 'mobx-react-lite';
 import { DataSection } from './DataSection';
 import { DetailField } from './DetailField';
 
@@ -10,7 +13,7 @@ interface NetworkSectionProps {
   showDivider?: boolean;
 }
 
-export const NetworkSection = ({
+export const NetworkSection = observer(({
   title,
   hash,
   address,
@@ -20,10 +23,10 @@ export const NetworkSection = ({
 }: NetworkSectionProps) => {
   return (
     <DataSection title={title} showDivider={showDivider}>
-      <DetailField kind="hash" label="Transaction Hash" value={hash} copyable={hash !== undefined} monospace />
-      <DetailField kind="address" label="Address" value={address} copyable={address !== undefined} monospace />
-      <DetailField kind="block" label="Block" value={block} monospace />
-      <DetailField label="Amount" value={amount} bold />
+      <DetailField label="Transaction Hash" value={hash} />
+      <DetailField label="Address" value={address} />
+      <DetailField label="Block" value={block} />
+      <DetailField label="Amount" value={amount} />
     </DataSection>
   );
-};
+});
