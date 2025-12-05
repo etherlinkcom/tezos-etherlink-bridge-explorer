@@ -20,8 +20,8 @@ export const GeneralInformationSection = ({
 }: GeneralInformationProps) => {
   return (
     <DataSection title="General Information" showDivider>
-      <DetailField kind="status" label="Status" value={status} />
-      <DetailField label="Transaction Type" value={type} bold />
+      <DetailField label="Status" value={status} />
+      <DetailField label="Transaction Type" value={type} />
       {kind && <DetailField label="Transaction Kind" value={kind} />}
       <DetailField label="Network Flow" value={networkFlow} />
       <DetailField label="Created" value={createdAt} />

@@ -64,30 +64,6 @@ export class NetworkStore {
     this.saveNetworkToStorage();
   };
 
-  getBlockExplorerInfo = (hash: string | undefined): { url: string; name: string } | null => {
-    if (!hash || hash === '-') return null;
-    
-    const trimmedHash: string = hash.trim();
-    const config: NetworkConfig = this.config;
-    const validation: ValidationResult = validateInput(trimmedHash);
-    
-    if (validation.type === 'tezos_tx_hash') {
-      return {
-        url: `${config.tezosExplorerUrl}/${trimmedHash}`,
-        name: 'TzKT Explorer'
-      };
-    }
-    
-    if (validation.type === 'etherlink_tx_hash') {
-      return {
-        url: `${config.etherlinkExplorerUrl}/tx/${trimmedHash}`,
-        name: 'Etherlink Explorer'
-      };
-    }
-    
-    return null;
-  };
-
   private loadNetworkFromStorage = (): void => {
     if (typeof window === 'undefined') return;
     
