@@ -9,7 +9,7 @@ interface NetworkSectionProps {
   hash: string | undefined;
   address: string | undefined;
   amount: string;
-  block: string;
+  block: string | undefined;
   showDivider?: boolean;
 }
 
