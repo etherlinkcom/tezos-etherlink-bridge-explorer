@@ -64,37 +64,6 @@ export class NetworkStore {
     this.saveNetworkToStorage();
   };
 
-  getExplorerInfo = (value: string | undefined): { url: string; name: string } | null => {
-    if (!value || value === '-') return null;
-    
-    const trimmed: string = value.trim();
-    const config: NetworkConfig = this.config;
-    const validation: ValidationResult = validateInput(trimmed);
-    
-    if (validation.type === 'tezos_tx_hash' || validation.type === 'tezos_address') {
-      return {
-        url: `${config.tezosExplorerUrl}/${trimmed}`,
-        name: 'TzKT Explorer'
-      };
-    }
-    
-    if (validation.type === 'etherlink_tx_hash') {
-      return {
-        url: `${config.etherlinkExplorerUrl}/tx/${trimmed}`,
-        name: 'Etherlink Explorer'
-      };
-    }
-    
-    if (validation.type === 'etherlink_address') {
-      return {
-        url: `${config.etherlinkExplorerUrl}/address/${trimmed}`,
-        name: 'Etherlink Explorer'
-      };
-    }
-    
-    return null;
-  };
-
   private loadNetworkFromStorage = (): void => {
     if (typeof window === 'undefined') return;
     
