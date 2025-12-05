@@ -1,7 +1,8 @@
 import { Box, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
-import { GraphQLResponse, TezosTransaction } from '@/stores/tezosTransactionStore';
+import { TezosTransaction } from '@/stores/tezosTransactionStore';
+import { GraphQLResponse } from '@/types/tezosTransaction';
 import { FATokenDepositFlow } from './FATokenDepositFlow';
 import { FastWithdrawalGuidance } from './FastWithdrawalGuidance';
 import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';

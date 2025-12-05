@@ -55,7 +55,7 @@ export const DetailField = observer(({ label, value }: DetailFieldProps) => {
           <Box sx={{ minWidth: 0, ml: theme.spacing(1) }}>
             {label === 'Status' ? (
               <StatusChip 
-                status={value ?? ''}
+                status={value ?? '-'}
                 size="small"
                 sx={{ height: '20px' }}
               />
@@ -68,7 +68,7 @@ export const DetailField = observer(({ label, value }: DetailFieldProps) => {
                   maxWidth: { xs: '100%', md: '450px', lg: '100%' }
                 }}
               >
-                {value ?? ''}
+                {value ?? '-'}
               </EllipsisBox>
             )}
           </Box>

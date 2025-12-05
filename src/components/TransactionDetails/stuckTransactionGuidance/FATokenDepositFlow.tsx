@@ -7,7 +7,8 @@ import toast from 'react-hot-toast';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
 import { walletStore } from '@/stores/walletStore';
 import { networkStore } from '@/stores/networkStore';
-import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
+import { TezosTransaction } from '@/stores/tezosTransactionStore';
+import { GraphQLResponse } from '@/types/tezosTransaction';
 import { useClaimFADeposit } from './useClaimFATokenDeposit';
 import { DiscordSupportSteps, DiscordSupportButton } from './DiscordSupport';
 

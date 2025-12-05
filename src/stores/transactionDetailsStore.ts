@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { TezosTransaction, tezosTransactionStore } from "./tezosTransactionStore";
-import { GraphQLResponse } from "./tezosTransactionStore";
+import { GraphQLResponse } from "@/types/tezosTransaction";
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
 
 export class TransactionDetailsStore {
@@ -59,7 +59,7 @@ export class TransactionDetailsStore {
       return isEtherlink ? formatEtherlinkValue(value) : value;
     };
     
-    const toBlockString = (level?: number) => (level !== undefined && level !== null ? String(level) : '-');
+    const toBlockString = (level?: number) => (level !== undefined && level !== null ? String(level) : undefined);
 
     const l1 = {
       network: 'Tezos',
@@ -94,7 +94,7 @@ export class TransactionDetailsStore {
             hash: formatValue(tx.fastWithdrawalPayOut.l1TxHash, false),
             address: formatValue(tx.fastWithdrawalPayOut.input?.l1_account, false),
             amount: `${tx.fastWithdrawalPayOut.receivingAmount || '0'} ${tx.fastWithdrawalPayOut.symbol || 'Unknown'}`,
-            block: String(tx.fastWithdrawalPayOut.l1Block || tx.fastWithdrawalPayOut.l2Block || 'Not available'),
+            block: toBlockString(tx.fastWithdrawalPayOut.l1Block || tx.fastWithdrawalPayOut.l2Block),
             date: tx.fastWithdrawalPayOut.submittedDate
               ? formatDateTime(new Date(tx.fastWithdrawalPayOut.submittedDate))
               : 'Not available',
