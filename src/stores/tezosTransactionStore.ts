@@ -72,13 +72,11 @@ export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
   private _transactions = observable.array<TezosTransaction>([]);
   
-  loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
+  loadingState: 'idle' | 'initial' | 'refresh' = 'idle';
   
   get loading() { return this.loadingState !== 'idle'; }
   get loadingInitial() { return this.loadingState === 'initial'; }
-  get loadingMore() { return this.loadingState === 'page'; }
   get loadingRefresh() { return this.loadingState === 'refresh'; }
-  get loadingPage() { return this.loadingState === 'page'; }
   
   error: string | null = null;
   currentPage: number = 1;
@@ -339,7 +337,7 @@ export class TezosTransactionStore {
     this.error = null;
   };
 
-  setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
+  setLoadingState = (state: 'idle' | 'initial' | 'refresh') => {
     this.loadingState = state;
   };
 

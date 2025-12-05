@@ -8,7 +8,7 @@ export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export interface GetTransactionsOptions extends QueryFilters {
   resetStore?: boolean;
   autoRefresh?: boolean;
-  loadingMode?: 'initial' | 'page' | 'refresh';
+  loadingMode?: 'initial' | 'refresh';
 }
 
 export type TezosTransactionKind =
