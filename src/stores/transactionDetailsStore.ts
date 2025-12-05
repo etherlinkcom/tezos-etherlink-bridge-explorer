@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { TezosTransaction, tezosTransactionStore } from "./tezosTransactionStore";
-import { GraphQLResponse } from "./tezosTransactionStore";
+import { GraphQLResponse } from "@/types/tezosTransaction";
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
 
 export class TransactionDetailsStore {

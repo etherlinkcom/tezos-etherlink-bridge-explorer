@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Contract, DeferredTopicFilter, EventLog, JsonRpcProvider, Log, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
 import { walletStore } from '@/stores/walletStore';
 import { networkStore } from '@/stores/networkStore';
-import { TezosTransaction, GraphQLResponse } from '@/stores/tezosTransactionStore';
+import { TezosTransaction } from '@/stores/tezosTransactionStore';
+import { GraphQLResponse } from '@/types/tezosTransaction';
 import { CLAIM_ABI, QUEUED_DEPOSIT_ABI } from '@/abi/claimAbi';
 import { fetchJson } from '@/utils/fetchJson';
 
