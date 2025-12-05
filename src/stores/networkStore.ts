@@ -1,5 +1,4 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { validateInput, ValidationResult } from '@/utils/validation';
 
 export type NetworkType = 'mainnet' | 'testnet';
 
