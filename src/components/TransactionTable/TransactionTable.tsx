@@ -1,7 +1,6 @@
 'use client';
 
 import { observer } from 'mobx-react-lite';
-import { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography,
@@ -16,38 +15,27 @@ export const TransactionTable = observer(() => {
   const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
   const loadingInitial: boolean = tezosTransactionStore.loadingInitial;
   const loadingRefresh: boolean = tezosTransactionStore.loadingRefresh;
-  const [showRefreshing, setShowRefreshing] = useState<boolean>(false);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (loadingRefresh) {
-      setShowRefreshing(true);
-    } else if (showRefreshing) {
-      timer = setTimeout(() => setShowRefreshing(false), 500);
-    }
-    
-    return () => clearTimeout(timer);
-  }, [loadingRefresh, showRefreshing]);
 
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           Transactions
-          {showRefreshing && (
+          <Box
+            sx={{
+              opacity: loadingRefresh ? 1 : 0,
+              visibility: loadingRefresh ? 'visible' : 'hidden',
+              display: 'inline-block',
+              transition: loadingRefresh
+                ? 'opacity 0s, visibility 0s'
+                : 'opacity 0s 1s, visibility 0s 1s',
+            }}
+          >
             <CircularProgress 
               size={18} 
-              sx={{ 
-                color: 'success.main',
-                animation: 'fadeIn 0.2s ease-in',
-                '@keyframes fadeIn': {
-                  from: { opacity: 0 },
-                  to: { opacity: 1 },
-                },
-              }} 
+              sx={{ color: 'success.main' }} 
             />
-          )}
+          </Box>
         </Typography>
       </Box>
       
