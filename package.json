@@ -19,7 +19,8 @@
     "posthog-js": "^1.277.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-hot-toast": "^2.6.0"
+    "react-hot-toast": "^2.6.0",
+    "react-timeago": "^8.3.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.14.0",

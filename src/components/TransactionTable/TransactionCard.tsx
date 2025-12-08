@@ -7,6 +7,7 @@ import {
   Typography,
   Stack
 } from '@mui/material';
+import ReactTimeAgo from 'react-timeago';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
@@ -73,8 +74,8 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
           <MonospaceField label="Transaction Hash" value={transactionData.sourceHash || transactionData.destHash || '-'} />
 
           {/* Created Date - right aligned, no label */}
-          <Typography variant="caption" color="text.secondary" textAlign="right">
-            {transactionData.formattedTimeAgo}
+          <Typography variant="caption" color="text.secondary" textAlign="right" component="div">
+            <ReactTimeAgo date={new Date(transaction.submittedDate)} />
           </Typography>
         </Stack>
       </CardContent>

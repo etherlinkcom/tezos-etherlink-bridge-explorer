@@ -11,8 +11,8 @@ interface TransactionCardsProps {
 export const TransactionCards = observer<TransactionCardsProps>(({ transactions, sx }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, ...sx }}>
-      {transactions.map((transaction, index) => (
-        <TransactionCard key={index} transaction={transaction} />
+      {transactions.map((transaction) => (
+        <TransactionCard key={transaction.input.id} transaction={transaction} />
       ))}
     </Box>
   );

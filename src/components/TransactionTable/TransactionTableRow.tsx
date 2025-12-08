@@ -3,6 +3,7 @@
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
 import { TableRow, TableCell, Typography, Chip, Tooltip } from '@mui/material';
+import ReactTimeAgo from 'react-timeago';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
@@ -15,7 +16,7 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
   
   return (
     <TableRow 
-      key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`} 
+      key={transaction.input.id} 
       hover
       onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{ cursor:'pointer' }}>
@@ -93,8 +94,8 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       </TableCell>
       
       <TableCell>
-        <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }}>
-          {transactionData.formattedTimeAgo}
+        <Typography variant="body2" sx={{ whiteSpace: 'nowrap', color: `inherit !important` }} component="div">
+          <ReactTimeAgo date={new Date(transaction.submittedDate)} />
         </Typography>
       </TableCell>
     </TableRow>
