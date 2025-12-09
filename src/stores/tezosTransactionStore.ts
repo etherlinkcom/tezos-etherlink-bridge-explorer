@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable, action, reaction } from "mobx";
+import { makeAutoObservable, observable, action, reaction, runInAction } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { filterStore } from "./filterStore";
@@ -16,7 +16,7 @@ import {
 } from "@/types/tezosTransaction";
 
 export class TezosTransaction<Input = GraphQLResponse>
-  implements TransactionProps<Input>
+implements TransactionProps<Input>
 {
   type: TezosTransactionType;
   input: Input;
@@ -70,7 +70,9 @@ export class TezosTransaction<Input = GraphQLResponse>
 
 export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
+  newTransactionIds = observable.map<string, boolean>();
   private _transactions = observable.array<TezosTransaction>([]);
+  private newTransactionTimeouts = observable.map<string, NodeJS.Timeout>();
   
   loadingState: 'idle' | 'initial' | 'refresh' = 'idle';
   
@@ -84,7 +86,7 @@ export class TezosTransactionStore {
   batchSize: number = 1000; // API batch size for fetching
   
   private readonly MAX_TRANSACTIONS = 5000;
-  private readonly AUTO_REFRESH_INTERVAL = 50000;
+  private readonly AUTO_REFRESH_INTERVAL = 60000;
   
   private refreshInterval: NodeJS.Timeout | null = null;
   
@@ -380,22 +382,47 @@ export class TezosTransactionStore {
     });
   };
 
-  private mergeTransactions = (transactions: TezosTransaction[]): void => {
+  private mergeTransactions = action((transactionsToAdd: TezosTransaction[]): void => {
     if (this.transactionMap.size === 0) {
-      transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
+      transactionsToAdd.forEach(tx => this.transactionMap.set(tx.input.id, tx));
     } else {
-      transactions.forEach(tx => {
+      transactionsToAdd.forEach(tx => {
         const existing: TezosTransaction | undefined = this.transactionMap.get(tx.input.id);
         if (existing) {
           existing.update(tx);
         } else {
           this.transactionMap.set(tx.input.id, tx);
+          if (this.loadingRefresh) {
+            this.markAsNew(tx.input.id);
+          }
         }
       });
     }
     
     this.trimOldTransactions();
-    this._transactions.replace(Array.from(this.transactionMap.values()));
+    const allTransactions: TezosTransaction[] = Array.from(this.transactionMap.values())
+    .sort((a, b) => b.input.created_at.localeCompare(a.input.created_at));
+    
+    this._transactions.replace(allTransactions);
+  });
+
+  private markAsNew = (id: string): void => {
+    if (this.newTransactionIds.has(id)) {
+      return;
+    }
+    
+    this.newTransactionIds.set(id, true);
+    const existingTimeout: NodeJS.Timeout | undefined = this.newTransactionTimeouts.get(id);
+    if (existingTimeout) clearTimeout(existingTimeout);
+
+    const timeout: NodeJS.Timeout = setTimeout(() => {
+      runInAction(() => {
+        this.newTransactionIds.delete(id);
+        this.newTransactionTimeouts.delete(id);
+      });
+    }, 5000);
+    
+    this.newTransactionTimeouts.set(id, timeout);
   };
 
   private trimOldTransactions = (): void => {
@@ -462,13 +489,14 @@ export class TezosTransactionStore {
 
     let filters: GetTransactionsOptions = options;
     if (options.autoRefresh && this.transactions.length > 0) {
-      filters = { ...options, since: this.transactions[0]?.input.updated_at };
+      filters = { ...options, since: this.transactions[0]?.input.created_at };
     }
     
     try {
       const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
       const allTransactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
-      
+      // If the transaction is a fast withdrawal, link it to the previous service provider transaction
+      // instead of displaying it as a new transaction
       const transactionsToAdd: TezosTransaction<GraphQLResponse>[] = allTransactions.filter(tx => 
         this.linkFastWithdrawalTxs(tx, this.transactionMap, allTransactions)
       );

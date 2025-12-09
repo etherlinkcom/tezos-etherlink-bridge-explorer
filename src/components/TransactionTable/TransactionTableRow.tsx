@@ -4,12 +4,13 @@ import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
 import { TableRow, TableCell, Typography, Chip, Tooltip } from '@mui/material';
 import ReactTimeAgo from 'react-timeago';
-import { TezosTransaction } from '@/stores/tezosTransactionStore';
+import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
 
 export const TransactionTableRow = observer<{ transaction: TezosTransaction }>(({ transaction }) => {
+  const isNew: boolean = tezosTransactionStore.newTransactionIds.has(transaction.input.id);
   const router = useRouter();
   const transactionData: TransactionData = getTransactionData(transaction);
   const handleTransactionClick = createTransactionClickHandler(router);
@@ -19,7 +20,11 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       key={transaction.input.id} 
       hover
       onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
-      sx={{ cursor:'pointer' }}>
+      sx={{ 
+        cursor: 'pointer',
+        backgroundColor: isNew ? 'action.selected' : 'transparent',
+        transition: 'background-color 0.3s ease-out',
+      }}>
         
       <TableCell sx={{ width: '100px', maxWidth: '100px' }}>
         <StatusChip status={transaction.status} />
