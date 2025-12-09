@@ -8,7 +8,7 @@ import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransacti
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
-import { createFadeInHighlight } from '@/theme/animations';
+import { createHighlightAnimation } from '@/theme/animations';
 
 export const TransactionTableRow = observer<{ transaction: TezosTransaction }>(({ transaction }) => {
   const isNew: boolean = tezosTransactionStore.newTransactionIds.has(transaction.input.id);
@@ -24,15 +24,13 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{ 
         cursor: 'pointer',
+        transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
         ...(isNew && {
-          backgroundColor: (theme) => alpha(theme.palette.success.main, 0.08),
-          borderLeft: (theme) => `4px solid ${theme.palette.success.main}`,
-          animation: `${createFadeInHighlight(theme)} 0.3s ease-in forwards`,
+          animation: `${createHighlightAnimation(theme)} 2s ease forwards`,
           '&:hover': {
             backgroundColor: (theme) => alpha(theme.palette.success.main, 0.12),
           },
         }),
-        transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
       }}>
         
       <TableCell sx={{ width: '100px', maxWidth: '100px' }}>

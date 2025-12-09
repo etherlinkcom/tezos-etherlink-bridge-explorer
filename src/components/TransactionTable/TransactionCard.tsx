@@ -15,9 +15,8 @@ import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { alpha } from '@mui/material/styles';
 import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
-import { createFadeInHighlight } from '@/theme/animations';
+import { createHighlightAnimation } from '@/theme/animations';
 
 const MonospaceField = ({ label, value }: { label: string; value: string }) => (
   <Box sx={{ flex: 1 }}>
@@ -48,12 +47,10 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
       sx={{
         cursor: 'pointer',
         mb: 2,
-        ...(isNew && {
-          backgroundColor: (theme) => alpha(theme.palette.success.main, 0.08),
-          borderLeft: (theme) => `4px solid ${theme.palette.success.main}`,
-          animation: `${createFadeInHighlight(theme)} 0.3s ease-in forwards`,
-        }),
         transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
+        ...(isNew && {
+          animation: `${createHighlightAnimation(theme)} 2s ease forwards`,
+        }),
       }}
     >
       <CardContent>
