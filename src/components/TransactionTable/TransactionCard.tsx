@@ -51,7 +51,7 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
         ...(isNew && {
           backgroundColor: (theme) => alpha(theme.palette.success.main, 0.08),
           borderLeft: (theme) => `4px solid ${theme.palette.success.main}`,
-          animation: `${createFadeInHighlight(theme)} 0.5s ease-in forwards`,
+          animation: `${createFadeInHighlight(theme)} 0.3s ease-in forwards`,
         }),
         transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
       }}

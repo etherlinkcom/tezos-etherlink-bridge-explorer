@@ -27,7 +27,7 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
         ...(isNew && {
           backgroundColor: (theme) => alpha(theme.palette.success.main, 0.08),
           borderLeft: (theme) => `4px solid ${theme.palette.success.main}`,
-          animation: `${createFadeInHighlight(theme)} 0.5s ease-in forwards`,
+          animation: `${createFadeInHighlight(theme)} 0.3s ease-in forwards`,
           '&:hover': {
             backgroundColor: (theme) => alpha(theme.palette.success.main, 0.12),
           },
