@@ -404,11 +404,16 @@ export class TezosTransactionStore {
     
     this.trimOldTransactions();
     
-    const allTransactions: TezosTransaction[] = Array.from(this.transactionMap.values());
-    const existingTransactions: TezosTransaction[] = allTransactions.filter(
-      tx => !newTransactions.some(newTx => newTx.input.id === tx.input.id)
-    );
-    this._transactions.replace([...newTransactions, ...existingTransactions]);
+    const updated: Map<string, TezosTransaction> = new Map();
+    
+    newTransactions.forEach(txn => updated.set(txn.input.id, txn));
+    
+    this.transactionMap.forEach((txn, id) => {
+      if (!updated.has(id)) updated.set(id, txn);
+    });
+    
+    this.transactionMap.replace(updated);
+    this._transactions.replace([...updated.values()]);
   });
 
   private markAsNew = (id: string): void => {
@@ -425,7 +430,7 @@ export class TezosTransactionStore {
         this.newTransactionIds.delete(id);
         this.newTransactionTimeouts.delete(id);
       });
-    }, 5000);
+    }, 2000);
     
     this.newTransactionTimeouts.set(id, timeout);
   };
