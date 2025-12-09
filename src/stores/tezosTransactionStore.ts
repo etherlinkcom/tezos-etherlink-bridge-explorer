@@ -383,6 +383,8 @@ export class TezosTransactionStore {
   };
 
   private mergeTransactions = action((transactionsToAdd: TezosTransaction[]): void => {
+    const newTransactions: TezosTransaction[] = [];
+    
     if (this.transactionMap.size === 0) {
       transactionsToAdd.forEach(tx => this.transactionMap.set(tx.input.id, tx));
     } else {
@@ -395,15 +397,18 @@ export class TezosTransactionStore {
           if (this.loadingRefresh) {
             this.markAsNew(tx.input.id);
           }
+          newTransactions.push(tx);
         }
       });
     }
     
     this.trimOldTransactions();
-    const allTransactions: TezosTransaction[] = Array.from(this.transactionMap.values())
-    .sort((a, b) => b.input.created_at.localeCompare(a.input.created_at));
     
-    this._transactions.replace(allTransactions);
+    const allTransactions: TezosTransaction[] = Array.from(this.transactionMap.values());
+    const existingTransactions: TezosTransaction[] = allTransactions.filter(
+      tx => !newTransactions.some(newTx => newTx.input.id === tx.input.id)
+    );
+    this._transactions.replace([...newTransactions, ...existingTransactions]);
   });
 
   private markAsNew = (id: string): void => {
