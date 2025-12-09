@@ -2,16 +2,18 @@
 
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { TableRow, TableCell, Typography, Chip, Tooltip } from '@mui/material';
+import { TableRow, TableCell, Typography, Chip, Tooltip, alpha, useTheme } from '@mui/material';
 import ReactTimeAgo from 'react-timeago';
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
+import { createFadeInHighlight } from '@/theme/animations';
 
 export const TransactionTableRow = observer<{ transaction: TezosTransaction }>(({ transaction }) => {
   const isNew: boolean = tezosTransactionStore.newTransactionIds.has(transaction.input.id);
   const router = useRouter();
+  const theme = useTheme();
   const transactionData: TransactionData = getTransactionData(transaction);
   const handleTransactionClick = createTransactionClickHandler(router);
   
@@ -22,8 +24,15 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{ 
         cursor: 'pointer',
-        backgroundColor: isNew ? 'action.selected' : 'transparent',
-        transition: 'background-color 0.3s ease-out',
+        ...(isNew && {
+          backgroundColor: (theme) => alpha(theme.palette.success.main, 0.08),
+          borderLeft: (theme) => `4px solid ${theme.palette.success.main}`,
+          animation: `${createFadeInHighlight(theme)} 0.5s ease-in forwards`,
+          '&:hover': {
+            backgroundColor: (theme) => alpha(theme.palette.success.main, 0.12),
+          },
+        }),
+        transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
       }}>
         
       <TableCell sx={{ width: '100px', maxWidth: '100px' }}>

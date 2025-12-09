@@ -5,7 +5,8 @@ import {
   CardContent,
   Box,
   Typography,
-  Stack
+  Stack,
+  useTheme
 } from '@mui/material';
 import ReactTimeAgo from 'react-timeago';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
@@ -14,6 +15,9 @@ import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
+import { alpha } from '@mui/material/styles';
+import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
+import { createFadeInHighlight } from '@/theme/animations';
 
 const MonospaceField = ({ label, value }: { label: string; value: string }) => (
   <Box sx={{ flex: 1 }}>
@@ -32,7 +36,9 @@ const MonospaceField = ({ label, value }: { label: string; value: string }) => (
 );
 
 export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ transaction }) => {
+  const isNew: boolean = tezosTransactionStore.newTransactionIds.has(transaction.input.id);
   const router = useRouter();
+  const theme = useTheme();
   const transactionData: TransactionData = getTransactionData(transaction);
   const handleTransactionClick = createTransactionClickHandler(router);
 
@@ -41,7 +47,13 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
       onClick={() => handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{
         cursor: 'pointer',
-        mb: 2
+        mb: 2,
+        ...(isNew && {
+          backgroundColor: (theme) => alpha(theme.palette.success.main, 0.08),
+          borderLeft: (theme) => `4px solid ${theme.palette.success.main}`,
+          animation: `${createFadeInHighlight(theme)} 0.5s ease-in forwards`,
+        }),
+        transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
       }}
     >
       <CardContent>
