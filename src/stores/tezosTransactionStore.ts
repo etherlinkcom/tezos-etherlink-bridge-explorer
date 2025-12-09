@@ -385,35 +385,27 @@ export class TezosTransactionStore {
   private mergeTransactions = action((transactionsToAdd: TezosTransaction[]): void => {
     const newTransactions: TezosTransaction[] = [];
     
-    if (this.transactionMap.size === 0) {
-      transactionsToAdd.forEach(tx => this.transactionMap.set(tx.input.id, tx));
-    } else {
-      transactionsToAdd.forEach(tx => {
-        const existing: TezosTransaction | undefined = this.transactionMap.get(tx.input.id);
-        if (existing) {
-          existing.update(tx);
-        } else {
-          this.transactionMap.set(tx.input.id, tx);
-          if (this.loadingRefresh) {
-            this.markAsNew(tx.input.id);
-          }
-          newTransactions.push(tx);
+    transactionsToAdd.forEach(tx => {
+      const existing = this.transactionMap.get(tx.input.id);
+      if (existing) {
+        existing.update(tx);
+      } else {
+        if (this.loadingRefresh) {
+          this.markAsNew(tx.input.id);
         }
-      });
-    }
-    
+        newTransactions.push(tx);
+      }
+    });
+
     this.trimOldTransactions();
     
-    const updated: Map<string, TezosTransaction> = new Map();
-    
-    newTransactions.forEach(txn => updated.set(txn.input.id, txn));
-    
-    this.transactionMap.forEach((txn, id) => {
-      if (!updated.has(id)) updated.set(id, txn);
-    });
-    
-    this.transactionMap.replace(updated);
-    this._transactions.replace([...updated.values()]);
+    if (newTransactions.length > 0) {
+      const updated = new Map<string, TezosTransaction>();
+      newTransactions.forEach(tx => updated.set(tx.input.id, tx));
+      this.transactionMap.forEach((txn, id) => updated.set(id, txn));
+      this.transactionMap.replace(updated);
+    }
+    this._transactions.replace([...this.transactionMap.values()]);
   });
 
   private markAsNew = (id: string): void => {
