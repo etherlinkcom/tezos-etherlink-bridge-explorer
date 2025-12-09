@@ -24,7 +24,6 @@ export const TransactionTableRow = observer<{ transaction: TezosTransaction }>((
       onClick={() => (transactionData.sourceHash || transactionData.destHash) && handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{ 
         cursor: 'pointer',
-        transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
         ...(isNew && {
           animation: `${createHighlightAnimation(theme)} 2s ease forwards`,
           '&:hover': {

@@ -47,7 +47,6 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
       sx={{
         cursor: 'pointer',
         mb: 2,
-        transition: 'background-color 0.3s ease-out, border-left 0.3s ease-out',
         ...(isNew && {
           animation: `${createHighlightAnimation(theme)} 2s ease forwards`,
         }),
