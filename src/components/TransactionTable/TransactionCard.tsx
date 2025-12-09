@@ -16,7 +16,7 @@ import { getTransactionData, createTransactionClickHandler, TransactionData } fr
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
 import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
-import { createHighlightAnimation } from '@/theme/animations';
+import { createHighlightAnimationMobile } from '@/theme/animations';
 
 const MonospaceField = ({ label, value }: { label: string; value: string }) => (
   <Box sx={{ flex: 1 }}>
@@ -48,7 +48,7 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
         cursor: 'pointer',
         mb: 2,
         ...(isNew && {
-          animation: `${createHighlightAnimation(theme)} 2s ease forwards`,
+          animation: `${createHighlightAnimationMobile(theme)} 2s ease forwards`,
         }),
       }}
     >
