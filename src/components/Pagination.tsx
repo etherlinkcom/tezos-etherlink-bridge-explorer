@@ -7,7 +7,6 @@ import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
 export const Pagination = observer(() => {
   const currentPage: number = tezosTransactionStore.currentPage;
   const totalPages: number = tezosTransactionStore.totalPages;
-  const loadingPage: boolean = tezosTransactionStore.loadingPage;
 
   const handlePreviousPage = () => {
     tezosTransactionStore.goToPage(currentPage - 1);
@@ -22,7 +21,7 @@ export const Pagination = observer(() => {
       <Button
         variant="outlined"
         onClick={handlePreviousPage}
-        disabled={currentPage === 1 || loadingPage}
+        disabled={currentPage === 1}
       >
         Previous
       </Button>
@@ -34,7 +33,7 @@ export const Pagination = observer(() => {
       <Button
         variant="outlined"
         onClick={handleNextPage}
-        disabled={currentPage === totalPages || loadingPage}
+        disabled={currentPage === totalPages}
       >
         Next
       </Button>

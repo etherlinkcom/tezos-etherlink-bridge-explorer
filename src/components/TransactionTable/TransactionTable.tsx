@@ -5,7 +5,6 @@ import {
   Box, 
   Typography,
   CircularProgress,
-  Chip,
 } from '@mui/material';
 import { TezosTransaction, tezosTransactionStore } from '@/stores/tezosTransactionStore';
 import { TransactionsTableContent } from '@/components/TransactionTable/TransactionsTableContent';
@@ -15,14 +14,28 @@ import { TransactionCards } from './TransactionCards';
 export const TransactionTable = observer(() => {
   const transactions: TezosTransaction[] = tezosTransactionStore.currentTransactions;
   const loadingInitial: boolean = tezosTransactionStore.loadingInitial;
-  const loadingRefresh: boolean = tezosTransactionStore.loadingRefresh;  
+  const loadingRefresh: boolean = tezosTransactionStore.loadingRefresh;
 
   return (
     <Box sx={{ width: '100%' }}>
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h2">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, ml: { xs: 0.25, md: 1} }}>
+        <Typography variant="h4" component="h2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           Transactions
+          <Box
+            sx={{
+              opacity: loadingRefresh ? 1 : 0,
+              visibility: loadingRefresh ? 'visible' : 'hidden',
+              display: 'inline-block',
+              transition: loadingRefresh
+                ? 'opacity 0s, visibility 0s'
+                : 'opacity 0s 1s, visibility 0s 1s',
+            }}
+          >
+            <CircularProgress 
+              size={18} 
+              sx={{ color: 'success.main' }} 
+            />
+          </Box>
         </Typography>
       </Box>
       
@@ -32,17 +45,6 @@ export const TransactionTable = observer(() => {
           <Typography variant="body1" sx={{ mt: 2 }}>
             Loading transactions...
           </Typography>
-        </Box>
-      )}
-      
-      {loadingRefresh && (
-        <Box sx={{ textAlign: 'center', py: 2 }}>
-          <Chip 
-            icon={<CircularProgress size={16} />}
-            label="Refreshing..." 
-            color="success" 
-            variant="outlined"
-          />
         </Box>
       )}
       

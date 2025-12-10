@@ -5,14 +5,18 @@ import {
   CardContent,
   Box,
   Typography,
-  Stack
+  Stack,
+  useTheme
 } from '@mui/material';
+import ReactTimeAgo from 'react-timeago';
 import { TezosTransaction } from '@/stores/tezosTransactionStore';
 import { StatusChip } from '@/components/shared/StatusChip';
 import { EllipsisBox } from '@/components/shared/EllipsisBox';
 import { getTransactionData, createTransactionClickHandler, TransactionData } from './transactionData';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
+import { tezosTransactionStore } from '@/stores/tezosTransactionStore';
+import { createHighlightAnimationMobile } from '@/theme/animations';
 
 const MonospaceField = ({ label, value }: { label: string; value: string }) => (
   <Box sx={{ flex: 1 }}>
@@ -31,7 +35,9 @@ const MonospaceField = ({ label, value }: { label: string; value: string }) => (
 );
 
 export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ transaction }) => {
+  const isNew: boolean = tezosTransactionStore.newTransactionIds.has(transaction.input.id);
   const router = useRouter();
+  const theme = useTheme();
   const transactionData: TransactionData = getTransactionData(transaction);
   const handleTransactionClick = createTransactionClickHandler(router);
 
@@ -40,7 +46,10 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
       onClick={() => handleTransactionClick(transactionData.sourceHash || transactionData.destHash)}
       sx={{
         cursor: 'pointer',
-        mb: 2
+        mb: 2,
+        ...(isNew && {
+          animation: `${createHighlightAnimationMobile(theme)} 2s ease forwards`,
+        }),
       }}
     >
       <CardContent>
@@ -73,8 +82,8 @@ export const TransactionCard = observer<{ transaction: TezosTransaction }>(({ tr
           <MonospaceField label="Transaction Hash" value={transactionData.sourceHash || transactionData.destHash || '-'} />
 
           {/* Created Date - right aligned, no label */}
-          <Typography variant="caption" color="text.secondary" textAlign="right">
-            {transactionData.formattedTimeAgo}
+          <Typography variant="caption" color="text.secondary" textAlign="right" component="div">
+            <ReactTimeAgo date={new Date(transaction.submittedDate)} />
           </Typography>
         </Stack>
       </CardContent>

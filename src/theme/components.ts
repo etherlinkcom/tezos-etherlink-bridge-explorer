@@ -535,31 +535,12 @@ export const components: Components<Theme> = {
         fontWeight: 500,
         fontSize: "14px",
         borderRadius: "20px",
-        transition: "all 0.2s ease-in-out",
-        "&:hover": {
-          transform: "translateY(-1px)",
-        },
+        transition: "all 0.2s ease-in-out"
       }),
-      outlined: ({ theme }) => ({
-        color: theme.palette.primary.main,
-        borderColor: theme.palette.primary.main,
-        backgroundColor: "transparent",
-        "&:hover": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-        },
+      filled: ({ theme }) => ({
+        color: theme.palette.primary.contrastText,
+        backgroundColor: theme.palette.primary.main
       }),
-      filled: ({ theme, ownerState }) => {
-        if (!ownerState.color || ownerState.color === 'default') {
-          return {
-            color: theme.palette.primary.contrastText,
-            backgroundColor: theme.palette.primary.main,
-            "&:hover": {
-              backgroundColor: theme.palette.primary.dark,
-            },
-          };
-        }
-        return {};
-      },
     },
   },
 };

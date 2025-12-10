@@ -64,17 +64,23 @@ export const formatAmount = (amount: string | number, symbol: string): string =>
   
   if (isNaN(numAmount)) return `${amount} ${symbol}`;
   
+  let formattedValue: string;
+  let suffix: string = '';
+  
   if (numAmount >= 1000000000) {
-    return `${(numAmount / 1000000000).toFixed(2)}B ${symbol}`;
+    formattedValue = (numAmount / 1000000000).toFixed(2);
+    suffix = 'B';
   } else if (numAmount >= 1000000) {
-    return `${(numAmount / 1000000).toFixed(2)}M ${symbol}`;
-  }
-  
-  if (numAmount >= 1) {
-    return `${numAmount.toFixed(2)} ${symbol}`;
+    formattedValue = (numAmount / 1000000).toFixed(2);
+    suffix = 'M';
+  } else if (numAmount >= 1) {
+    formattedValue = numAmount.toFixed(2);
   } else if (numAmount > 0) {
-    return `${numAmount.toFixed(6)} ${symbol}`;
+    formattedValue = numAmount.toFixed(6);
+  } else {
+    return `${amount} ${symbol}`;
   }
   
-  return `${amount} ${symbol}`;
+  formattedValue = formattedValue.replace(/\.?0+$/, '');
+  return `${formattedValue}${suffix} ${symbol}`;
 };

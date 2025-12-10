@@ -29,7 +29,7 @@ export const TransactionsTableContent = observer<TransactionsTableContentProps>(
         <TableBody>
           {transactions.map((transaction) => (
             <TransactionTableRow
-              key={transaction.input.id || `${transaction.l1TxHash}-${transaction.l2TxHash}`}
+              key={transaction.input.id}
               transaction={transaction}
             />
           ))}

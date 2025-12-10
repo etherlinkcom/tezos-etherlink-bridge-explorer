@@ -1,140 +1,24 @@
-import { makeAutoObservable, observable, action, reaction } from "mobx";
+import { makeAutoObservable, observable, action, reaction, runInAction } from "mobx";
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { filterStore } from "./filterStore";
 import { networkStore } from "./networkStore";
 import { QueryFilters } from "@/types/queryFilters";
-
-
-type TransactionType = string;
-type Confirmation = { txHash: string; chainId: number };
-export type TezosTransactionType = "withdrawal" | "deposit";
-type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
-interface GetTransactionsOptions extends QueryFilters {
-  resetStore?: boolean;
-  autoRefresh?: boolean;
-  loadingMode?: 'initial' | 'page' | 'refresh';
-}
-
-export type TezosTransactionKind =
-  "fast_withdrawal" |
-  "fast_withdrawal_service_provider" |
-  "fast_withdrawal_payed_out" |
-  "fast_withdrawal_payed_out_expired" |
-  "fast_withdrawal_payed_out_reward" | null
-
-export interface GraphQLResponse {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  l1_account: string;
-  l2_account: string;
-  status: GraphTokenStatus;
-  is_successful: boolean;
-  is_completed: boolean;
-  type: TezosTransactionType;
-  kind: TezosTransactionKind;
-  deposit: {
-    l2_transaction: {
-      token_id: string;
-      amount: string;
-      transaction_hash: string;
-      level: number | null;
-      l2_token: {
-        decimals: number;
-        name: string;
-        symbol: string;
-      };
-      ticket: {
-        token: {
-          decimals: number;
-          name: string;
-          symbol: string;
-        };
-      };
-    };
-    l1_transaction: {
-      amount: string;
-      operation_hash: string;
-      level: number;
-      ticket: {
-        token: {
-          decimals: number;
-          name: string;
-          symbol: string;
-        };
-      };
-    };
-  };
-  withdrawal: {
-    l2_transaction: {
-      token_id: string;
-      amount: string;
-      transaction_hash: string;
-      level: number | null;
-      l2_token: {
-        decimals: number;
-        name: string;
-        symbol: string;
-      };
-      ticket: {
-        token: {
-          decimals: number;
-          name: string;
-          symbol: string;
-        };
-      };
-    };
-    l1_transaction: {
-      amount: string;
-      operation_hash: string;
-      level: number;
-    };
-  };
-}
-
-export enum GraphTokenStatus {
-  Pending = "PENDING",
-  Created = "CREATED",
-  Sealed = "SEALED",
-  Finished = "FINISHED",
-  Failed = "FAILED",
-}
-
-
-interface TransactionProps<Input> {
-  type: TransactionType;
-  input: Input;
-  sendingAmount: string;
-  receivingAmount: string | undefined;
-  symbol: string;
-  chainId: number;
-  expectedDate?: number;
-  submittedDate: number;
-  completedDate?: number;
-  error: string | null;
-  l1TxHash: string;
-  l2TxHash: string;
-  kind: TezosTransactionKind | null;
-  confirmation: Confirmation | undefined;
-  completed: boolean;
-  status: GraphTokenStatus;
-  isFastWithdrawal?: boolean;
-  l1Block?: number;
-  l2Block?: number;
-  fastWithdrawalPayOut?: TezosTransaction;
-  depositNonce?: bigint | null;
-}
-type TransactionConstructorProps<Input> = Optional<
-  TransactionProps<Input>,
-  "confirmation" | "error"
->;
+import { 
+  GraphQLResponse, 
+  TransactionProps, 
+  TransactionConstructorProps, 
+  TezosTransactionType, 
+  TezosTransactionKind, 
+  Confirmation, 
+  GraphTokenStatus, 
+  GetTransactionsOptions 
+} from "@/types/tezosTransaction";
 
 export class TezosTransaction<Input = GraphQLResponse>
-  implements TransactionProps<Input>
+implements TransactionProps<Input>
 {
-  type: TransactionType;
+  type: TezosTransactionType;
   input: Input;
   sendingAmount: string;
   receivingAmount: string | undefined;
@@ -186,15 +70,15 @@ export class TezosTransaction<Input = GraphQLResponse>
 
 export class TezosTransactionStore {
   transactionMap = observable.map<string, TezosTransaction>();
+  newTransactionIds = observable.map<string, boolean>();
   private _transactions = observable.array<TezosTransaction>([]);
+  private newTransactionTimeouts = observable.map<string, NodeJS.Timeout>();
   
-  loadingState: 'idle' | 'initial' | 'page' | 'refresh' = 'idle';
+  loadingState: 'idle' | 'initial' | 'refresh' = 'idle';
   
   get loading() { return this.loadingState !== 'idle'; }
   get loadingInitial() { return this.loadingState === 'initial'; }
-  get loadingMore() { return this.loadingState === 'page'; }
   get loadingRefresh() { return this.loadingState === 'refresh'; }
-  get loadingPage() { return this.loadingState === 'page'; }
   
   error: string | null = null;
   currentPage: number = 1;
@@ -202,7 +86,7 @@ export class TezosTransactionStore {
   batchSize: number = 1000; // API batch size for fetching
   
   private readonly MAX_TRANSACTIONS = 5000;
-  private readonly AUTO_REFRESH_INTERVAL = 50000;
+  private readonly AUTO_REFRESH_INTERVAL = 60000;
   
   private refreshInterval: NodeJS.Timeout | null = null;
   
@@ -455,7 +339,7 @@ export class TezosTransactionStore {
     this.error = null;
   };
 
-  setLoadingState = (state: 'idle' | 'initial' | 'page' | 'refresh') => {
+  setLoadingState = (state: 'idle' | 'initial' | 'refresh') => {
     this.loadingState = state;
   };
 
@@ -498,22 +382,49 @@ export class TezosTransactionStore {
     });
   };
 
-  private mergeTransactions = (transactions: TezosTransaction[]): void => {
-    if (this.transactionMap.size === 0) {
-      transactions.forEach(tx => this.transactionMap.set(tx.input.id, tx));
-    } else {
-      transactions.forEach(tx => {
-        const existing: TezosTransaction | undefined = this.transactionMap.get(tx.input.id);
-        if (existing) {
-          existing.update(tx);
-        } else {
-          this.transactionMap.set(tx.input.id, tx);
+  private mergeTransactions = action((transactionsToAdd: TezosTransaction[]): void => {
+    const newTransactions: TezosTransaction[] = [];
+    
+    transactionsToAdd.forEach(tx => {
+      const existing = this.transactionMap.get(tx.input.id);
+      if (existing) {
+        existing.update(tx);
+      } else {
+        if (this.loadingRefresh) {
+          this.markAsNew(tx.input.id);
         }
-      });
+        newTransactions.push(tx);
+      }
+    });
+
+    this.trimOldTransactions();
+    
+    if (newTransactions.length > 0) {
+      const updated = new Map<string, TezosTransaction>();
+      newTransactions.forEach(tx => updated.set(tx.input.id, tx));
+      this.transactionMap.forEach((txn, id) => updated.set(id, txn));
+      this.transactionMap.replace(updated);
+    }
+    this._transactions.replace([...this.transactionMap.values()]);
+  });
+
+  private markAsNew = (id: string): void => {
+    if (this.newTransactionIds.has(id)) {
+      return;
     }
     
-    this.trimOldTransactions();
-    this._transactions.replace(Array.from(this.transactionMap.values()));
+    this.newTransactionIds.set(id, true);
+    const existingTimeout: NodeJS.Timeout | undefined = this.newTransactionTimeouts.get(id);
+    if (existingTimeout) clearTimeout(existingTimeout);
+
+    const timeout: NodeJS.Timeout = setTimeout(() => {
+      runInAction(() => {
+        this.newTransactionIds.delete(id);
+        this.newTransactionTimeouts.delete(id);
+      });
+    }, 2000);
+    
+    this.newTransactionTimeouts.set(id, timeout);
   };
 
   private trimOldTransactions = (): void => {
@@ -580,13 +491,14 @@ export class TezosTransactionStore {
 
     let filters: GetTransactionsOptions = options;
     if (options.autoRefresh && this.transactions.length > 0) {
-      filters = { ...options, since: this.transactions[0]?.input.updated_at };
+      filters = { ...options, since: this.transactions[0]?.input.created_at };
     }
     
     try {
       const operations: GraphQLResponse[] = await this.fetchBridgeOperations({ ...filters, limit: this.batchSize });
       const allTransactions: TezosTransaction<GraphQLResponse>[] = operations.map(item => this.createTransaction(item));
-      
+      // If the transaction is a fast withdrawal, link it to the previous service provider transaction
+      // instead of displaying it as a new transaction
       const transactionsToAdd: TezosTransaction<GraphQLResponse>[] = allTransactions.filter(tx => 
         this.linkFastWithdrawalTxs(tx, this.transactionMap, allTransactions)
       );
