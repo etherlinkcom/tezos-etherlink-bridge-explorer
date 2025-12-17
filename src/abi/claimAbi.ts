@@ -12,6 +12,8 @@ export const QUEUED_DEPOSIT_ABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, name: 'ticketHash', type: 'uint256' },
+      { indexed: true, name: 'proxy', type: 'address' },
       { indexed: false, name: 'nonce', type: 'uint256' },
       { indexed: false, name: 'receiver', type: 'address' },
       { indexed: false, name: 'amount', type: 'uint256' },
