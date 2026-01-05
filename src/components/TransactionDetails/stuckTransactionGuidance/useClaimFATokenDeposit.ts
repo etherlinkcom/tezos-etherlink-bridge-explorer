@@ -74,10 +74,9 @@ export const useClaimFADeposit = (transaction: TezosTransaction<GraphQLResponse>
     
     for (const event of events) {
       if (event instanceof EventLog) {
-        const eventReceiver: string = event.args[1];
-        
+        const eventReceiver: string = event.args[3];
         if (eventReceiver.toLowerCase() === normalizedReceiverAddress) {
-          const nonce: bigint = event.args[0];
+          const nonce: bigint = event.args[2];
           return nonce;
         }
       }

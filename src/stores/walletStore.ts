@@ -31,6 +31,11 @@ const getOnboard = (): ReturnType<typeof Onboard> => {
           enabled: false,
         },
       },
+      connect: {
+        showSidebar: false,
+        removeWhereIsMyWalletWarning: true,
+        removeIDontHaveAWalletInfoLink: true
+      },
       theme: 'dark',
     });
   }
