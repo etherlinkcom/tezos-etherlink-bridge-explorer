@@ -185,22 +185,25 @@ export class TezosTransactionStore {
 
     if (txHash) {
       // API gets without 0x
-      const l2TxHash: string = txHash.startsWith('0x') ? txHash.slice(2) : txHash;
+      const normalizedTxHash: string = txHash.toLowerCase();
+      const l2TxHash: string = normalizedTxHash.startsWith('0x') ? normalizedTxHash.slice(2) : normalizedTxHash;
       
       andConditions.push(`
         _or: [
-          {deposit: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}},
+          {deposit: {l1_transaction: {operation_hash: {_eq: "${normalizedTxHash}"}}}},
           {deposit: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}},
-          {withdrawal: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}},
+          {withdrawal: {l1_transaction: {operation_hash: {_eq: "${normalizedTxHash}"}}}},
           {withdrawal: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}}
         ]
       `);
       // API gets without 0x
     } else if (address) {
-      const addressWithout0x: string = address.startsWith('0x') ? address.slice(2) : address;
+      const normalizedAddress: string = address.toLowerCase();
+      const addressWithout0x: string = normalizedAddress.startsWith('0x') ? normalizedAddress.slice(2) : normalizedAddress;
+      
       andConditions.push(`
         _or: [
-          {l1_account: {_eq: "${address}"}},
+          {l1_account: {_eq: "${normalizedAddress}"}},
           {l2_account: {_eq: "${addressWithout0x}"}}
         ]
       `);
