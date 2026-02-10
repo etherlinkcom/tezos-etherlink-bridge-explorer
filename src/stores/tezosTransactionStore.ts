@@ -184,19 +184,25 @@ export class TezosTransactionStore {
     const andConditions: string[] = [];
 
     if (txHash) {
-      // API gets without 0x
-      const normalizedTxHash: string = txHash.toLowerCase();
-      const l2TxHash: string = normalizedTxHash.startsWith('0x') ? normalizedTxHash.slice(2) : normalizedTxHash;
+      // Etherlink hashes should be lowercased (not checksummed) and without 0x; Tezos hashes are base58 and case-sensitive
+      const isEtherlink: boolean = txHash.toLowerCase().startsWith('0x');
       
-      andConditions.push(`
-        _or: [
-          {deposit: {l1_transaction: {operation_hash: {_eq: "${normalizedTxHash}"}}}},
-          {deposit: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}},
-          {withdrawal: {l1_transaction: {operation_hash: {_eq: "${normalizedTxHash}"}}}},
-          {withdrawal: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}}
-        ]
-      `);
-      // API gets without 0x
+      if (isEtherlink) {
+        const l2TxHash: string = txHash.toLowerCase().slice(2);
+        andConditions.push(`
+          _or: [
+            {deposit: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}},
+            {withdrawal: {l2_transaction: {transaction_hash: {_eq: "${l2TxHash}"}}}}
+          ]
+        `);
+      } else {
+        andConditions.push(`
+          _or: [
+            {deposit: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}},
+            {withdrawal: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}}
+          ]
+        `);
+      }
     } else if (address) {
       const normalizedAddress: string = address.toLowerCase();
       const addressWithout0x: string = normalizedAddress.startsWith('0x') ? normalizedAddress.slice(2) : normalizedAddress;
