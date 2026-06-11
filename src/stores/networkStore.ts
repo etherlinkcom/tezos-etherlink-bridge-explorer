@@ -8,6 +8,7 @@ export interface NetworkConfig {
   networkName: string;
   etherlinkExplorerUrl: string;
   tezosExplorerUrl: string;
+  tezosExplorerApiUrl: string;
   graphqlEndpoint: string;
 }
 
@@ -17,6 +18,7 @@ const MAINNET_CONFIG: NetworkConfig = {
   networkName: 'Etherlink Mainnet',
   etherlinkExplorerUrl: 'https://explorer.etherlink.com',
   tezosExplorerUrl: 'https://tzkt.io',
+  tezosExplorerApiUrl: 'https://api.tzkt.io',
   graphqlEndpoint: 'https://bridge.indexer.etherlink.com/v1/graphql',
 };
 
@@ -26,6 +28,7 @@ const TESTNET_CONFIG: NetworkConfig = {
   networkName: 'Etherlink Shadownet Testnet',
   etherlinkExplorerUrl: 'https://shadownet.explorer.etherlink.com',
   tezosExplorerUrl: 'https://shadownet.tzkt.io',
+  tezosExplorerApiUrl: 'https://api.shadownet.tzkt.io',
   graphqlEndpoint: 'https://shadownet.bridge.indexer.etherlink.com/v1/graphql',
 };
 
