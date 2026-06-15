@@ -1,12 +1,17 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { TezosTransaction, tezosTransactionStore } from "./tezosTransactionStore";
+import { networkStore } from "./networkStore";
 import { GraphQLResponse } from "@/types/tezosTransaction";
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
+import { fetchWithdrawalL1ReceivedAmount } from '@/utils/tzktVerification';
 
 export class TransactionDetailsStore {
   selectedTransaction: TezosTransaction | null = null;
   loadingState: 'idle' | 'loading' | 'error' = 'idle';
   error: string | null = null;
+
+  // L1 amount sourced from TzKT when the indexer didn't return one (see recoverMissingL1Amount)
+  recoveredL1Amount: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -61,12 +66,18 @@ export class TransactionDetailsStore {
     
     const toBlockString = (level?: number) => (level !== undefined && level !== null ? String(level) : undefined);
 
+    // For withdrawals the L1 amount is the value received on Tezos. When the
+    // indexer didn't return one, fall back to the value sourced from TzKT.
+    const l1Amount: string | undefined = isDeposit
+      ? tx.sendingAmount
+      : (this.recoveredL1Amount ?? tx.receivingAmount);
+
     const l1 = {
       network: 'Tezos',
       hash: formatValue(tx.l1TxHash, false),
       address: formatValue(tx.input?.l1_account, false),
       block: toBlockString(tx.l1Block),
-      amount: isDeposit ? tx.sendingAmount : tx.receivingAmount
+      amount: l1Amount
     };
 
     const l2 = {
@@ -119,6 +130,7 @@ export class TransactionDetailsStore {
   async getTransactionDetails(hash: string): Promise<TezosTransaction | null> {
     this.loadingState = 'loading';
     this.error = null;
+    this.recoveredL1Amount = null;
 
     try {
       const operations: GraphQLResponse[] | null = await this.fetchOperationByHash(hash);
@@ -146,6 +158,11 @@ export class TransactionDetailsStore {
 
       this.selectedTransaction = transaction;
       this.loadingState = 'idle';
+
+      // If the indexer didn't return an L1 amount, source it from TzKT in the
+      // background so the page renders immediately and updates reactively.
+      void this.recoverMissingL1Amount(transaction);
+
       return transaction;
 
     } catch (error) {
@@ -154,10 +171,46 @@ export class TransactionDetailsStore {
     }
   }
 
+  // Fallback for when the indexer doesn't return a regular withdrawal's L1
+  // (Tezos) amount: source it from TzKT instead. Only acts when the indexer
+  // amount is missing/zero, so a healthy indexer is never second-guessed.
+  private async recoverMissingL1Amount(tx: TezosTransaction<GraphQLResponse>): Promise<void> {
+    if (tx.type !== 'withdrawal' || !tx.l1TxHash) return;
+
+    // Fast withdrawals carry their L1 amount on a separately-linked payout
+    // record, so they're handled elsewhere and don't need recovery here.
+    if (tx.isFastWithdrawal) return;
+
+    // Indexer already returned an amount -> nothing to do.
+    const indexerRaw: string | undefined = tx.input?.withdrawal?.l1_transaction?.amount;
+    if (indexerRaw && indexerRaw !== '0') return;
+
+    // Native XTZ is always mutez (6 dp); FA tokens use their own decimals.
+    const isNativeXtz: boolean = tx.symbol === 'XTZ';
+    const decimals: number = isNativeXtz
+      ? 6
+      : (tx.input?.withdrawal?.l2_transaction?.ticket?.token?.decimals ?? 6);
+
+    const amount: string | null = await fetchWithdrawalL1ReceivedAmount(
+      networkStore.config.tezosExplorerApiUrl,
+      tx.l1TxHash,
+      tx.input?.l1_account,
+      isNativeXtz,
+      decimals
+    );
+    if (amount === null) return;
+
+    runInAction(() => {
+      if (this.selectedTransaction?.input.id !== tx.input.id) return; // user navigated away
+      this.recoveredL1Amount = amount;
+    });
+  }
+
   clearSelectedTransaction() {
     this.selectedTransaction = null;
     this.loadingState = 'idle';
     this.error = null;
+    this.recoveredL1Amount = null;
   }
 }
 
