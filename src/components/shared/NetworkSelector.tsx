@@ -95,6 +95,7 @@ export const NetworkSelector = observer(() => {
           >
             <MenuItem value="mainnet">Mainnet</MenuItem>
             <MenuItem value="testnet">Shadownet Testnet</MenuItem>
+            <MenuItem value="previewnet">Tezos X Previewnet</MenuItem>
           </Select>
       </FormControl>
     </Box>

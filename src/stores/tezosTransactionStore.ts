@@ -181,6 +181,10 @@ export class TezosTransactionStore {
       isFastWithdrawal
     } = filters;
 
+    // DipDup indexer (previewnet) exposes the L2 account scalar at l2_account_id;
+    // alias it back to l2_account so the response shape stays identical.
+    const l2AccountField: string = networkStore.config.indexerKind === 'dipdup' ? 'l2_account_id' : 'l2_account';
+
     const andConditions: string[] = [];
 
     if (txHash) {
@@ -210,7 +214,7 @@ export class TezosTransactionStore {
       andConditions.push(`
         _or: [
           {l1_account: {_eq: "${normalizedAddress}"}},
-          {l2_account: {_eq: "${addressWithout0x}"}}
+          {${l2AccountField}: {_eq: "${addressWithout0x}"}}
         ]
       `);
     } else if (level) {
@@ -264,7 +268,7 @@ export class TezosTransactionStore {
           created_at
           updated_at
           l1_account
-          l2_account
+          l2_account: ${l2AccountField}
           status
           is_successful
           is_completed
