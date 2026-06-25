@@ -30,6 +30,7 @@ implements TransactionProps<Input>
   error: string | null = null;
   l1TxHash: string;
   l2TxHash: string;
+  l2Runtime?: 'evm' | 'michelson';
   kind: TezosTransactionKind;
   confirmation: Confirmation | undefined = undefined;
   completed = false;
@@ -47,6 +48,7 @@ implements TransactionProps<Input>
     this.chainId = props.chainId;
     this.l1TxHash = props.l1TxHash;
     this.l2TxHash = props.l2TxHash;
+    this.l2Runtime = props.l2Runtime;
     this.expectedDate = props.expectedDate;
     this.submittedDate = props.submittedDate;
     this.completedDate = props.completedDate;
@@ -183,7 +185,12 @@ export class TezosTransactionStore {
 
     // DipDup indexer (previewnet) exposes the L2 account scalar at l2_account_id;
     // alias it back to l2_account so the response shape stays identical.
-    const l2AccountField: string = networkStore.config.indexerKind === 'dipdup' ? 'l2_account_id' : 'l2_account';
+    const isDipdup: boolean = networkStore.config.indexerKind === 'dipdup';
+    const l2AccountField: string = isDipdup ? 'l2_account_id' : 'l2_account';
+    // dipdup-only fields used to tell EVM from Michelson and pick the right address.
+    const runtimeFields: string = isDipdup
+      ? 'runtime_kind\n          l2_account_meta: l2_account { origin kind home_runtime }'
+      : '';
 
     const andConditions: string[] = [];
 
@@ -200,10 +207,14 @@ export class TezosTransactionStore {
           ]
         `);
       } else {
+        // A Tezos-format hash can be an L1 op or, on Michelson L2, an L2 op hash
+        // (native Michelson deposits carry a base58 tx hash), so match both sides.
         andConditions.push(`
           _or: [
             {deposit: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}},
-            {withdrawal: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}}
+            {withdrawal: {l1_transaction: {operation_hash: {_eq: "${txHash}"}}}},
+            {deposit: {l2_transaction: {transaction_hash: {_eq: "${txHash}"}}}},
+            {withdrawal: {l2_transaction: {transaction_hash: {_eq: "${txHash}"}}}}
           ]
         `);
       }
@@ -269,6 +280,7 @@ export class TezosTransactionStore {
           updated_at
           l1_account
           l2_account: ${l2AccountField}
+          ${runtimeFields}
           status
           is_successful
           is_completed
@@ -532,7 +544,22 @@ export class TezosTransactionStore {
     const l2AmountRaw: string = txData?.l2_transaction?.amount || '0';
     const l1Hash: string = txData?.l1_transaction?.operation_hash || '';
     const l2HashRaw: string = txData?.l2_transaction?.transaction_hash || '';
-    const l2Hash: string = l2HashRaw && !l2HashRaw.startsWith('0x') ? `0x${l2HashRaw}` : l2HashRaw;
+
+    // Runtime (dipdup/previewnet only). Withdrawals always run on EVM even when
+    // michelson-originated (NAC), so they're identified by the L2 account being a
+    // michelson alias; deposits go straight to a runtime, so home_runtime is the
+    // destination (runtime_kind is unreliable for deposits: often null/wrong).
+    const meta: GraphQLResponse['l2_account_meta'] = data.l2_account_meta;
+    const l2Runtime: 'evm' | 'michelson' | undefined = meta
+      ? (data.type === 'withdrawal'
+          ? (meta.kind === 'alias' && meta.home_runtime === 'michelson' ? 'michelson' : 'evm')
+          : (meta.home_runtime ?? undefined))
+      : undefined;
+
+    // Michelson L2 hashes are Tezos op hashes (base58, no 0x); only EVM hashes get 0x.
+    const l2Hash: string = l2Runtime === 'michelson'
+      ? l2HashRaw
+      : (l2HashRaw && !l2HashRaw.startsWith('0x') ? `0x${l2HashRaw}` : l2HashRaw);
     
     const tokenMetadata = isDeposit 
       ? (txData as GraphQLResponse['deposit'])?.l1_transaction?.ticket?.token
@@ -584,6 +611,7 @@ export class TezosTransactionStore {
       completedDate: completedDate,
       l1TxHash: l1Hash,
       l2TxHash: l2Hash,
+      l2Runtime: l2Runtime,
       status: data.status,
       completed: data.is_completed,
       l1Block: l1Block,

@@ -13,6 +13,9 @@ export interface NetworkConfig {
   // Bridge indexer schema. 'etherlink' (default) exposes l2_account as a scalar;
   // 'dipdup' (previewnet) exposes it as a relation with the scalar at l2_account_id.
   indexerKind?: 'etherlink' | 'dipdup';
+  // Dual-runtime networks (previewnet) have a separate Michelson L2 interface.
+  michelsonExplorerUrl?: string; // Michelson L2 explorer (TzKT); API base derived as api.<host>
+  gatewayContract?: string;      // Michelson L2 bridge gateway (call_evm) for exit-op lookup
 }
 
 const CONFIGS: Record<NetworkType, NetworkConfig> = {
@@ -44,8 +47,8 @@ const CONFIGS: Record<NetworkType, NetworkConfig> = {
     tezosExplorerApiUrl: 'https://api.shadownet.tzkt.io',
     graphqlEndpoint: 'https://tezosx-bridge-shadownet.dipdup.net/v1/graphql',
     indexerKind: 'dipdup',
-    // ponytail: phase 1 — EVM ops only. Michelson ops appear but link to the EVM
-    // explorer until phase-2 linking lands (michelsonExplorerUrl + TzKT op matching).
+    michelsonExplorerUrl: 'https://previewnet.tezosx.tzkt.io',
+    gatewayContract: 'KT18oDJJKXMKhfE1bSuAPGp92pYcwVDiqsPw',
   },
 };
 

@@ -3,7 +3,8 @@ import { TezosTransaction, tezosTransactionStore } from "./tezosTransactionStore
 import { networkStore } from "./networkStore";
 import { GraphQLResponse } from "@/types/tezosTransaction";
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
-import { fetchWithdrawalL1ReceivedAmount } from '@/utils/tzktVerification';
+import { fetchWithdrawalL1ReceivedAmount, fetchMichelsonExitOpHash } from '@/utils/tzktVerification';
+import { ExplorerInfo } from '@/utils/explorerInfo';
 
 export class TransactionDetailsStore {
   selectedTransaction: TezosTransaction | null = null;
@@ -12,6 +13,10 @@ export class TransactionDetailsStore {
 
   // L1 amount sourced from TzKT when the indexer didn't return one (see recoverMissingL1Amount)
   recoveredL1Amount: string | null = null;
+
+  // Michelson L2 op hash for a michelson-alias withdrawal, sourced from TzKT
+  // (see recoverMichelsonExitOp). The indexer only has the EVM-side hash.
+  michelsonExitOpHash: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -77,15 +82,45 @@ export class TransactionDetailsStore {
       hash: formatValue(tx.l1TxHash, false),
       address: formatValue(tx.input?.l1_account, false),
       block: toBlockString(tx.l1Block),
-      amount: l1Amount
+      amount: l1Amount,
+      hashExplorer: undefined as ExplorerInfo | undefined,
+      addressExplorer: undefined as ExplorerInfo | undefined,
     };
 
+    // Dual-runtime (previewnet) L2 side: label the runtime, show the
+    // runtime-correct address, and link Michelson hashes/addresses to the
+    // Michelson explorer (shape-based routing would send them to L1 TzKT).
+    const runtime: 'evm' | 'michelson' | undefined = tx.l2Runtime;
+    const isMichelson: boolean = runtime === 'michelson';
+    const meta = tx.input?.l2_account_meta;
+    const michelsonExplorer: string | undefined = networkStore.config.michelsonExplorerUrl;
+
+    const l2Address: string | undefined = isMichelson
+      ? (meta?.origin ?? tx.input?.l2_account)        // the tz1 (alias scalar is the EVM hex)
+      : formatValue(tx.input?.l2_account, true);      // 0x + hex
+
+    const l2Hash: string | undefined = isMichelson
+      ? (tx.l2TxHash || undefined)                    // Tezos op hash, unprefixed
+      : formatValue(tx.l2TxHash, true);
+
+    // Michelson hash link: deposits carry the Tezos op hash directly; alias
+    // withdrawals run on EVM, so the op is resolved from TzKT (michelsonExitOpHash).
+    const michelsonOpHash: string | undefined = isMichelson
+      ? (isDeposit ? tx.l2TxHash : (this.michelsonExitOpHash ?? undefined))
+      : undefined;
+    const toMichelsonLink = (id: string | undefined): ExplorerInfo | undefined =>
+      isMichelson && michelsonExplorer && id
+        ? { url: `${michelsonExplorer}/${id}`, name: 'TzKT Explorer' }
+        : undefined;
+
     const l2 = {
-      network: 'Etherlink',
-      hash: formatValue(tx.l2TxHash, true),
-      address: formatValue(tx.input?.l2_account, true),
+      network: runtime ? `Etherlink (${isMichelson ? 'Michelson' : 'EVM'})` : 'Etherlink',
+      hash: l2Hash,
+      address: l2Address,
       block: toBlockString(tx.l2Block),
-      amount: isDeposit ? tx.receivingAmount : tx.sendingAmount
+      amount: isDeposit ? tx.receivingAmount : tx.sendingAmount,
+      hashExplorer: toMichelsonLink(michelsonOpHash),
+      addressExplorer: toMichelsonLink(l2Address),
     };
 
     return {
@@ -131,6 +166,7 @@ export class TransactionDetailsStore {
     this.loadingState = 'loading';
     this.error = null;
     this.recoveredL1Amount = null;
+    this.michelsonExitOpHash = null;
 
     try {
       const operations: GraphQLResponse[] | null = await this.fetchOperationByHash(hash);
@@ -162,6 +198,10 @@ export class TransactionDetailsStore {
       // If the indexer didn't return an L1 amount, source it from TzKT in the
       // background so the page renders immediately and updates reactively.
       void this.recoverMissingL1Amount(transaction);
+
+      // Michelson-alias withdrawals only carry their EVM-side hash in the indexer;
+      // resolve the Michelson op from TzKT in the background for the explorer link.
+      void this.recoverMichelsonExitOp(transaction);
 
       return transaction;
 
@@ -206,11 +246,37 @@ export class TransactionDetailsStore {
     });
   }
 
+  // Resolves the Michelson L2 op hash for a michelson-alias withdrawal from TzKT.
+  // No-op for EVM ops, deposits (their L2 hash is already the Tezos op), or
+  // networks without a Michelson interface.
+  private async recoverMichelsonExitOp(tx: TezosTransaction<GraphQLResponse>): Promise<void> {
+    if (tx.l2Runtime !== 'michelson' || tx.type !== 'withdrawal') return;
+
+    const cfg = networkStore.config;
+    if (!cfg.michelsonExplorerUrl || !cfg.gatewayContract) return;
+    if (tx.l2Block == null) return;
+
+    const hash: string | null = await fetchMichelsonExitOpHash(
+      cfg.michelsonExplorerUrl,
+      cfg.gatewayContract,
+      tx.l2Block,
+      tx.input?.withdrawal?.l2_transaction?.amount,
+      tx.input?.l2_account_meta?.origin ?? tx.input?.l1_account
+    );
+    if (hash === null) return;
+
+    runInAction(() => {
+      if (this.selectedTransaction?.input.id !== tx.input.id) return; // user navigated away
+      this.michelsonExitOpHash = hash;
+    });
+  }
+
   clearSelectedTransaction() {
     this.selectedTransaction = null;
     this.loadingState = 'idle';
     this.error = null;
     this.recoveredL1Amount = null;
+    this.michelsonExitOpHash = null;
   }
 }
 

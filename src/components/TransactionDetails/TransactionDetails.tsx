@@ -65,6 +65,8 @@ export const TransactionDetails = observer(() => {
             address={transactionDetails.source.address}
             amount={`${transactionDetails.source.amount || '0'} ${transactionDetails.symbol}`}
             block={transactionDetails.source.block}
+            hashExplorer={transactionDetails.source.hashExplorer}
+            addressExplorer={transactionDetails.source.addressExplorer}
           />
 
           <NetworkSection
@@ -73,6 +75,8 @@ export const TransactionDetails = observer(() => {
             address={transactionDetails.destination.address}
             amount={`${transactionDetails.destination.amount || '0'} ${transactionDetails.symbol}`}
             block={transactionDetails.destination.block}
+            hashExplorer={transactionDetails.destination.hashExplorer}
+            addressExplorer={transactionDetails.destination.addressExplorer}
             showDivider
           />
 
