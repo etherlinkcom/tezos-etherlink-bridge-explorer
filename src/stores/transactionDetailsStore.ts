@@ -99,6 +99,7 @@ export class TransactionDetailsStore {
     const isMichelson: boolean = runtime === 'michelson';
     const meta = tx.input?.l2_account_meta;
     const michelsonExplorer: string | undefined = networkStore.config.michelsonExplorerUrl;
+    const l2Name: string = networkStore.config.l2Name ?? 'Etherlink';
 
     const l2Address: string | undefined = isMichelson
       ? (meta?.origin ?? tx.input?.l2_account)        // the tz1 (alias scalar is the EVM hex)
@@ -121,7 +122,7 @@ export class TransactionDetailsStore {
         : undefined;
 
     const l2 = {
-      network: runtime ? `Etherlink (${isMichelson ? 'Michelson' : 'EVM'})` : 'Etherlink',
+      network: runtime ? `${l2Name} (${isMichelson ? 'Michelson' : 'EVM'})` : l2Name,
       hash: l2Hash,
       address: l2Address,
       block: toBlockString(tx.l2Block),
@@ -138,7 +139,7 @@ export class TransactionDetailsStore {
       source: isDeposit ? l1 : l2,
       destination: isDeposit ? l2 : l1,
       status: tx.status || 'Unknown',
-      networkFlow: `${isDeposit ? 'Tezos' : 'Etherlink'} → ${isDeposit ? 'Etherlink' : 'Tezos'}`,
+      networkFlow: `${isDeposit ? 'Tezos' : l2Name} → ${isDeposit ? l2Name : 'Tezos'}`,
       createdAt: tx.submittedDate ? formatDateTime(new Date(tx.submittedDate)) : 'Unknown',
       expectedAt: tx.expectedDate ? formatDateTime(new Date(tx.expectedDate)) : null,
       kind: tx.kind ? tx.kind.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : null,

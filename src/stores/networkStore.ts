@@ -16,6 +16,7 @@ export interface NetworkConfig {
   // Dual-runtime networks (previewnet) have a separate Michelson L2 interface.
   michelsonExplorerUrl?: string; // Michelson L2 explorer (TzKT); API base derived as api.<host>
   gatewayContract?: string;      // Michelson L2 bridge gateway (call_evm) for exit-op lookup
+  l2Name?: string;               // L2 display name (default 'Etherlink'; previewnet is 'Tezos X')
 }
 
 const CONFIGS: Record<NetworkType, NetworkConfig> = {
@@ -49,6 +50,7 @@ const CONFIGS: Record<NetworkType, NetworkConfig> = {
     indexerKind: 'dipdup',
     michelsonExplorerUrl: 'https://previewnet.tezosx.tzkt.io',
     gatewayContract: 'KT18oDJJKXMKhfE1bSuAPGp92pYcwVDiqsPw',
+    l2Name: 'Tezos X',
   },
 };
 
