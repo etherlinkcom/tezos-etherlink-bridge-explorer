@@ -15,6 +15,57 @@ interface TzktTokenTransfer {
 const sameAccount = (a: string | undefined, b: string | undefined): boolean =>
   !!a && !!b && a.toLowerCase() === b.toLowerCase();
 
+interface TzktCallEvmOp {
+  hash: string;
+  amount: number; // mutez
+}
+
+/**
+ * Resolves the Michelson L2 op hash for a michelson-alias withdrawal. The bridge
+ * indexer only carries the EVM-side hash for these (the withdrawal runs on EVM via
+ * NAC), so the real Tezos op is found on the Michelson L2's TzKT: the gateway's
+ * `call_evm` op at the withdrawal's L2 level. When several ops share a level we
+ * disambiguate by amount (indexer wei = tzkt mutez * 1e12 for native XTZ).
+ *
+ * Returns the op hash, or null if none matches / the request failed.
+ */
+export async function fetchMichelsonExitOpHash(
+  michelsonExplorerUrl: string,
+  gatewayContract: string,
+  level: number,
+  amountWei: string | undefined,
+  sender: string | undefined
+): Promise<string | null> {
+  if (!level || !gatewayContract) return null;
+
+  // The Michelson explorer's TzKT API lives at the api.<host> subdomain.
+  const apiBase: string = michelsonExplorerUrl.replace('://', '://api.');
+  const senderParam: string = sender ? `&sender=${sender}` : '';
+
+  try {
+    const ops: TzktCallEvmOp[] = await fetchJson<TzktCallEvmOp[]>(
+      `${apiBase}/v1/operations/transactions`
+        + `?target=${gatewayContract}&entrypoint=call_evm&level=${level}${senderParam}`
+        + `&limit=20&sort.desc=id`,
+      { method: 'GET', headers: { Accept: 'application/json' } },
+      3
+    );
+    if (!ops || ops.length === 0) return null;
+    if (ops.length === 1) return ops[0].hash;
+
+    // ponytail: amount tiebreak assumes native XTZ (wei 18dp -> mutez 6dp). For FA
+    // tokens this won't match and we fall back to ops[0]; acceptable because the
+    // level (+sender) filter almost always yields a single op. Pass token decimals
+    // here if same-level FA collisions ever surface.
+    const mutez: string | undefined = amountWei
+      ? (BigInt(amountWei) / BigInt('1000000000000')).toString()
+      : undefined;
+    return (ops.find(op => String(op.amount) === mutez) ?? ops[0]).hash;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Sources how much a withdrawal actually delivered on Tezos (L1) from TzKT, a
  * canonical indexer independent of our custom GraphQL indexer. Used as a

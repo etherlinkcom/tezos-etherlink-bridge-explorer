@@ -24,6 +24,13 @@ export interface GraphQLResponse {
   updated_at: string;
   l1_account: string;
   l2_account: string;
+  // dipdup-only (previewnet): L2 account metadata used to derive the runtime
+  // (origin) + the runtime-correct address.
+  l2_account_meta?: {
+    origin: string;
+    kind: 'unknown' | 'native' | 'alias';
+    home_runtime: 'evm' | 'michelson' | null;
+  };
   status: GraphTokenStatus;
   is_successful: boolean;
   is_completed: boolean;
@@ -110,6 +117,7 @@ export interface TransactionProps<Input> {
   error: string | null;
   l1TxHash: string;
   l2TxHash: string;
+  l2Runtime?: 'evm' | 'michelson';
   kind: TezosTransactionKind | null;
   confirmation: Confirmation | undefined;
   completed: boolean;

@@ -7,7 +7,7 @@ import { CopyButton } from '../shared/CopyButton';
 import { StatusChip } from '../shared/StatusChip';
 import { EllipsisBox } from '../shared/EllipsisBox';
 import { networkStore } from '@/stores/networkStore';
-import { getExplorerInfo } from '@/utils/explorerInfo';
+import { getExplorerInfo, ExplorerInfo } from '@/utils/explorerInfo';
 
 export type DetailFieldLabel =
   | 'Error' | 'Transaction Hash' | 'Address' | 'Block' | 'Amount'
@@ -23,15 +23,19 @@ const EXPLORER_LABELS: ReadonlySet<DetailFieldLabel> = new Set(['Transaction Has
 interface DetailFieldProps {
   label: DetailFieldLabel;
   value: string | undefined;
+  // When set, link here instead of routing by value shape (e.g. Michelson hashes
+  // whose shape would otherwise resolve to the wrong explorer).
+  explorerOverride?: ExplorerInfo;
 }
 
-export const DetailField = observer(({ label, value }: DetailFieldProps) => {
+export const DetailField = observer(({ label, value, explorerOverride }: DetailFieldProps) => {
   const theme = useTheme();
   const isCopyableAndMonospace: boolean = COPYABLE_AND_MONOSPACE_LABELS.has(label);
   const bold: boolean = BOLD_LABELS.has(label);
   const hasExplorer: boolean = EXPLORER_LABELS.has(label);
-  const explorerInfo: { url: string; name: string } | null = 
-  (value && value !== '-' && hasExplorer) ? getExplorerInfo(value, networkStore.config) : null;
+  const explorerInfo: ExplorerInfo | null =
+    explorerOverride ??
+    ((value && value !== '-' && hasExplorer) ? getExplorerInfo(value, networkStore.config) : null);
 
   return (
     <Box sx={{ mb: theme.spacing(1.5) }}>

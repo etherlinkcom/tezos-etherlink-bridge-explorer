@@ -1,15 +1,17 @@
 'use client';
 
-import { 
-  Box, 
-  Typography, 
+import {
+  Box,
+  Typography,
   Card,
   CardContent,
   CircularProgress,
-  Divider
+  Divider,
+  Button
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { transactionDetailsStore } from '@/stores/transactionDetailsStore';
+import { networkStore } from '@/stores/networkStore';
 import { DetailField } from './DetailField';
 import { DataSection } from './DataSection';
 import { NetworkSection } from './NetworkSection';
@@ -32,10 +34,16 @@ export const TransactionDetails = observer(() => {
   }
 
   if (hasError) {
+    const foundOn = transactionDetailsStore.foundOnNetwork;
     return (
-      <Typography color="error" sx={{ py: 4 }}>
-        {error}
-      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, py: 4 }}>
+        <Typography color="error">{error}</Typography>
+        {foundOn && (
+          <Button variant="outlined" onClick={() => transactionDetailsStore.switchToFoundNetwork()}>
+            Transaction found on {networkStore.getConfig(foundOn).networkName} — switch network
+          </Button>
+        )}
+      </Box>
     );
   }
 
@@ -65,6 +73,8 @@ export const TransactionDetails = observer(() => {
             address={transactionDetails.source.address}
             amount={`${transactionDetails.source.amount || '0'} ${transactionDetails.symbol}`}
             block={transactionDetails.source.block}
+            hashExplorer={transactionDetails.source.hashExplorer}
+            addressExplorer={transactionDetails.source.addressExplorer}
           />
 
           <NetworkSection
@@ -73,6 +83,8 @@ export const TransactionDetails = observer(() => {
             address={transactionDetails.destination.address}
             amount={`${transactionDetails.destination.amount || '0'} ${transactionDetails.symbol}`}
             block={transactionDetails.destination.block}
+            hashExplorer={transactionDetails.destination.hashExplorer}
+            addressExplorer={transactionDetails.destination.addressExplorer}
             showDivider
           />
 
