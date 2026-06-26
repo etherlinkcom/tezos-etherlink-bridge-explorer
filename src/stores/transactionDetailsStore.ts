@@ -104,15 +104,17 @@ export class TransactionDetailsStore {
       ? (meta?.origin ?? tx.input?.l2_account)        // the tz1 (alias scalar is the EVM hex)
       : formatValue(tx.input?.l2_account, true);      // 0x + hex
 
-    const l2Hash: string | undefined = isMichelson
-      ? (tx.l2TxHash || undefined)                    // Tezos op hash, unprefixed
-      : formatValue(tx.l2TxHash, true);
-
-    // Michelson hash link: deposits carry the Tezos op hash directly; alias
-    // withdrawals run on EVM, so the op is resolved from TzKT (michelsonExitOpHash).
+    // Michelson hash: deposits carry the Tezos op hash directly; alias withdrawals
+    // run on EVM, so the op is resolved from TzKT (michelsonExitOpHash).
     const michelsonOpHash: string | undefined = isMichelson
       ? (isDeposit ? tx.l2TxHash : (this.michelsonExitOpHash ?? undefined))
       : undefined;
+
+    // Display the resolved Michelson op hash so the shown value matches the link;
+    // until an alias withdrawal's op resolves, fall back to the EVM hash we have.
+    const l2Hash: string | undefined = isMichelson
+      ? (michelsonOpHash ?? tx.l2TxHash ?? undefined)
+      : formatValue(tx.l2TxHash, true);
     const toMichelsonLink = (id: string | undefined): ExplorerInfo | undefined =>
       isMichelson && michelsonExplorer && id
         ? { url: `${michelsonExplorer}/${id}`, name: 'TzKT Explorer' }

@@ -189,7 +189,7 @@ export class TezosTransactionStore {
     const l2AccountField: string = isDipdup ? 'l2_account_id' : 'l2_account';
     // dipdup-only fields used to tell EVM from Michelson and pick the right address.
     const runtimeFields: string = isDipdup
-      ? 'runtime_kind\n          l2_account_meta: l2_account { origin kind home_runtime }'
+      ? 'l2_account_meta: l2_account { origin kind home_runtime }'
       : '';
 
     const andConditions: string[] = [];

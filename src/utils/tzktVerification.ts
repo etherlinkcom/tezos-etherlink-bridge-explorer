@@ -53,6 +53,10 @@ export async function fetchMichelsonExitOpHash(
     if (!ops || ops.length === 0) return null;
     if (ops.length === 1) return ops[0].hash;
 
+    // ponytail: amount tiebreak assumes native XTZ (wei 18dp -> mutez 6dp). For FA
+    // tokens this won't match and we fall back to ops[0]; acceptable because the
+    // level (+sender) filter almost always yields a single op. Pass token decimals
+    // here if same-level FA collisions ever surface.
     const mutez: string | undefined = amountWei
       ? (BigInt(amountWei) / BigInt('1000000000000')).toString()
       : undefined;

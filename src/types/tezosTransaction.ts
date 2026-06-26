@@ -24,9 +24,8 @@ export interface GraphQLResponse {
   updated_at: string;
   l1_account: string;
   l2_account: string;
-  // dipdup-only (previewnet): which L2 runtime an op ran on, and the L2 account
-  // metadata used to derive origin + the runtime-correct address.
-  runtime_kind?: 'evm' | 'michelson' | null;
+  // dipdup-only (previewnet): L2 account metadata used to derive the runtime
+  // (origin) + the runtime-correct address.
   l2_account_meta?: {
     origin: string;
     kind: 'unknown' | 'native' | 'alias';
