@@ -70,6 +70,12 @@ export class NetworkStore {
     return CONFIGS[this._currentNetwork];
   }
 
+  get networks(): NetworkType[] {
+    return Object.keys(CONFIGS) as NetworkType[];
+  }
+
+  getConfig = (network: NetworkType): NetworkConfig => CONFIGS[network];
+
   get isInitialized(): boolean {
     return this._isInitialized;
   }

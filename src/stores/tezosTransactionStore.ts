@@ -2,7 +2,7 @@ import { makeAutoObservable, observable, action, reaction, runInAction } from "m
 import { toDecimalValue } from "@/utils/formatters";
 import { fetchJson } from "@/utils/fetchJson";
 import { filterStore } from "./filterStore";
-import { networkStore } from "./networkStore";
+import { networkStore, NetworkConfig } from "./networkStore";
 import { QueryFilters } from "@/types/queryFilters";
 import { 
   GraphQLResponse, 
@@ -170,7 +170,7 @@ export class TezosTransactionStore {
     this.setError(`${context}: ${errorMessage}`);
   };
 
-  private buildGraphQLQuery = (filters: QueryFilters = {}): string => {
+  private buildGraphQLQuery = (filters: QueryFilters = {}, config: NetworkConfig = networkStore.config): string => {
     const {
       limit = this.pageSize,
       offset = 0,
@@ -185,7 +185,7 @@ export class TezosTransactionStore {
 
     // DipDup indexer (previewnet) exposes the L2 account scalar at l2_account_id;
     // alias it back to l2_account so the response shape stays identical.
-    const isDipdup: boolean = networkStore.config.indexerKind === 'dipdup';
+    const isDipdup: boolean = config.indexerKind === 'dipdup';
     const l2AccountField: string = isDipdup ? 'l2_account_id' : 'l2_account';
     // dipdup-only fields used to tell EVM from Michelson and pick the right address.
     const runtimeFields: string = isDipdup
@@ -376,13 +376,13 @@ export class TezosTransactionStore {
     this.setPage(page);
   };
 
-  fetchBridgeOperations = async (filters: QueryFilters = {}): Promise<GraphQLResponse[]> => {
-    const query: string = this.buildGraphQLQuery(filters);
+  fetchBridgeOperations = async (filters: QueryFilters = {}, config: NetworkConfig = networkStore.config): Promise<GraphQLResponse[]> => {
+    const query: string = this.buildGraphQLQuery(filters, config);
 
-    const response: { 
+    const response: {
       data: { bridge_operation: GraphQLResponse[] };
       errors?: Array<{ message: string }>;
-    } = await fetchJson(networkStore.config.graphqlEndpoint, {
+    } = await fetchJson(config.graphqlEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })

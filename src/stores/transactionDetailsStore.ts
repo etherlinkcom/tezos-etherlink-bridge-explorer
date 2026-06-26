@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { TezosTransaction, tezosTransactionStore } from "./tezosTransactionStore";
-import { networkStore } from "./networkStore";
+import { networkStore, NetworkType } from "./networkStore";
 import { GraphQLResponse } from "@/types/tezosTransaction";
 import { formatDateTime, formatEtherlinkValue } from '@/utils/formatters';
 import { fetchWithdrawalL1ReceivedAmount, fetchMichelsonExitOpHash } from '@/utils/tzktVerification';
@@ -17,6 +17,11 @@ export class TransactionDetailsStore {
   // Michelson L2 op hash for a michelson-alias withdrawal, sourced from TzKT
   // (see recoverMichelsonExitOp). The indexer only has the EVM-side hash.
   michelsonExitOpHash: string | null = null;
+
+  // Search is network-scoped. When a hash isn't on the selected network, we probe
+  // the others; if found, this names the network so the UI can offer a switch.
+  searchedHash: string | null = null;
+  foundOnNetwork: NetworkType | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -167,11 +172,15 @@ export class TransactionDetailsStore {
     this.error = null;
     this.recoveredL1Amount = null;
     this.michelsonExitOpHash = null;
+    this.searchedHash = hash;
+    this.foundOnNetwork = null;
 
     try {
       const operations: GraphQLResponse[] | null = await this.fetchOperationByHash(hash);
       
       if (!operations || operations.length === 0) {
+        // Not on the selected network — probe the others so the UI can offer a switch.
+        await this.probeOtherNetworks(hash);
         this.handleError(new Error('Transaction not found'), 'Transaction by hash lookup');
         return null;
       }
@@ -271,12 +280,51 @@ export class TransactionDetailsStore {
     });
   }
 
+  // Probes the non-selected networks for the hash. Stops at the first hit and
+  // records it (a tx hash is unique to one chain). A bare existence query works
+  // across both indexer schemas, so no per-network field handling is needed.
+  private async probeOtherNetworks(hash: string): Promise<void> {
+    const others: NetworkType[] = networkStore.networks.filter(n => n !== networkStore.currentNetwork);
+
+    for (const network of others) {
+      try {
+        const ops = await tezosTransactionStore.fetchBridgeOperations(
+          { txHash: hash, limit: 1 },
+          networkStore.getConfig(network)
+        );
+        if (ops && ops.length > 0) {
+          runInAction(() => {
+            if (this.searchedHash !== hash) return; // a newer search superseded this one
+            this.foundOnNetwork = network;
+          });
+          return;
+        }
+      } catch {
+        // One network's indexer failing shouldn't stop us probing the rest.
+      }
+    }
+  }
+
+  // Switches to the network where the hash was found and re-runs the lookup, so
+  // the detail page renders with that network's config (explorer URLs, etc.).
+  switchToFoundNetwork = (): void => {
+    const network: NetworkType | null = this.foundOnNetwork;
+    const hash: string | null = this.searchedHash;
+    if (!network || !hash) return;
+
+    networkStore.setNetwork(network);
+    this.foundOnNetwork = null;
+    void this.getTransactionDetails(hash);
+  };
+
   clearSelectedTransaction() {
     this.selectedTransaction = null;
     this.loadingState = 'idle';
     this.error = null;
     this.recoveredL1Amount = null;
     this.michelsonExitOpHash = null;
+    this.searchedHash = null;
+    this.foundOnNetwork = null;
   }
 }
 
