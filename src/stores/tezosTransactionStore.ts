@@ -170,7 +170,7 @@ export class TezosTransactionStore {
     this.setError(`${context}: ${errorMessage}`);
   };
 
-  private buildGraphQLQuery = (filters: QueryFilters = {}, config: NetworkConfig = networkStore.config): string => {
+  private buildGraphQLQuery = (filters: QueryFilters = {}): string => {
     const {
       limit = this.pageSize,
       offset = 0,
@@ -182,15 +182,6 @@ export class TezosTransactionStore {
       tokenSymbol,
       isFastWithdrawal
     } = filters;
-
-    // DipDup indexer (previewnet) exposes the L2 account scalar at l2_account_id;
-    // alias it back to l2_account so the response shape stays identical.
-    const isDipdup: boolean = config.indexerKind === 'dipdup';
-    const l2AccountField: string = isDipdup ? 'l2_account_id' : 'l2_account';
-    // dipdup-only fields used to tell EVM from Michelson and pick the right address.
-    const runtimeFields: string = isDipdup
-      ? 'l2_account_meta: l2_account { origin kind home_runtime }'
-      : '';
 
     const andConditions: string[] = [];
 
@@ -225,7 +216,7 @@ export class TezosTransactionStore {
       andConditions.push(`
         _or: [
           {l1_account: {_eq: "${normalizedAddress}"}},
-          {${l2AccountField}: {_eq: "${addressWithout0x}"}}
+          {l2_account_id: {_eq: "${addressWithout0x}"}}
         ]
       `);
     } else if (level) {
@@ -279,8 +270,8 @@ export class TezosTransactionStore {
           created_at
           updated_at
           l1_account
-          l2_account: ${l2AccountField}
-          ${runtimeFields}
+          l2_account: l2_account_id
+          l2_account_meta: l2_account { origin kind home_runtime }
           status
           is_successful
           is_completed
@@ -377,7 +368,7 @@ export class TezosTransactionStore {
   };
 
   fetchBridgeOperations = async (filters: QueryFilters = {}, config: NetworkConfig = networkStore.config): Promise<GraphQLResponse[]> => {
-    const query: string = this.buildGraphQLQuery(filters, config);
+    const query: string = this.buildGraphQLQuery(filters);
 
     const response: {
       data: { bridge_operation: GraphQLResponse[] };
